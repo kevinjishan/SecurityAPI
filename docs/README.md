@@ -48,3 +48,13 @@ registry.requireEntry("kiwoom", "ka10001");
 registry.getEndpoint("ls", "t1101");
 registry.getRequestFields("kiwoom", "ka10001");
 ```
+
+## Core SDK
+
+Broker Client가 공유할 HTTP/토큰/에러 기반은 `security-api-reference/core`에서 제공합니다.
+
+```js
+import { BrokerError, HttpClient, MemoryTokenStore } from "security-api-reference/core";
+```
+
+Core SDK는 실제 증권사 인증/주문 의미를 알지 않고, fetch 호출, timeout, 응답 파싱, header 정규화, token cache, 공통 에러 형태까지만 담당합니다.

@@ -27,6 +27,15 @@ const endpoint = registry.getEndpoint("kiwoom", "ka10001", { env: "mock" });
 const requestFields = registry.getRequestFields("ls", "t1101");
 ```
 
+Core SDK 유틸리티는 `security-api-reference/core`에서 사용할 수 있습니다.
+
+```js
+import { HttpClient, MemoryTokenStore, BrokerError } from "security-api-reference/core";
+
+const http = new HttpClient({ defaultTimeoutMs: 10_000 });
+const tokens = new MemoryTokenStore();
+```
+
 ## 공식 출처
 
 - 키움 REST API: https://openapi.kiwoom.com/guide/apiguide?dummyVal=0

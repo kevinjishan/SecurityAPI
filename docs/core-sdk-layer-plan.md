@@ -2,6 +2,26 @@
 
 이 문서는 SecurityAPI SDK의 공통 기반인 Core SDK Layer를 상세 설계한다. Core SDK는 증권사별 Client가 공유하는 HTTP 호출, 토큰 저장, 응답 정규화, 에러 타입, 테스트 가능한 의존성 주입 구조를 제공한다.
 
+## 구현 상태
+
+현재 1차 Core SDK는 ESM JavaScript 모듈로 구현되어 있다.
+
+```text
+src/core/types.mjs
+src/core/BrokerError.mjs
+src/core/HttpClient.mjs
+src/core/TokenStore.mjs
+src/core/RetryPolicy.mjs
+src/core/index.mjs
+```
+
+검증:
+
+```bash
+npm test
+npm run validate:all
+```
+
 ## 1. 목표와 범위
 
 Core SDK Layer의 목표는 증권사별 차이와 무관한 공통 실행 기반을 만드는 것이다.
