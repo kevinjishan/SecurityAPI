@@ -7,13 +7,25 @@
 ```bash
 npm run generate:docs
 npm run validate:docs
+npm run generate:manifest
+npm run validate:manifest
 ```
 
-생성 결과는 `docs/`에, 원본 JSON 스냅샷은 `data/raw/`에 저장됩니다.
+Markdown 레퍼런스는 `docs/`에, SDK용 JSON manifest는 `data/generated/`에, 원본 JSON 스냅샷은 `data/raw/`에 저장됩니다.
 
 ## SDK 확장 계획
 
 문서 레퍼런스를 공통 증권사 API SDK로 확장하기 위한 방향성은 [docs/sdk-architecture-plan.md](docs/sdk-architecture-plan.md)에 정리되어 있습니다.
+
+초기 SDK 구현은 `data/generated/kiwoom-manifest.json`과 `data/generated/ls-manifest.json`을 기준으로 API ID/TR 코드, 엔드포인트, 헤더, 요청/응답 필드, 인증 필요 여부를 조회하도록 설계합니다.
+
+```js
+import { createMetadataRegistry } from "security-api-reference/metadata";
+
+const registry = await createMetadataRegistry();
+const endpoint = registry.getEndpoint("kiwoom", "ka10001", { env: "mock" });
+const requestFields = registry.getRequestFields("ls", "t1101");
+```
 
 ## 공식 출처
 

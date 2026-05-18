@@ -3,9 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./metadata": "./src/metadata/index.mjs"
+  },
   "scripts": {
     "generate:docs": "node scripts/generate-docs.mjs",
-    "validate:docs": "node scripts/validate-docs.mjs"
+    "validate:docs": "node scripts/validate-docs.mjs",
+    "generate:manifest": "node scripts/generate-manifest.mjs",
+    "validate:manifest": "node scripts/validate-manifest.mjs",
+    "test": "node --test",
+    "validate:all": "npm run validate:docs && npm run validate:manifest && npm test"
   },
   "engines": {
     "node": ">=20"

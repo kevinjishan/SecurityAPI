@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-05-18T06:37:12.104Z",
+  "brokers": {
+    "kiwoom": {
+      "apis": 207,
+      "errors": 33,
+      "manifest": "data/generated/kiwoom-manifest.json"
+    },
+    "ls": {
+      "groups": 8,
+      "apiPages": 41,
+      "trs": 365,
+      "manifest": "data/generated/ls-manifest.json"
+    }
+  }
+}
