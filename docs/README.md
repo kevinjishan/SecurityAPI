@@ -112,22 +112,28 @@ caps.findApis("account.domesticStock.balance");
 
 ## Domain Services
 
-첫 도메인 서비스로 국내주식 시세 조회를 제공합니다. 이 레이어는 Broker Client를 사용하되, 결과를 공통 형태로 얇게 정리합니다.
+도메인 서비스는 Broker Client를 사용하되, 결과를 공통 형태로 얇게 정리합니다.
+현재 국내주식 시세 조회와 계좌 기본 조회를 제공합니다.
 
 ```js
-import { KiwoomClient, QuoteService } from "security-api-reference";
+import { AccountService, KiwoomClient, QuoteService } from "security-api-reference";
 
-const quote = new QuoteService({
+const clients = {
   kiwoom: new KiwoomClient({
     appKey: process.env.KIWOOM_APP_KEY,
     secretKey: process.env.KIWOOM_SECRET_KEY,
     env: "mock"
   })
-});
+};
+
+const quote = new QuoteService(clients);
+const account = new AccountService(clients);
 
 const currentPrice = await quote.getDomesticStockCurrentPrice("kiwoom", "005930");
 const orderBook = await quote.getDomesticStockOrderBook("kiwoom", "005930");
 const multiPrices = await quote.getDomesticStockMultiCurrentPrice("kiwoom", ["005930", "000660"]);
+const cash = await account.getDomesticStockCash("kiwoom");
+const balance = await account.getDomesticStockBalance("kiwoom");
 ```
 
-현재 구현 범위는 `quote.domesticStock.currentPrice`, `quote.domesticStock.orderBook`, `quote.domesticStock.multiCurrentPrice`입니다. 주문/잔고 도메인 함수는 별도 안전 정책과 함께 추가합니다.
+현재 구현 범위는 `quote.domesticStock.currentPrice`, `quote.domesticStock.orderBook`, `quote.domesticStock.multiCurrentPrice`, `account.domesticStock.cash`, `account.domesticStock.balance`입니다. 주문과 주문/체결 내역 도메인 함수는 별도 안전 정책과 함께 추가합니다.

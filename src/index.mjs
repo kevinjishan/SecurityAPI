@@ -51,7 +51,10 @@ export {
 } from "./capabilities/index.mjs";
 
 export {
+  AccountService,
   QuoteService,
+  normalizeDomesticStockBalance,
+  normalizeDomesticStockCash,
   normalizeDomesticStockCurrentPrice,
   normalizeDomesticStockMultiCurrentPrice,
   normalizeDomesticStockOrderBook,
