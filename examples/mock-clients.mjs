@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { KiwoomClient, LsClient } from "security-api-reference";
+import { KiwoomClient, LsClient, QuoteService } from "security-api-reference";
 
 const kiwoomCalls = [];
 const kiwoom = new KiwoomClient({
@@ -92,8 +92,21 @@ assert.equal(lsCalls[1].headers.tr_cd, "t1101");
 assert.equal(lsCalls[1].headers.authorization, "Bearer mock-ls-token");
 assert.equal(lsCalls[1].headers.mac_address, "AABBCCDDEEFF");
 
+const quote = new QuoteService({ kiwoom, ls });
+const kiwoomQuote = await quote.getDomesticStockCurrentPrice("kiwoom", "005930");
+const lsQuote = await quote.getDomesticStockCurrentPrice("ls", "005930");
+
+assert.equal(kiwoomQuote.ok, true);
+assert.equal(kiwoomQuote.data.price, 70000);
+assert.equal(lsQuote.ok, true);
+assert.equal(lsQuote.data.price, 70000);
+
 console.log("Mock Kiwoom result:", kiwoomResult.data);
 console.log("Mock LS result:", lsResult.data);
+console.log("Mock QuoteService results:", {
+  kiwoom: kiwoomQuote.data,
+  ls: lsQuote.data,
+});
 console.log("Mock broker client examples passed.");
 
 function readCall(url, init) {

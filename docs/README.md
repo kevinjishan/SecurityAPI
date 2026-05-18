@@ -109,3 +109,23 @@ caps.findApis("account.domesticStock.balance");
 ```
 
 매핑된 API ID/TR 코드는 `npm test`에서 generated manifest 존재 여부를 검증합니다.
+
+## Domain Services
+
+첫 도메인 서비스로 국내주식 현재가 조회를 제공합니다. 이 레이어는 Broker Client를 사용하되, 결과를 공통 형태로 얇게 정리합니다.
+
+```js
+import { KiwoomClient, QuoteService } from "security-api-reference";
+
+const quote = new QuoteService({
+  kiwoom: new KiwoomClient({
+    appKey: process.env.KIWOOM_APP_KEY,
+    secretKey: process.env.KIWOOM_SECRET_KEY,
+    env: "mock"
+  })
+});
+
+const result = await quote.getDomesticStockCurrentPrice("kiwoom", "005930");
+```
+
+현재 구현 범위는 `quote.domesticStock.currentPrice` 하나입니다. 주문/잔고 도메인 함수는 별도 안전 정책과 함께 추가합니다.

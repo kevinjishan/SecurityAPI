@@ -49,3 +49,8 @@ export {
   listCapabilityIds,
   validateCapabilityReferences,
 } from "./capabilities/index.mjs";
+
+export {
+  QuoteService,
+  normalizeDomesticStockCurrentPrice,
+} from "./services/index.mjs";

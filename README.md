@@ -80,6 +80,22 @@ caps.supports("quote.domesticStock"); // true
 caps.findApis("quote.domesticStock.currentPrice");
 ```
 
+첫 도메인 서비스로 국내주식 현재가 조회를 제공합니다.
+
+```js
+import { KiwoomClient, QuoteService } from "security-api-reference";
+
+const quote = new QuoteService({
+  kiwoom: new KiwoomClient({
+    appKey: process.env.KIWOOM_APP_KEY,
+    secretKey: process.env.KIWOOM_SECRET_KEY,
+    env: "mock"
+  })
+});
+
+const price = await quote.getDomesticStockCurrentPrice("kiwoom", "005930");
+```
+
 실제 API 키 없이 호출 흐름을 확인하려면 [examples](examples/README.md)를 사용합니다.
 
 ## 공식 출처

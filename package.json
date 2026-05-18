@@ -9,7 +9,8 @@
     "./adapters": "./src/adapters/index.mjs",
     "./capabilities": "./src/capabilities/index.mjs",
     "./core": "./src/core/index.mjs",
-    "./metadata": "./src/metadata/index.mjs"
+    "./metadata": "./src/metadata/index.mjs",
+    "./services": "./src/services/index.mjs"
   },
   "scripts": {
     "generate:docs": "node scripts/generate-docs.mjs",
