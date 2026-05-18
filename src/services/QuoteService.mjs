@@ -1,7 +1,9 @@
 import { getCapabilities } from "../capabilities/index.mjs";
 import { BrokerError, assertBroker } from "../core/index.mjs";
 
-const CAPABILITY_ID = "quote.domesticStock.currentPrice";
+const CURRENT_PRICE_CAPABILITY_ID = "quote.domesticStock.currentPrice";
+const ORDER_BOOK_CAPABILITY_ID = "quote.domesticStock.orderBook";
+const MULTI_CURRENT_PRICE_CAPABILITY_ID = "quote.domesticStock.multiCurrentPrice";
 
 export class QuoteService {
   constructor(clients = {}) {
@@ -18,14 +20,15 @@ export class QuoteService {
       normalizedBroker = assertBroker(normalizedBroker);
       const capabilities = getCapabilities(normalizedBroker);
 
-      if (!capabilities.supports(CAPABILITY_ID)) {
+      if (!capabilities.supports(CURRENT_PRICE_CAPABILITY_ID)) {
         return failureResponse({
           broker: normalizedBroker,
           symbol: normalizedSymbol,
           source,
-          error: BrokerError.unsupported(`${normalizedBroker} does not support ${CAPABILITY_ID}`, {
+          capabilityId: CURRENT_PRICE_CAPABILITY_ID,
+          error: BrokerError.unsupported(`${normalizedBroker} does not support ${CURRENT_PRICE_CAPABILITY_ID}`, {
             broker: normalizedBroker,
-            details: { capabilityId: CAPABILITY_ID },
+            details: { capabilityId: CURRENT_PRICE_CAPABILITY_ID },
           }),
         });
       }
@@ -36,6 +39,7 @@ export class QuoteService {
           broker: normalizedBroker,
           symbol: normalizedSymbol,
           source,
+          capabilityId: CURRENT_PRICE_CAPABILITY_ID,
           error: BrokerError.config(`Missing client for broker: ${normalizedBroker}`, {
             broker: normalizedBroker,
             details: { broker: normalizedBroker },
@@ -43,7 +47,7 @@ export class QuoteService {
         });
       }
 
-      source = selectCurrentPriceSource(normalizedBroker, capabilities, options);
+      source = selectQuoteSource(normalizedBroker, capabilities, CURRENT_PRICE_CAPABILITY_ID, options);
       const result = await requestCurrentPrice(client, normalizedBroker, source.id, normalizedSymbol, options);
 
       if (!result.ok) {
@@ -52,6 +56,7 @@ export class QuoteService {
           symbol: normalizedSymbol,
           source,
           result,
+          capabilityId: CURRENT_PRICE_CAPABILITY_ID,
           error: result.error,
         });
       }
@@ -62,12 +67,126 @@ export class QuoteService {
         source,
         result,
         data: normalizeDomesticStockCurrentPrice(normalizedBroker, normalizedSymbol, source.id, result.data),
+        capabilityId: CURRENT_PRICE_CAPABILITY_ID,
       });
     } catch (error) {
       return failureResponse({
         broker: normalizedBroker || "unknown",
         symbol: normalizedSymbol,
         source,
+        capabilityId: CURRENT_PRICE_CAPABILITY_ID,
+        error,
+      });
+    }
+  }
+
+  async getDomesticStockOrderBook(broker, symbol, options = {}) {
+    let normalizedSymbol = String(symbol ?? "").trim();
+    let normalizedBroker = String(broker ?? "").trim().toLowerCase();
+    let source = null;
+
+    try {
+      normalizedSymbol = normalizeSymbol(symbol, ORDER_BOOK_CAPABILITY_ID);
+      normalizedBroker = assertBroker(normalizedBroker);
+      const { client, capabilities } = resolveClient(this.clients, normalizedBroker);
+
+      if (!capabilities.supports(ORDER_BOOK_CAPABILITY_ID)) {
+        return failureResponse({
+          broker: normalizedBroker,
+          symbol: normalizedSymbol,
+          source,
+          capabilityId: ORDER_BOOK_CAPABILITY_ID,
+          error: BrokerError.unsupported(`${normalizedBroker} does not support ${ORDER_BOOK_CAPABILITY_ID}`, {
+            broker: normalizedBroker,
+            details: { capabilityId: ORDER_BOOK_CAPABILITY_ID },
+          }),
+        });
+      }
+
+      source = selectQuoteSource(normalizedBroker, capabilities, ORDER_BOOK_CAPABILITY_ID, options);
+      const result = await requestOrderBook(client, normalizedBroker, source.id, normalizedSymbol, options);
+
+      if (!result.ok) {
+        return failureResponse({
+          broker: normalizedBroker,
+          symbol: normalizedSymbol,
+          source,
+          result,
+          capabilityId: ORDER_BOOK_CAPABILITY_ID,
+          error: result.error,
+        });
+      }
+
+      return successResponse({
+        broker: normalizedBroker,
+        symbol: normalizedSymbol,
+        source,
+        result,
+        data: normalizeDomesticStockOrderBook(normalizedBroker, normalizedSymbol, source.id, result.data),
+        capabilityId: ORDER_BOOK_CAPABILITY_ID,
+      });
+    } catch (error) {
+      return failureResponse({
+        broker: normalizedBroker || "unknown",
+        symbol: normalizedSymbol,
+        source,
+        capabilityId: ORDER_BOOK_CAPABILITY_ID,
+        error,
+      });
+    }
+  }
+
+  async getDomesticStockMultiCurrentPrice(broker, symbols, options = {}) {
+    let normalizedSymbols = [];
+    let normalizedBroker = String(broker ?? "").trim().toLowerCase();
+    let source = null;
+
+    try {
+      normalizedSymbols = normalizeSymbols(symbols);
+      normalizedBroker = assertBroker(normalizedBroker);
+      const { client, capabilities } = resolveClient(this.clients, normalizedBroker);
+
+      if (!capabilities.supports(MULTI_CURRENT_PRICE_CAPABILITY_ID)) {
+        return failureResponse({
+          broker: normalizedBroker,
+          symbol: normalizedSymbols.join(","),
+          source,
+          capabilityId: MULTI_CURRENT_PRICE_CAPABILITY_ID,
+          error: BrokerError.unsupported(`${normalizedBroker} does not support ${MULTI_CURRENT_PRICE_CAPABILITY_ID}`, {
+            broker: normalizedBroker,
+            details: { capabilityId: MULTI_CURRENT_PRICE_CAPABILITY_ID },
+          }),
+        });
+      }
+
+      source = selectQuoteSource(normalizedBroker, capabilities, MULTI_CURRENT_PRICE_CAPABILITY_ID, options);
+      const result = await requestMultiCurrentPrice(client, normalizedBroker, source.id, normalizedSymbols, options);
+
+      if (!result.ok) {
+        return failureResponse({
+          broker: normalizedBroker,
+          symbol: normalizedSymbols.join(","),
+          source,
+          result,
+          capabilityId: MULTI_CURRENT_PRICE_CAPABILITY_ID,
+          error: result.error,
+        });
+      }
+
+      return successResponse({
+        broker: normalizedBroker,
+        symbol: normalizedSymbols.join(","),
+        source,
+        result,
+        data: normalizeDomesticStockMultiCurrentPrice(normalizedBroker, normalizedSymbols, source.id, result.data),
+        capabilityId: MULTI_CURRENT_PRICE_CAPABILITY_ID,
+      });
+    } catch (error) {
+      return failureResponse({
+        broker: normalizedBroker || "unknown",
+        symbol: normalizedSymbols.join(","),
+        source,
+        capabilityId: MULTI_CURRENT_PRICE_CAPABILITY_ID,
         error,
       });
     }
@@ -89,17 +208,64 @@ export function normalizeDomesticStockCurrentPrice(broker, symbol, sourceId, pay
   });
 }
 
-function selectCurrentPriceSource(broker, capabilities, options) {
+export function normalizeDomesticStockMultiCurrentPrice(broker, symbols, sourceId, payload) {
+  if (broker === "kiwoom") {
+    const rows = Array.isArray(payload?.atn_stk_infr) ? payload.atn_stk_infr : [];
+    return rows.map((row) => normalizeKiwoomCurrentPrice(firstValue(row, ["stk_cd"]) ?? "", sourceId, row));
+  }
+
+  if (broker === "ls") {
+    const rows = Array.isArray(payload?.t8407OutBlock1) ? payload.t8407OutBlock1 : [];
+    return rows.map((row) => normalizeLsCurrentPrice(firstValue(row, ["shcode"]) ?? "", sourceId, row));
+  }
+
+  throw BrokerError.unsupported(`Unsupported multi quote normalization broker: ${broker}`, {
+    broker,
+    details: { sourceId, symbols },
+  });
+}
+
+export function normalizeDomesticStockOrderBook(broker, symbol, sourceId, payload) {
+  if (broker === "kiwoom") {
+    return normalizeKiwoomOrderBook(symbol, sourceId, payload);
+  }
+
+  if (broker === "ls") {
+    return normalizeLsOrderBook(symbol, sourceId, payload);
+  }
+
+  throw BrokerError.unsupported(`Unsupported order book normalization broker: ${broker}`, {
+    broker,
+    details: { sourceId },
+  });
+}
+
+function resolveClient(clients, broker) {
+  const client = clients[broker];
+  if (!client?.request) {
+    throw BrokerError.config(`Missing client for broker: ${broker}`, {
+      broker,
+      details: { broker },
+    });
+  }
+
+  return {
+    client,
+    capabilities: getCapabilities(broker),
+  };
+}
+
+function selectQuoteSource(broker, capabilities, capabilityId, options) {
   const preferredId = options.apiId ?? options.trCode;
-  const sources = capabilities.findApis(CAPABILITY_ID).filter((api) => api.transport === "rest");
+  const sources = capabilities.findApis(capabilityId).filter((api) => api.transport === "rest");
 
   if (preferredId) {
     const source = sources.find((api) => api.id === preferredId);
     if (!source) {
-      throw BrokerError.unsupported(`${broker} ${CAPABILITY_ID} does not expose ${preferredId}`, {
+      throw BrokerError.unsupported(`${broker} ${capabilityId} does not expose ${preferredId}`, {
         broker,
         details: {
-          capabilityId: CAPABILITY_ID,
+          capabilityId,
           requestedId: preferredId,
         },
       });
@@ -108,17 +274,33 @@ function selectCurrentPriceSource(broker, capabilities, options) {
     return source;
   }
 
-  const defaultId = broker === "kiwoom" ? "ka10001" : "t1101";
+  const defaultId = defaultSourceId(broker, capabilityId);
   const source = sources.find((api) => api.id === defaultId) ?? sources[0];
 
   if (!source) {
-    throw BrokerError.unsupported(`${broker} does not have a REST source for ${CAPABILITY_ID}`, {
+    throw BrokerError.unsupported(`${broker} does not have a REST source for ${capabilityId}`, {
       broker,
-      details: { capabilityId: CAPABILITY_ID },
+      details: { capabilityId },
     });
   }
 
   return source;
+}
+
+function defaultSourceId(broker, capabilityId) {
+  if (capabilityId === CURRENT_PRICE_CAPABILITY_ID) {
+    return broker === "kiwoom" ? "ka10001" : "t1101";
+  }
+
+  if (capabilityId === ORDER_BOOK_CAPABILITY_ID) {
+    return broker === "kiwoom" ? "ka10004" : "t1101";
+  }
+
+  if (capabilityId === MULTI_CURRENT_PRICE_CAPABILITY_ID) {
+    return broker === "kiwoom" ? "ka10095" : "t8407";
+  }
+
+  return null;
 }
 
 async function requestCurrentPrice(client, broker, sourceId, symbol, options) {
@@ -133,6 +315,45 @@ async function requestCurrentPrice(client, broker, sourceId, symbol, options) {
   }
 
   throw BrokerError.unsupported(`Unsupported quote request broker: ${broker}`, {
+    broker,
+    details: { sourceId },
+  });
+}
+
+async function requestOrderBook(client, broker, sourceId, symbol, options) {
+  const requestOptions = options.requestOptions ?? {};
+
+  if (broker === "kiwoom") {
+    return client.request(sourceId, { stk_cd: symbol }, requestOptions);
+  }
+
+  if (broker === "ls") {
+    return client.request(sourceId, { [`${sourceId}InBlock`]: { shcode: symbol } }, requestOptions);
+  }
+
+  throw BrokerError.unsupported(`Unsupported order book request broker: ${broker}`, {
+    broker,
+    details: { sourceId },
+  });
+}
+
+async function requestMultiCurrentPrice(client, broker, sourceId, symbols, options) {
+  const requestOptions = options.requestOptions ?? {};
+
+  if (broker === "kiwoom") {
+    return client.request(sourceId, { stk_cd: symbols.join("|") }, requestOptions);
+  }
+
+  if (broker === "ls") {
+    return client.request(sourceId, {
+      [`${sourceId}InBlock`]: {
+        nrec: symbols.length,
+        shcode: symbols.join(""),
+      },
+    }, requestOptions);
+  }
+
+  throw BrokerError.unsupported(`Unsupported multi quote request broker: ${broker}`, {
     broker,
     details: { sourceId },
   });
@@ -160,7 +381,7 @@ function normalizeKiwoomCurrentPrice(symbol, sourceId, payload) {
     source: {
       broker: "kiwoom",
       id: sourceId,
-      capabilityId: CAPABILITY_ID,
+      capabilityId: CURRENT_PRICE_CAPABILITY_ID,
     },
   };
 }
@@ -188,16 +409,85 @@ function normalizeLsCurrentPrice(symbol, sourceId, payload) {
     source: {
       broker: "ls",
       id: sourceId,
-      capabilityId: CAPABILITY_ID,
+      capabilityId: CURRENT_PRICE_CAPABILITY_ID,
     },
   };
 }
 
-function successResponse({ broker, symbol, source, result, data }) {
+function normalizeKiwoomOrderBook(symbol, sourceId, payload) {
+  return {
+    broker: "kiwoom",
+    symbol,
+    asks: Array.from({ length: 10 }, (_, index) => kiwoomOrderBookLevel(payload, "ask", index + 1)),
+    bids: Array.from({ length: 10 }, (_, index) => kiwoomOrderBookLevel(payload, "bid", index + 1)),
+    totals: {
+      askQuantity: parseNumber(firstValue(payload, ["tot_sel_req"])),
+      askQuantityRaw: nullableString(firstValue(payload, ["tot_sel_req"])),
+      bidQuantity: parseNumber(firstValue(payload, ["tot_buy_req"])),
+      bidQuantityRaw: nullableString(firstValue(payload, ["tot_buy_req"])),
+    },
+    timestamp: nullableString(firstValue(payload, ["bid_req_base_tm"])),
+    source: {
+      broker: "kiwoom",
+      id: sourceId,
+      capabilityId: ORDER_BOOK_CAPABILITY_ID,
+    },
+  };
+}
+
+function normalizeLsOrderBook(symbol, sourceId, payload) {
+  const block = payload?.[`${sourceId}OutBlock`] ?? payload?.t1101OutBlock ?? payload;
+
+  return {
+    broker: "ls",
+    symbol: String(firstValue(block, ["shcode"]) ?? symbol),
+    asks: Array.from({ length: 10 }, (_, index) => lsOrderBookLevel(block, "ask", index + 1)),
+    bids: Array.from({ length: 10 }, (_, index) => lsOrderBookLevel(block, "bid", index + 1)),
+    totals: {
+      askQuantity: parseNumber(firstValue(block, ["totofferrem"])),
+      askQuantityRaw: nullableString(firstValue(block, ["totofferrem"])),
+      bidQuantity: parseNumber(firstValue(block, ["totbidrem"])),
+      bidQuantityRaw: nullableString(firstValue(block, ["totbidrem"])),
+    },
+    timestamp: nullableString(firstValue(block, ["hotime"])),
+    source: {
+      broker: "ls",
+      id: sourceId,
+      capabilityId: ORDER_BOOK_CAPABILITY_ID,
+    },
+  };
+}
+
+function kiwoomOrderBookLevel(payload, side, level) {
+  const prefix = side === "ask" ? "sel" : "buy";
+  const priceKey = level === 1 ? `${prefix}_fpr_bid` : `${prefix}_${level}th_pre_bid`;
+  const quantityKey = level === 1 ? `${prefix}_fpr_req` : `${prefix}_${level}th_pre_req`;
+
+  return orderBookLevel(level, payload?.[priceKey], payload?.[quantityKey]);
+}
+
+function lsOrderBookLevel(payload, side, level) {
+  const priceKey = side === "ask" ? `offerho${level}` : `bidho${level}`;
+  const quantityKey = side === "ask" ? `offerrem${level}` : `bidrem${level}`;
+
+  return orderBookLevel(level, payload?.[priceKey], payload?.[quantityKey]);
+}
+
+function orderBookLevel(level, priceRaw, quantityRaw) {
+  return {
+    level,
+    price: parsePrice(priceRaw),
+    priceRaw: nullableString(priceRaw),
+    quantity: parseNumber(quantityRaw),
+    quantityRaw: nullableString(quantityRaw),
+  };
+}
+
+function successResponse({ broker, symbol, source, result, data, capabilityId }) {
   return {
     ok: true,
     broker,
-    capability: CAPABILITY_ID,
+    capability: capabilityId,
     id: source.id,
     symbol,
     data,
@@ -208,7 +498,7 @@ function successResponse({ broker, symbol, source, result, data }) {
   };
 }
 
-function failureResponse({ broker, symbol, source, result, error }) {
+function failureResponse({ broker, symbol, source, result, error, capabilityId }) {
   const brokerError = error instanceof BrokerError
     ? error
     : BrokerError.unknown(error?.message ?? "Quote service failed", {
@@ -219,7 +509,7 @@ function failureResponse({ broker, symbol, source, result, error }) {
   return {
     ok: false,
     broker,
-    capability: CAPABILITY_ID,
+    capability: capabilityId,
     id: source?.id ?? result?.id ?? null,
     symbol,
     data: null,
@@ -231,12 +521,30 @@ function failureResponse({ broker, symbol, source, result, error }) {
   };
 }
 
-function normalizeSymbol(symbol) {
+function normalizeSymbol(symbol, capabilityId = CURRENT_PRICE_CAPABILITY_ID) {
   const normalized = String(symbol ?? "").trim();
 
   if (!normalized) {
     throw BrokerError.validation("Domestic stock symbol is required", {
-      details: { capabilityId: CAPABILITY_ID },
+      details: { capabilityId },
+    });
+  }
+
+  return normalized;
+}
+
+function normalizeSymbols(symbols) {
+  if (!Array.isArray(symbols)) {
+    throw BrokerError.validation("Domestic stock symbols must be an array", {
+      details: { capabilityId: MULTI_CURRENT_PRICE_CAPABILITY_ID },
+    });
+  }
+
+  const normalized = symbols.map((symbol) => normalizeSymbol(symbol, MULTI_CURRENT_PRICE_CAPABILITY_ID));
+
+  if (normalized.length === 0) {
+    throw BrokerError.validation("At least one domestic stock symbol is required", {
+      details: { capabilityId: MULTI_CURRENT_PRICE_CAPABILITY_ID },
     });
   }
 

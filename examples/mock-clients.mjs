@@ -18,20 +18,42 @@ const kiwoom = new KiwoomClient({
       });
     }
 
-    return jsonResponse(
-      {
-        stk_cd: "005930",
-        stk_nm: "삼성전자",
-        cur_prc: "70000",
+    if (init.headers["api-id"] === "ka10004") {
+      return jsonResponse({
+        bid_req_base_tm: "093000",
+        sel_fpr_bid: "70100",
+        sel_fpr_req: "10",
+        buy_fpr_bid: "70000",
+        buy_fpr_req: "15",
+        tot_sel_req: "100",
+        tot_buy_req: "200",
         return_code: 0,
         return_msg: "정상적으로 처리되었습니다",
+      });
+    }
+
+    if (init.headers["api-id"] === "ka10095") {
+      return jsonResponse({
+        atn_stk_infr: [
+          { stk_cd: "005930", stk_nm: "삼성전자", cur_prc: "70000" },
+          { stk_cd: "000660", stk_nm: "SK하이닉스", cur_prc: "120000" },
+        ],
+        return_code: 0,
+        return_msg: "정상적으로 처리되었습니다",
+      });
+    }
+
+    return jsonResponse({
+      stk_cd: "005930",
+      stk_nm: "삼성전자",
+      cur_prc: "70000",
+      return_code: 0,
+      return_msg: "정상적으로 처리되었습니다",
+    }, {
+      headers: {
+        "cont-yn": "N",
       },
-      {
-        headers: {
-          "cont-yn": "N",
-        },
-      },
-    );
+    });
   },
 });
 
@@ -62,22 +84,34 @@ const ls = new LsClient({
       });
     }
 
-    return jsonResponse(
-      {
+    if (init.headers.tr_cd === "t8407") {
+      return jsonResponse({
         rsp_cd: "00000",
         rsp_msg: "정상적으로 조회가 완료되었습니다.",
-        t1101OutBlock: {
-          shcode: "005930",
-          hname: "삼성전자",
-          price: 70000,
-        },
+        t8407OutBlock1: [
+          { shcode: "005930", hname: "삼성전자", price: 70000 },
+          { shcode: "000660", hname: "SK하이닉스", price: 120000 },
+        ],
+      });
+    }
+
+    return jsonResponse({
+      rsp_cd: "00000",
+      rsp_msg: "정상적으로 조회가 완료되었습니다.",
+      t1101OutBlock: {
+        shcode: "005930",
+        hname: "삼성전자",
+        price: 70000,
+        offerho1: 70100,
+        offerrem1: 10,
+        bidho1: 70000,
+        bidrem1: 15,
       },
-      {
-        headers: {
-          tr_cont: "N",
-        },
+    }, {
+      headers: {
+        tr_cont: "N",
       },
-    );
+    });
   },
 });
 
@@ -95,17 +129,33 @@ assert.equal(lsCalls[1].headers.mac_address, "AABBCCDDEEFF");
 const quote = new QuoteService({ kiwoom, ls });
 const kiwoomQuote = await quote.getDomesticStockCurrentPrice("kiwoom", "005930");
 const lsQuote = await quote.getDomesticStockCurrentPrice("ls", "005930");
+const kiwoomOrderBook = await quote.getDomesticStockOrderBook("kiwoom", "005930");
+const lsOrderBook = await quote.getDomesticStockOrderBook("ls", "005930");
+const kiwoomMultiQuote = await quote.getDomesticStockMultiCurrentPrice("kiwoom", ["005930", "000660"]);
+const lsMultiQuote = await quote.getDomesticStockMultiCurrentPrice("ls", ["005930", "000660"]);
 
 assert.equal(kiwoomQuote.ok, true);
 assert.equal(kiwoomQuote.data.price, 70000);
 assert.equal(lsQuote.ok, true);
 assert.equal(lsQuote.data.price, 70000);
+assert.equal(kiwoomOrderBook.ok, true);
+assert.equal(kiwoomOrderBook.data.asks[0].price, 70100);
+assert.equal(lsOrderBook.ok, true);
+assert.equal(lsOrderBook.data.asks[0].price, 70100);
+assert.equal(kiwoomMultiQuote.ok, true);
+assert.equal(kiwoomMultiQuote.data.length, 2);
+assert.equal(lsMultiQuote.ok, true);
+assert.equal(lsMultiQuote.data.length, 2);
 
 console.log("Mock Kiwoom result:", kiwoomResult.data);
 console.log("Mock LS result:", lsResult.data);
 console.log("Mock QuoteService results:", {
   kiwoom: kiwoomQuote.data,
   ls: lsQuote.data,
+  kiwoomOrderBook: kiwoomOrderBook.data,
+  lsOrderBook: lsOrderBook.data,
+  kiwoomMultiQuote: kiwoomMultiQuote.data,
+  lsMultiQuote: lsMultiQuote.data,
 });
 console.log("Mock broker client examples passed.");
 

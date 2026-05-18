@@ -30,6 +30,8 @@ test("finds Kiwoom API references for capabilities", () => {
 
   assert.deepEqual(caps.findApis("auth.oauth.issueToken").map((api) => api.id), ["au10001"]);
   assert.deepEqual(caps.findApis("quote.domesticStock.currentPrice").map((api) => api.id), ["ka10001"]);
+  assert.deepEqual(caps.findApis("quote.domesticStock.orderBook").map((api) => api.id), ["ka10004"]);
+  assert.deepEqual(caps.findApis("quote.domesticStock.multiCurrentPrice").map((api) => api.id), ["ka10095"]);
   assert.deepEqual(caps.findApis("order.domesticStock").map((api) => api.id), [
     "kt10000",
     "kt10001",

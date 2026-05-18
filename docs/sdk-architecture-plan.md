@@ -290,7 +290,7 @@ futureOption.order.new
 
 ### 3.6 Domain Service Layer
 
-이 레이어는 2차 작업이며, 현재 첫 구현으로 국내주식 현재가 조회만 제공한다.
+이 레이어는 2차 작업이며, 현재 첫 구현으로 국내주식 시세 조회를 제공한다.
 
 목표는 사용자가 증권사별 API ID/TR 코드를 몰라도 도메인 함수로 호출하게 하는 것이다.
 
@@ -303,6 +303,8 @@ const quote = new QuoteService({ kiwoom, ls });
 
 await quote.getDomesticStockCurrentPrice("kiwoom", "005930");
 await quote.getDomesticStockCurrentPrice("ls", "005930");
+await quote.getDomesticStockOrderBook("kiwoom", "005930");
+await quote.getDomesticStockMultiCurrentPrice("ls", ["005930", "000660"]);
 ```
 
 현재 구현:
@@ -316,9 +318,15 @@ test/services/QuoteService.test.mjs
 현재 범위:
 
 - `quote.domesticStock.currentPrice` capability 확인
+- `quote.domesticStock.orderBook` capability 확인
+- `quote.domesticStock.multiCurrentPrice` capability 확인
 - 키움 `ka10001` 호출
-- LS `t1101` 기본 호출, 옵션으로 `t1102` 등 명시 가능
+- 키움 `ka10004` 호가 호출
+- 키움 `ka10095` 복수 현재가 호출
+- LS `t1101` 현재가/호가 기본 호출, 옵션으로 `t1102` 등 명시 가능
+- LS `t8407` 복수 현재가 호출
 - `symbol`, `name`, `price`, `change`, `changeRate`, `volume`, `currency`, `source` 공통 형태 제공
+- 호가는 `asks`, `bids`, `totals`, `timestamp`, `source` 공통 형태 제공
 
 추후 다룰 것:
 

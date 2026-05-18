@@ -14,6 +14,8 @@ npm run examples:mock
 - LS `token` mock 토큰 발급 후 `t1101` 호출
 - 인증 헤더, API ID/TR 코드 헤더, LS `mac_address` 자동 구성
 - `QuoteService.getDomesticStockCurrentPrice()` 공통 응답 형태 확인
+- `QuoteService.getDomesticStockOrderBook()` 공통 호가 형태 확인
+- `QuoteService.getDomesticStockMultiCurrentPrice()` 복수 현재가 형태 확인
 
 ## Real Credentials
 

@@ -53,4 +53,6 @@ export {
 export {
   QuoteService,
   normalizeDomesticStockCurrentPrice,
+  normalizeDomesticStockMultiCurrentPrice,
+  normalizeDomesticStockOrderBook,
 } from "./services/index.mjs";

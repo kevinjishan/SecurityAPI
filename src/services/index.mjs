@@ -1,1 +1,6 @@
-export { QuoteService, normalizeDomesticStockCurrentPrice } from "./QuoteService.mjs";
+export {
+  QuoteService,
+  normalizeDomesticStockCurrentPrice,
+  normalizeDomesticStockMultiCurrentPrice,
+  normalizeDomesticStockOrderBook,
+} from "./QuoteService.mjs";

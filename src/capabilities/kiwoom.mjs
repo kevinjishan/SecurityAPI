@@ -15,6 +15,16 @@ export const KIWOOM_CAPABILITIES = [
     apis: [{ id: "ka10001", role: "basicInfoWithCurrentPrice", transport: "rest" }],
   },
   {
+    id: "quote.domesticStock.orderBook",
+    status: "documented",
+    apis: [{ id: "ka10004", role: "orderBook", transport: "rest" }],
+  },
+  {
+    id: "quote.domesticStock.multiCurrentPrice",
+    status: "documented",
+    apis: [{ id: "ka10095", role: "watchListInfo", transport: "rest" }],
+  },
+  {
     id: "account.domesticStock.cash",
     status: "documented",
     apis: [
