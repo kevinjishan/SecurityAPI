@@ -15,8 +15,9 @@
     "validate:docs": "node scripts/validate-docs.mjs",
     "generate:manifest": "node scripts/generate-manifest.mjs",
     "validate:manifest": "node scripts/validate-manifest.mjs",
+    "examples:mock": "node examples/mock-clients.mjs",
     "test": "node --test",
-    "validate:all": "npm run validate:docs && npm run validate:manifest && npm test"
+    "validate:all": "npm run validate:docs && npm run validate:manifest && npm test && npm run examples:mock"
   },
   "engines": {
     "node": ">=20"

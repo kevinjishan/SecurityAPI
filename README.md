@@ -9,6 +9,7 @@ npm run generate:docs
 npm run validate:docs
 npm run generate:manifest
 npm run validate:manifest
+npm run examples:mock
 ```
 
 Markdown 레퍼런스는 `docs/`에, SDK용 JSON manifest는 `data/generated/`에, 원본 JSON 스냅샷은 `data/raw/`에 저장됩니다.
@@ -67,6 +68,8 @@ const result = await ls.request("t1101", {
   t1101InBlock: { shcode: "005930" }
 });
 ```
+
+실제 API 키 없이 호출 흐름을 확인하려면 [examples](examples/README.md)를 사용합니다.
 
 ## 공식 출처
 
