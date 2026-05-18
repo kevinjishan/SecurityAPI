@@ -58,3 +58,23 @@ import { BrokerError, HttpClient, MemoryTokenStore } from "security-api-referenc
 ```
 
 Core SDK는 실제 증권사 인증/주문 의미를 알지 않고, fetch 호출, timeout, 응답 파싱, header 정규화, token cache, 공통 에러 형태까지만 담당합니다.
+
+## Broker Clients
+
+현재 키움 REST API client가 구현되어 있습니다.
+
+```js
+import { KiwoomClient } from "security-api-reference";
+
+const kiwoom = new KiwoomClient({
+  appKey: process.env.KIWOOM_APP_KEY,
+  secretKey: process.env.KIWOOM_SECRET_KEY,
+  env: "mock"
+});
+
+const result = await kiwoom.request("ka10001", {
+  stk_cd: "005930"
+});
+```
+
+`KiwoomClient`는 manifest에서 endpoint와 content type을 조회하고, 토큰 발급/캐시, `authorization`, `api-id`, 연속조회 헤더, `return_code` 기반 업무 오류 변환을 처리합니다.

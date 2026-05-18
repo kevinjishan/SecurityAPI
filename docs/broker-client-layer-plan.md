@@ -2,6 +2,30 @@
 
 이 문서는 SecurityAPI SDK의 Broker Client Layer를 상세 설계한다. Broker Client는 Metadata Layer의 manifest와 Core SDK Layer의 HTTP/토큰/에러 기반을 사용해, 사용자가 API ID 또는 TR 코드만으로 증권사 API를 호출할 수 있게 한다.
 
+## 구현 상태
+
+현재 1차 구현은 키움 REST API client까지 완료되어 있다.
+
+```text
+src/adapters/BaseBrokerClient.mjs
+src/adapters/KiwoomClient.mjs
+src/adapters/index.mjs
+test/adapters/KiwoomClient.test.mjs
+```
+
+완료된 범위:
+
+- `KiwoomClient.request(apiId, params, options)`
+- `au10001` 접근토큰 발급 및 memory token cache
+- `au10002` 접근토큰 폐기
+- manifest 기반 endpoint/content type 조회
+- `authorization`, `api-id`, `cont-yn`, `next-key` 헤더 구성
+- 응답 header의 연속조회 정보 추출
+- `return_code !== 0` 업무 오류를 `API_ERROR`로 변환
+- 실제 API 키 없는 mock fetch 테스트
+
+다음 구현 대상은 `LsClient`다.
+
 ## 1. 목표와 범위
 
 Broker Client Layer의 1차 목표는 다음 호출을 안정적으로 지원하는 것이다.

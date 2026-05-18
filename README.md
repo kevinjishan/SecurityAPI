@@ -36,6 +36,22 @@ const http = new HttpClient({ defaultTimeoutMs: 10_000 });
 const tokens = new MemoryTokenStore();
 ```
 
+키움 REST API는 API ID 기반으로 호출할 수 있습니다.
+
+```js
+import { KiwoomClient } from "security-api-reference";
+
+const kiwoom = new KiwoomClient({
+  appKey: process.env.KIWOOM_APP_KEY,
+  secretKey: process.env.KIWOOM_SECRET_KEY,
+  env: "mock"
+});
+
+const result = await kiwoom.request("ka10001", {
+  stk_cd: "005930"
+});
+```
+
 ## 공식 출처
 
 - 키움 REST API: https://openapi.kiwoom.com/guide/apiguide?dummyVal=0
