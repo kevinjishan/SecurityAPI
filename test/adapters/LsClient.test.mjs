@@ -274,6 +274,47 @@ test("treats documented LS no-data success codes as successful responses", async
   assert.deepEqual(result.data.CSPAQ13700OutBlock3, []);
 });
 
+test("treats documented LS order success codes as successful responses", async () => {
+  const tokenStore = new MemoryTokenStore();
+  tokenStore.set("ls:prod", {
+    accessToken: "cached-token",
+    expiresAt: Date.now() + 60_000,
+  });
+
+  const client = new LsClient({
+    appKey: "app-key",
+    appSecretKey: "secret-key",
+    macAddress: "AABBCCDDEEFF",
+    tokenStore,
+    fetch: async () =>
+      jsonResponse({
+        rsp_cd: "00040",
+        rsp_msg: "매수 주문이 완료되었습니다.",
+        CSPAT00601OutBlock2: {
+          OrdNo: 32004,
+        },
+      }),
+  });
+
+  const result = await client.request("CSPAT00601", {
+    CSPAT00601InBlock1: {
+      IsuNo: "A005930",
+      OrdQty: 1,
+      OrdPrc: 0,
+      BnsTpCode: "2",
+      OrdprcPtnCode: "03",
+      MgntrnCode: "000",
+      LoanDt: "",
+      OrdCndiTpCode: "0",
+      MbrNo: "KRX",
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.rsp_cd, "00040");
+  assert.equal(result.data.CSPAT00601OutBlock2.OrdNo, 32004);
+});
+
 test("returns validation errors for unknown LS TR codes", async () => {
   let fetchCalled = false;
   const client = new LsClient({

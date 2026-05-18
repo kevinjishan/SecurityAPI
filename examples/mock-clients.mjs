@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { AccountService, KiwoomClient, LsClient, QuoteService } from "security-api-reference";
+import { AccountService, KiwoomClient, LsClient, OrderService, QuoteService } from "security-api-reference";
 
 const kiwoomCalls = [];
 const kiwoom = new KiwoomClient({
@@ -294,6 +294,17 @@ const lsOrderHistory = await account.getDomesticStockOrderHistory("ls", {
   orderDate: "20260518",
   symbol: "005930",
 });
+const order = new OrderService({ kiwoom, ls });
+const kiwoomBuyDryRun = await order.buyDomesticStock("kiwoom", {
+  symbol: "005930",
+  quantity: 1,
+});
+const lsSellDryRun = await order.sellDomesticStock("ls", {
+  symbol: "005930",
+  quantity: 1,
+  price: 70000,
+  orderType: "limit",
+});
 
 assert.equal(kiwoomQuote.ok, true);
 assert.equal(kiwoomQuote.data.price, 70000);
@@ -319,6 +330,12 @@ assert.equal(kiwoomOrderHistory.ok, true);
 assert.equal(kiwoomOrderHistory.data.orders[0].symbol, "005930");
 assert.equal(lsOrderHistory.ok, true);
 assert.equal(lsOrderHistory.data.orders[0].symbol, "005930");
+assert.equal(kiwoomBuyDryRun.ok, true);
+assert.equal(kiwoomBuyDryRun.dryRun, true);
+assert.equal(kiwoomBuyDryRun.data.request.trde_tp, "3");
+assert.equal(lsSellDryRun.ok, true);
+assert.equal(lsSellDryRun.dryRun, true);
+assert.equal(lsSellDryRun.data.request.CSPAT00601InBlock1.BnsTpCode, "1");
 
 console.log("Mock Kiwoom result:", kiwoomResult.data);
 console.log("Mock LS result:", lsResult.data);
@@ -335,6 +352,8 @@ console.log("Mock QuoteService results:", {
   lsBalance: lsBalance.data,
   kiwoomOrderHistory: kiwoomOrderHistory.data,
   lsOrderHistory: lsOrderHistory.data,
+  kiwoomBuyDryRun: kiwoomBuyDryRun.data,
+  lsSellDryRun: lsSellDryRun.data,
 });
 console.log("Mock broker client examples passed.");
 

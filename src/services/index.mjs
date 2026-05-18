@@ -6,6 +6,11 @@ export {
 } from "./AccountService.mjs";
 
 export {
+  OrderService,
+  normalizeDomesticStockOrder,
+} from "./OrderService.mjs";
+
+export {
   QuoteService,
   normalizeDomesticStockCurrentPrice,
   normalizeDomesticStockMultiCurrentPrice,

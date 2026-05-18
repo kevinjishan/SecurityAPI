@@ -56,6 +56,8 @@ export {
   normalizeDomesticStockBalance,
   normalizeDomesticStockCash,
   normalizeDomesticStockOrderHistory,
+  normalizeDomesticStockOrder,
+  OrderService,
   normalizeDomesticStockCurrentPrice,
   normalizeDomesticStockMultiCurrentPrice,
   normalizeDomesticStockOrderBook,

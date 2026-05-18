@@ -4,7 +4,7 @@ import { BrokerError, mergeHeaders } from "../core/index.mjs";
 const TOKEN_TR_CODE = "token";
 const REVOKE_TR_CODE = "revoke";
 const DEFAULT_TOKEN_TTL_MS = 23 * 60 * 60 * 1000;
-const LS_SUCCESS_CODES = new Set(["00000", "00136", "00200"]);
+const LS_SUCCESS_CODES = new Set(["00000", "00040", "00136", "00156", "00200"]);
 
 export class LsClient extends BaseBrokerClient {
   constructor(config = {}) {
