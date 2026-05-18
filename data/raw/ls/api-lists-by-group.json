@@ -1,0 +1,2706 @@
+{
+  "ffd2def7-a118-40f7-a0ab-cd4c6a538a90": [
+    {
+      "id": "33bd887a-6652-4209-88cd-5324bc7c5e36",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-31T09:38:34.876491+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-06-01T17:53:14.870939+09:00",
+      "name": "접근토큰 발급",
+      "accessUrl": "/oauth2/token",
+      "description": "본인을 인증하는 확인 절차로, 접근 토큰을 부여받아 오픈 API  활용이 가능합니다.",
+      "extraParam": "{}",
+      "children": "[\n  {\n    \"key\": \"OAuth.Common.Policy.Error.Handle\",\n    \"children\": []\n  },\n  {\n    \"key\": \"OAuth.Common.Policy.Config\",\n    \"children\": []\n  },\n  {\n    \"key\": \"OAuth.Common.Policy.Token\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": null,
+      "contentType": "application/x-www-form-urlencoded",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "2d923333-f816-4df9-932d-ad390437b66f",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-31T09:40:24.86728+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-06-02T09:10:42.669241+09:00",
+      "name": "접근토큰 폐기",
+      "accessUrl": "/oauth2/revoke",
+      "description": "발급받은 접근토큰을 더 이상  활용하지 않을 때 사용합니다.",
+      "extraParam": "{}",
+      "children": "[\n  {\n    \"key\": \"OAuth.Common.Policy.Error.Handle\",\n    \"children\": []\n  },\n  {\n    \"key\": \"OAuth.Common.Policy.Config\",\n    \"children\": []\n  },\n  {\n    \"key\": \"OAuth.Common.Policy.Revoke\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": null,
+      "contentType": "application/x-www-form-urlencoded",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    }
+  ],
+  "f82999f4-eb1a-4ead-a0b1-a4386e8721ab": [
+    {
+      "id": "88a7c0d3-fb4f-48ef-bc9b-4c47ac72a87b",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:42:07.802298+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-11-06T16:00:54.109471+09:00",
+      "name": "[업종] 시세",
+      "accessUrl": "/indtp/market-data",
+      "description": "업종별 시세 및 기간별 추이를 확인할 수 있는 서비스입니다.",
+      "extraParam": "{\"tr_cd\" : \"t1511|t1516|t1485|t8424|t1514\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t1511\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t1516\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1485\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8424\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1514\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t1511\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1516\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1485\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8424\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1514\",\"requestLimit\" : \"1\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "5b483d74-407c-4760-8452-1b2b1dc1dcde",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:42:52.320462+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-05-19T14:12:13.405229+09:00",
+      "name": "[업종] 차트",
+      "accessUrl": "/indtp/chart",
+      "description": "업종 기간별 차트를 확인할 수 있는 서비스입니다. ",
+      "extraParam": "{\"tr_cd\" : \"t4203|t8417|t8418|t8419\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t4203\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8417\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8418\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8419\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t4203\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8417\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8418\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8419\",\"requestLimit\" : \"3\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "3c2b0280-6663-41e2-8995-a179de99e074",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-06-02T15:32:53.862168+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-06-13T16:08:41.838294+09:00",
+      "name": "[업종] 실시간 시세",
+      "accessUrl": "/websocket/indtp",
+      "description": "업종 관련 정보를 실시간으로 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"BM_\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"BM_\",\"requestLimit\" : \"\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "wss://openapi.ls-sec.co.kr:9443",
+      "protocolType": "WEBSOCKET",
+      "simulatedDomain": "wss://openapi.ls-sec.co.kr:29443",
+      "trName": null
+    }
+  ],
+  "73142d9f-1983-48d2-8543-89b75535d34c": [
+    {
+      "id": "54a99b02-dbba-4057-8756-9ac759c9a2ed",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-04T09:25:58.792525+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-11-12T16:06:34.905218+09:00",
+      "name": "[주식] 시세",
+      "accessUrl": "/stock/market-data",
+      "description": "개별종목 현재가 및 기간별 시세 등 종목별 시세를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"t1101|t1102|t1104|t1105|t1301|t1302|t1305|t1308|t1404|t1405|t1410|t1422|t1427|t1442|t1449|t1471|t1486|t1488|t8407|t9945|t1310|t1109|t1475|t8450|t8454\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t1101\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t1102\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t1104\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1105\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1301\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1302\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1305\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1308\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1404\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1405\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1410\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1422\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1427\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1442\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1449\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1471\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1486\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1488\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8407\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t9945\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1310\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1109\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1475\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8450\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t8454\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t1101\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1102\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1104\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1105\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1301\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1302\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1305\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1308\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1404\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1405\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1410\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1422\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1427\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1442\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1449\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1471\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1486\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1488\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8407\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t9945\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1310\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1109\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1475\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8450\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8454\",\"requestLimit\" : \"1\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": {\n          \"authorization\": \"Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0b2tlbiIsImF1ZCI6ImM4NGFmMjUyLTkzNWYtNGRkMi05YTQ0LWI1MjhjODU4MzU4NCIsIm5iZiI6MTY4MzcwMzA1MSwiZ3JhbnRfdHlwZSI6IkNvZGUiLCJpc3MiOiJ1bm9ndyIsImV4cCI6MTY4NjI5NTA1MSwiaWF0IjoxNjgzNzAzMDUxLCJqdGkiOiJCU3JUT09aTm9YdHh0OENuYWlTbzFxUGZ6Q29jMFdnZlAydnUifQ.g7m7JJA7b_v4A0m0WJx9YL-Rqk6h6trCjwMWYbaybIqvY2j4K8r2Q4cELxfrvUStvzQcDU5X5OnbCyC2CEnw-A\",\n          \"tr_cd\": \"t1427\",\n          \"tr_cont\": \"0\"\n        },\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": [\n          \"GET\"\n        ],\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"{\\r\\n\\t\\\"t1427InBlock\\\": {\\r\\n\\t\\t\\\"qrygb\\\":\\\"1\\\",\\r\\n\\t\\t\\\"gubun\\\":\\\"1\\\",\\r\\n\\t\\t\\\"signgubun\\\":\\\"2\\\",\\r\\n\\t\\t\\\"diff\\\":1,\\r\\n\\t\\t\\\"jc_num\\\":0,\\r\\n\\t\\t\\\"sprice\\\":0,\\r\\n\\t\\t\\\"eprice\\\":0,\\r\\n\\t\\t\\\"volume\\\":0,\\r\\n\\t\\t\\\"idx\\\":0,\\r\\n\\t\\t\\\"jshex\\\":\\\"\\\"\\r\\n\\t}\\r\\n}\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"{\\r\\n    \\\"rsp_cd\\\": \\\"00000\\\",\\r\\n    \\\"t1427OutBlock\\\": {\\r\\n        \\\"cnt\\\": 280,\\r\\n        \\\"idx\\\": 20\\r\\n    },\\r\\n    \\\"rsp_msg\\\": \\\"정상적으로 조회가 완료되었습니다.\\\",\\r\\n    \\\"t1427OutBlock1\\\": [\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"-000058.79\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 1180,\\r\\n            \\\"shcode\\\": \\\"024900\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-12.63\\\",\\r\\n            \\\"lmtprice\\\": 6540,\\r\\n            \\\"volume\\\": 5431134,\\r\\n            \\\"high\\\": 9450,\\r\\n            \\\"total\\\": 2657,\\r\\n            \\\"rate\\\": \\\"000000024.77\\\",\\r\\n            \\\"low\\\": 7950,\\r\\n            \\\"price\\\": 8160,\\r\\n            \\\"jnilvolume\\\": 13178370,\\r\\n            \\\"value\\\": 47410,\\r\\n            \\\"hname\\\": \\\"덕양산업\\\",\\r\\n            \\\"open\\\": 8830\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"-000064.53\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 3350,\\r\\n            \\\"shcode\\\": \\\"025560\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-11.11\\\",\\r\\n            \\\"lmtprice\\\": 21150,\\r\\n            \\\"volume\\\": 243730,\\r\\n            \\\"high\\\": 30400,\\r\\n            \\\"total\\\": 1226,\\r\\n            \\\"rate\\\": \\\"000000026.71\\\",\\r\\n            \\\"low\\\": 26800,\\r\\n            \\\"price\\\": 26800,\\r\\n            \\\"jnilvolume\\\": 687117,\\r\\n            \\\"value\\\": 6961,\\r\\n            \\\"hname\\\": \\\"미래산업\\\",\\r\\n            \\\"open\\\": 30150\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"0000577.77\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 8900,\\r\\n            \\\"shcode\\\": \\\"139480\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-08.98\\\",\\r\\n            \\\"lmtprice\\\": 69400,\\r\\n            \\\"volume\\\": 501354,\\r\\n            \\\"high\\\": 99500,\\r\\n            \\\"total\\\": 25143,\\r\\n            \\\"rate\\\": \\\"000000029.97\\\",\\r\\n            \\\"low\\\": 89300,\\r\\n            \\\"price\\\": 90200,\\r\\n            \\\"jnilvolume\\\": 73971,\\r\\n            \\\"value\\\": 46010,\\r\\n            \\\"hname\\\": \\\"이마트\\\",\\r\\n            \\\"open\\\": 99100\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"-000070.59\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 870,\\r\\n            \\\"shcode\\\": \\\"011810\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-07.87\\\",\\r\\n            \\\"lmtprice\\\": 7740,\\r\\n            \\\"volume\\\": 3182163,\\r\\n            \\\"high\\\": 10950,\\r\\n            \\\"total\\\": 2913,\\r\\n            \\\"rate\\\": \\\"000000031.52\\\",\\r\\n            \\\"low\\\": 10060,\\r\\n            \\\"price\\\": 10180,\\r\\n            \\\"jnilvolume\\\": 10820886,\\r\\n            \\\"value\\\": 33496,\\r\\n            \\\"hname\\\": \\\"STX\\\",\\r\\n            \\\"open\\\": 10680\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"0000038.74\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 405,\\r\\n            \\\"shcode\\\": \\\"145210\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-07.76\\\",\\r\\n            \\\"lmtprice\\\": 3660,\\r\\n            \\\"volume\\\": 1302896,\\r\\n            \\\"high\\\": 5360,\\r\\n            \\\"total\\\": 822,\\r\\n            \\\"rate\\\": \\\"000000031.56\\\",\\r\\n            \\\"low\\\": 4745,\\r\\n            \\\"price\\\": 4815,\\r\\n            \\\"jnilvolume\\\": 939063,\\r\\n            \\\"value\\\": 6537,\\r\\n            \\\"hname\\\": \\\"다이나믹디자인\\\",\\r\\n            \\\"open\\\": 5220\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"-000045.51\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 1900,\\r\\n            \\\"shcode\\\": \\\"000760\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-07.45\\\",\\r\\n            \\\"lmtprice\\\": 17850,\\r\\n            \\\"volume\\\": 89755,\\r\\n            \\\"high\\\": 25350,\\r\\n            \\\"total\\\": 660,\\r\\n            \\\"rate\\\": \\\"000000032.21\\\",\\r\\n            \\\"low\\\": 23600,\\r\\n            \\\"price\\\": 23600,\\r\\n            \\\"jnilvolume\\\": 164731,\\r\\n            \\\"value\\\": 2179,\\r\\n            \\\"hname\\\": \\\"이화산업\\\",\\r\\n            \\\"open\\\": 24850\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"-000088.14\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 660,\\r\\n            \\\"shcode\\\": \\\"117580\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-06.82\\\",\\r\\n            \\\"lmtprice\\\": 6780,\\r\\n            \\\"volume\\\": 1031303,\\r\\n            \\\"high\\\": 9380,\\r\\n            \\\"total\\\": 2480,\\r\\n            \\\"rate\\\": \\\"000000033.04\\\",\\r\\n            \\\"low\\\": 8940,\\r\\n            \\\"price\\\": 9020,\\r\\n            \\\"jnilvolume\\\": 8695734,\\r\\n            \\\"value\\\": 9396,\\r\\n            \\\"hname\\\": \\\"대성에너지\\\",\\r\\n            \\\"open\\\": 9350\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"0000077.96\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 43,\\r\\n            \\\"shcode\\\": \\\"015590\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-06.33\\\",\\r\\n            \\\"lmtprice\\\": 476,\\r\\n            \\\"volume\\\": 25903687,\\r\\n            \\\"high\\\": 768,\\r\\n            \\\"total\\\": 1470,\\r\\n            \\\"rate\\\": \\\"000000033.61\\\",\\r\\n            \\\"low\\\": 496,\\r\\n            \\\"price\\\": 636,\\r\\n            \\\"jnilvolume\\\": 14555814,\\r\\n            \\\"value\\\": 17873,\\r\\n            \\\"hname\\\": \\\"큐로\\\",\\r\\n            \\\"open\\\": 700\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"0000071.16\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 1800,\\r\\n            \\\"shcode\\\": \\\"053690\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-05.89\\\",\\r\\n            \\\"lmtprice\\\": 21400,\\r\\n            \\\"volume\\\": 734508,\\r\\n            \\\"high\\\": 30700,\\r\\n            \\\"total\\\": 3150,\\r\\n            \\\"rate\\\": \\\"000000034.35\\\",\\r\\n            \\\"low\\\": 28650,\\r\\n            \\\"price\\\": 28750,\\r\\n            \\\"jnilvolume\\\": 429131,\\r\\n            \\\"value\\\": 21653,\\r\\n            \\\"hname\\\": \\\"한미글로벌\\\",\\r\\n            \\\"open\\\": 30450\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"-000080.48\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 255,\\r\\n            \\\"shcode\\\": \\\"002140\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-05.70\\\",\\r\\n            \\\"lmtprice\\\": 3135,\\r\\n            \\\"volume\\\": 1515982,\\r\\n            \\\"high\\\": 4400,\\r\\n            \\\"total\\\": 1052,\\r\\n            \\\"rate\\\": \\\"000000034.61\\\",\\r\\n            \\\"low\\\": 4220,\\r\\n            \\\"price\\\": 4220,\\r\\n            \\\"jnilvolume\\\": 7766255,\\r\\n            \\\"value\\\": 6477,\\r\\n            \\\"hname\\\": \\\"고려산업\\\",\\r\\n            \\\"open\\\": 4340\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"0000116.37\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 60,\\r\\n            \\\"shcode\\\": \\\"510028\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-05.50\\\",\\r\\n            \\\"lmtprice\\\": 440,\\r\\n            \\\"volume\\\": 81086,\\r\\n            \\\"high\\\": 1030,\\r\\n            \\\"total\\\": 30,\\r\\n            \\\"rate\\\": \\\"000000134.09\\\",\\r\\n            \\\"low\\\": 1020,\\r\\n            \\\"price\\\": 1030,\\r\\n            \\\"jnilvolume\\\": 37476,\\r\\n            \\\"value\\\": 83,\\r\\n            \\\"hname\\\": \\\"대신 S&P 2X 천연가스\\\",\\r\\n            \\\"open\\\": 1025\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"0000291.63\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 65,\\r\\n            \\\"shcode\\\": \\\"520058\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-05.49\\\",\\r\\n            \\\"lmtprice\\\": 475,\\r\\n            \\\"volume\\\": 142979,\\r\\n            \\\"high\\\": 1120,\\r\\n            \\\"total\\\": 50,\\r\\n            \\\"rate\\\": \\\"000000135.79\\\",\\r\\n            \\\"low\\\": 1105,\\r\\n            \\\"price\\\": 1120,\\r\\n            \\\"jnilvolume\\\": 36509,\\r\\n            \\\"value\\\": 159,\\r\\n            \\\"hname\\\": \\\"미래에셋 S&P 2X 천연\\\",\\r\\n            \\\"open\\\": 1105\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"0000172.95\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 65,\\r\\n            \\\"shcode\\\": \\\"700019\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-05.49\\\",\\r\\n            \\\"lmtprice\\\": 475,\\r\\n            \\\"volume\\\": 64585,\\r\\n            \\\"high\\\": 1125,\\r\\n            \\\"total\\\": 33,\\r\\n            \\\"rate\\\": \\\"000000135.79\\\",\\r\\n            \\\"low\\\": 1095,\\r\\n            \\\"price\\\": 1120,\\r\\n            \\\"jnilvolume\\\": 23662,\\r\\n            \\\"value\\\": 72,\\r\\n            \\\"hname\\\": \\\"하나 블룸버그 2X 천\\\",\\r\\n            \\\"open\\\": 1115\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"0000085.74\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 60,\\r\\n            \\\"shcode\\\": \\\"570083\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-05.48\\\",\\r\\n            \\\"lmtprice\\\": 445,\\r\\n            \\\"volume\\\": 211082,\\r\\n            \\\"high\\\": 1035,\\r\\n            \\\"total\\\": 207,\\r\\n            \\\"rate\\\": \\\"000000132.58\\\",\\r\\n            \\\"low\\\": 1020,\\r\\n            \\\"price\\\": 1035,\\r\\n            \\\"jnilvolume\\\": 113642,\\r\\n            \\\"value\\\": 216,\\r\\n            \\\"hname\\\": \\\"TRUE 블룸버그 레버리\\\",\\r\\n            \\\"open\\\": 1025\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"-000060.12\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 530,\\r\\n            \\\"shcode\\\": \\\"45226K\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-05.46\\\",\\r\\n            \\\"lmtprice\\\": 6790,\\r\\n            \\\"volume\\\": 93121,\\r\\n            \\\"high\\\": 9820,\\r\\n            \\\"total\\\": 266,\\r\\n            \\\"rate\\\": \\\"000000035.05\\\",\\r\\n            \\\"low\\\": 9170,\\r\\n            \\\"price\\\": 9170,\\r\\n            \\\"jnilvolume\\\": 233476,\\r\\n            \\\"value\\\": 875,\\r\\n            \\\"hname\\\": \\\"한화갤러리아우\\\",\\r\\n            \\\"open\\\": 9250\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"0000045.98\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 480,\\r\\n            \\\"shcode\\\": \\\"412570\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-05.35\\\",\\r\\n            \\\"lmtprice\\\": 3600,\\r\\n            \\\"volume\\\": 134819,\\r\\n            \\\"high\\\": 9150,\\r\\n            \\\"total\\\": 178,\\r\\n            \\\"rate\\\": \\\"000000136.11\\\",\\r\\n            \\\"low\\\": 8500,\\r\\n            \\\"price\\\": 8500,\\r\\n            \\\"jnilvolume\\\": 92357,\\r\\n            \\\"value\\\": 1190,\\r\\n            \\\"hname\\\": \\\"TIGER KRX2차전지K-뉴\\\",\\r\\n            \\\"open\\\": 9100\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"-000056.00\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 225,\\r\\n            \\\"shcode\\\": \\\"030210\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-05.33\\\",\\r\\n            \\\"lmtprice\\\": 2960,\\r\\n            \\\"volume\\\": 1783356,\\r\\n            \\\"high\\\": 4285,\\r\\n            \\\"total\\\": 2424,\\r\\n            \\\"rate\\\": \\\"000000035.14\\\",\\r\\n            \\\"low\\\": 3995,\\r\\n            \\\"price\\\": 4000,\\r\\n            \\\"jnilvolume\\\": 4053407,\\r\\n            \\\"value\\\": 7314,\\r\\n            \\\"hname\\\": \\\"다올투자증권\\\",\\r\\n            \\\"open\\\": 4250\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"-000000.69\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 70,\\r\\n            \\\"shcode\\\": \\\"530068\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-05.19\\\",\\r\\n            \\\"lmtprice\\\": 540,\\r\\n            \\\"volume\\\": 2671855,\\r\\n            \\\"high\\\": 1280,\\r\\n            \\\"total\\\": 1088,\\r\\n            \\\"rate\\\": \\\"000000137.04\\\",\\r\\n            \\\"low\\\": 1265,\\r\\n            \\\"price\\\": 1280,\\r\\n            \\\"jnilvolume\\\": 2690413,\\r\\n            \\\"value\\\": 3399,\\r\\n            \\\"hname\\\": \\\"삼성 레버리지 천연가\\\",\\r\\n            \\\"open\\\": 1270\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"0000068.16\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 860,\\r\\n            \\\"shcode\\\": \\\"530111\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-05.14\\\",\\r\\n            \\\"lmtprice\\\": 6695,\\r\\n            \\\"volume\\\": 294075,\\r\\n            \\\"high\\\": 15880,\\r\\n            \\\"total\\\": 793,\\r\\n            \\\"rate\\\": \\\"000000136.97\\\",\\r\\n            \\\"low\\\": 15600,\\r\\n            \\\"price\\\": 15865,\\r\\n            \\\"jnilvolume\\\": 174873,\\r\\n            \\\"value\\\": 4621,\\r\\n            \\\"hname\\\": \\\"삼성 레버리지 천연가\\\",\\r\\n            \\\"open\\\": 15705\\r\\n        },\\r\\n        {\\r\\n            \\\"diff_vol\\\": \\\"-000053.80\\\",\\r\\n            \\\"lmtdaycnt\\\": 0,\\r\\n            \\\"change\\\": 100,\\r\\n            \\\"shcode\\\": \\\"011300\\\",\\r\\n            \\\"sign\\\": \\\"5\\\",\\r\\n            \\\"diff\\\": \\\"-05.13\\\",\\r\\n            \\\"lmtprice\\\": 1366,\\r\\n            \\\"volume\\\": 584394,\\r\\n            \\\"high\\\": 1912,\\r\\n            \\\"total\\\": 1130,\\r\\n            \\\"rate\\\": \\\"000000035.51\\\",\\r\\n            \\\"low\\\": 1851,\\r\\n            \\\"price\\\": 1851,\\r\\n            \\\"jnilvolume\\\": 1264810,\\r\\n            \\\"value\\\": 1097,\\r\\n            \\\"hname\\\": \\\"성안\\\",\\r\\n            \\\"open\\\": 1901\\r\\n        }\\r\\n    ]\\r\\n}\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "3dbce945-a73c-475c-9758-88d9922ab94e",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T13:46:54.690891+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-05-19T14:12:39.118364+09:00",
+      "name": "[주식] 거래원",
+      "accessUrl": "/stock/exchange",
+      "description": "종목별 거래 회원사를 호출하여 거래원을 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"t1752|t1764|t1771\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t1752\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1764\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1771\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t1752\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1764\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1771\",\"requestLimit\" : \"3\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "580d2770-a7a9-49e3-9ec1-49ed8bc734a2",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T13:48:27.642517+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-05-19T14:13:04.847484+09:00",
+      "name": "[주식] 투자정보",
+      "accessUrl": "/stock/investinfo",
+      "description": "투자정보에 대한 서비스로 종목별 정보를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"t3102|t3202|t3341|t3401|t3521|t3320|t3518|t8428\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t3102\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t3202\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t3341\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t3401\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t3521\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t3320\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t3518\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8428\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t3102\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t3202\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t3341\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t3401\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t3521\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t3320\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t3518\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8428\",\"requestLimit\" : \"3\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "6b554636-7b2a-4e1a-a615-54b0c131a558",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T13:49:23.705033+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-05-19T14:13:17.214949+09:00",
+      "name": "[주식] 프로그램",
+      "accessUrl": "/stock/program",
+      "description": "프로그램매매 추이에  관한 정보를 확인할 수 있습니다. ",
+      "extraParam": "{\"tr_cd\" : \"t1631|t1632|t1633|t1640|t1662|t1636|t1637\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t1631\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1632\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1633\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1640\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1662\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1636\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1637\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t1631\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1632\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1633\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1640\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1662\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1636\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1637\",\"requestLimit\" : \"3\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "c148a42f-51a7-4446-b6df-10d6056dd75b",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T13:50:20.489175+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-05-19T14:13:36.011238+09:00",
+      "name": "[주식] 투자자",
+      "accessUrl": "/stock/investor",
+      "description": "투자자별 매매추이를 확인할 수 있는 서비스를 호출하여 이용가능합니다.",
+      "extraParam": "{\"tr_cd\" : \"t1601|t1602|t1603|t1615|t1617|t1621|t1664\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t1601\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1602\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1603\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1615\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1617\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1621\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1664\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t1601\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1602\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1603\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1615\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1617\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1621\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1664\",\"requestLimit\" : \"3\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "90378c39-f93e-4f95-9670-f76e5c924cc6",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T13:55:42.711615+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-05-19T14:13:50.306965+09:00",
+      "name": "[주식] 외인/기관",
+      "accessUrl": "/stock/frgr-itt",
+      "description": "종목별 외인/기관 거래현황을 추정할 수 있는 서비스입니다.(실시간정보 아님)",
+      "extraParam": "{\"tr_cd\" : \"t1702|t1717|t1716\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t1702\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1717\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1716\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t1702\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1717\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1716\",\"requestLimit\" : \"3\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "3d58c125-8b45-46b4-baf2-6f98d0373131",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T13:57:13.320645+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-11-12T16:08:49.530204+09:00",
+      "name": "[주식] ELW",
+      "accessUrl": "/stock/elw",
+      "description": "ELW 시세 및  종목별정보를 호출하여 ELW 상세정보를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"t9905|t9907|t1950|t1951|t1954|t1956|t1958|t1959|t1960|t1961|t1964|t1966|t1971|t1972|t1973|t1974|t9942|t8431|t1969|t1988\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t9905\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t9907\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1950\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t1951\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1954\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1956\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t1958\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1959\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1960\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1961\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1964\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1966\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1971\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t1972\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1973\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1974\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t9942\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8431\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1969\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1988\",\"requestLimit\" : \"2\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t9905\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t9907\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1950\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1951\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1954\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1956\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1958\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1959\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1960\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1961\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1964\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1966\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1971\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1972\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1973\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1974\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t9942\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8431\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1969\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1988\",\"requestLimit\" : \"3\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "30b6dfd6-b0bd-4e63-a510-7d5d94edc740",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T13:58:00.406106+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-11-12T16:09:13.004086+09:00",
+      "name": "[주식] ETF",
+      "accessUrl": "/stock/etf",
+      "description": "ETF 시세 및 종목별정보를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"t1901|t1902|t1903|t1904|t1906\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t1901\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1902\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1903\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1904\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1906\",\"requestLimit\" : \"10\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t1901\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1902\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1903\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1904\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1906\",\"requestLimit\" : \"5\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "8f027fa6-4177-43e3-9a7a-a76873efd47c",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T13:58:44.47598+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-05-19T14:14:31.355094+09:00",
+      "name": "[주식] 섹터",
+      "accessUrl": "/stock/sector",
+      "description": "섹터별 종목조회 및 시세를 확인할 수 있는 서비스입니다.",
+      "extraParam": "{\"tr_cd\" : \"t1531|t8425|t1533|t1532|t1537\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t1531\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8425\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1533\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1532\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1537\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t1531\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8425\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1533\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1532\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1537\",\"requestLimit\" : \"3\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "6b67369a-dc7a-4cc7-8c33-71bb6336b6bf",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T13:59:32.34705+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-05-13T16:38:50.168774+09:00",
+      "name": "[주식] 종목검색",
+      "accessUrl": "/stock/item-search",
+      "description": "구분값을 넣어 종목을 검색할 수 있는 서비스입니다.",
+      "extraParam": "{\"tr_cd\" : \"t1866|t1859|t1860|t1809|t1825|t1826|t1856|t1852\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t1866\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1859\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1860\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1809\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1825\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1826\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1856\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1852\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t1866\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1859\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1860\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1809\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1825\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1826\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1856\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1852\",\"requestLimit\" : \"1\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "d3d0ef41-6a0f-4bda-9e28-160071f66206",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:00:52.075078+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-05-19T14:14:53.622132+09:00",
+      "name": "[주식] 상위종목",
+      "accessUrl": "/stock/high-item",
+      "description": "거래대금 및 등락율 등 항목별 상위데이터를 확인할 수 있는 서비스입니다.",
+      "extraParam": "{\"tr_cd\" : \"t1463|t1489|t1482|t1481|t1492|t1441|t1466|t1452|t1444\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t1463\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1489\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1482\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1481\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1492\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1441\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1466\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1452\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1444\",\"requestLimit\" : \"2\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t1463\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1489\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1482\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1481\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1492\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1441\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1466\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1452\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1444\",\"requestLimit\" : \"3\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "12320341-ad85-429a-90bd-5b3771c5e89f",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:01:36.51322+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-03-12T14:06:08.902113+09:00",
+      "name": "[주식] 차트",
+      "accessUrl": "/stock/chart",
+      "description": "개별종목 시세차트 및 기간별투자자매매 차트를 확인할 수 있는 서비스입니다.",
+      "extraParam": "{\"tr_cd\" : \"t8411|t8412|t8413|t1665|t8410|t4201|t8451|t8452|t8453\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t8411\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8412\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8413\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1665\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8410\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t4201\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8451\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8452\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8453\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t8411\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8412\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8413\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1665\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8410\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t4201\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8451\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8452\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8453\",\"requestLimit\" : \"3\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "316495d3-6109-45a6-baaf-9e8a0261f30a",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:02:19.00716+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-05-26T14:27:44.549565+09:00",
+      "name": "[주식] 기타",
+      "accessUrl": "/stock/etc",
+      "description": "신용잔고 및 신규상장종목 등 종목별 기타정보를 확인할 수 있는 서비스입니다.",
+      "extraParam": "{\"tr_cd\" : \"t1411|t1926|t1921|t1927|t1941|t8430|t8436|t1403|t1638|CLNAQ00100\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t1411\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1926\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1921\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1927\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1941\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8430\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8436\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t1403\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1638\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CLNAQ00100\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t1411\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1926\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1921\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1927\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t1941\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8430\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t8436\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t1403\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t1638\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CLNAQ00100\",\"requestLimit\" : \"30\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "37d22d4d-83cd-40a4-a375-81b010a4a627",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:03:09.70245+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-11-12T16:09:49.311097+09:00",
+      "name": "[주식] 계좌",
+      "accessUrl": "/stock/accno",
+      "description": "계좌별 거래내역 및 잔고 등 계좌에 관련된 서비스를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"CSPAQ00600|CSPAQ12200|CSPAQ12300|CSPAQ13700|CSPAQ22200|FOCCQ33600|CDPCQ04700|CSPBQ00200|t0425|t0424|t0150|t0151\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"CSPAQ00600\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CSPAQ12200\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CSPAQ12300\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CSPAQ13700\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CSPAQ22200\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"FOCCQ33600\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CDPCQ04700\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CSPBQ00200\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t0425\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t0424\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t0150\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t0151\",\"requestLimit\" : \"2\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"CSPAQ00600\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"CSPAQ12200\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CSPAQ12300\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CSPAQ13700\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CSPAQ22200\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"FOCCQ33600\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CDPCQ04700\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CSPBQ00200\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t0425\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t0424\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t0150\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t0151\",\"requestLimit\" : \"10\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "d0e216e0-10d9-479f-8a4d-e175b8bae307",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:04:52.197953+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-07-21T17:50:44.119407+09:00",
+      "name": "[주식] 주문",
+      "accessUrl": "/stock/order",
+      "description": "주문과 관련된 서비스를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"CSPAT00601|CSPAT00701|CSPAT00801\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"CSPAT00601\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CSPAT00701\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"CSPAT00801\",\"requestLimit\" : \"3\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"CSPAT00601\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CSPAT00701\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"CSPAT00801\",\"requestLimit\" : \"3\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "9a2800c3-9bf2-4d67-8d83-905074f06646",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-06-02T15:35:35.256649+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-03-12T14:08:57.356098+09:00",
+      "name": "[주식] 실시간 시세",
+      "accessUrl": "/websocket/stock",
+      "description": "주식 주문현황 및 시세, 투자정보를  실시간으로 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"H2_|I5_|K1_|PM_|S2_|S3_|S4_|YS3|PH_|DH1|DS3|HA_|HB_|K3_|KM_|KS_|OK_|YK3|KH_|B7_|DHA|DK3|SC0|SC1|SC2|SC3|SC4|IJ_|SHC|SHD|SHI|SHO|YJ_|VI_|DVI|ESN|h2_4ELW|h3_4ELW|s2_4ELW|s3_4ELW|s4_ELW|k1_4ELW|Ys3_4ELW|AFR|NS3|NH1|NS2|NYS|NVI|NK1|NPH|NPM|NBT|NBM|US3|UH1|US2|UYS|UK1|UPH|UBT|UBM|UPM|UVI\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"H2_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"I5_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"K1_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"PM_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"S2_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"S3_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"S4_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"YS3\",\"requestLimit\" : \"\"},{\"tr_cd\": \"PH_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"DH1\",\"requestLimit\" : \"\"},{\"tr_cd\": \"DS3\",\"requestLimit\" : \"\"},{\"tr_cd\": \"HA_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"HB_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"K3_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"KM_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"KS_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"OK_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"YK3\",\"requestLimit\" : \"\"},{\"tr_cd\": \"KH_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"B7_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"DHA\",\"requestLimit\" : \"\"},{\"tr_cd\": \"DK3\",\"requestLimit\" : \"\"},{\"tr_cd\": \"SC0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"SC1\",\"requestLimit\" : \"\"},{\"tr_cd\": \"SC2\",\"requestLimit\" : \"\"},{\"tr_cd\": \"SC3\",\"requestLimit\" : \"\"},{\"tr_cd\": \"SC4\",\"requestLimit\" : \"\"},{\"tr_cd\": \"IJ_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"SHC\",\"requestLimit\" : \"\"},{\"tr_cd\": \"SHD\",\"requestLimit\" : \"\"},{\"tr_cd\": \"SHI\",\"requestLimit\" : \"\"},{\"tr_cd\": \"SHO\",\"requestLimit\" : \"\"},{\"tr_cd\": \"YJ_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"VI_\",\"requestLimit\" : \"\"},{\"tr_cd\": \"DVI\",\"requestLimit\" : \"\"},{\"tr_cd\": \"ESN\",\"requestLimit\" : \"\"},{\"tr_cd\": \"h2_4ELW\",\"requestLimit\" : \"\"},{\"tr_cd\": \"h3_4ELW\",\"requestLimit\" : \"\"},{\"tr_cd\": \"s2_4ELW\",\"requestLimit\" : \"\"},{\"tr_cd\": \"s3_4ELW\",\"requestLimit\" : \"\"},{\"tr_cd\": \"s4_ELW\",\"requestLimit\" : \"\"},{\"tr_cd\": \"k1_4ELW\",\"requestLimit\" : \"\"},{\"tr_cd\": \"Ys3_4ELW\",\"requestLimit\" : \"\"},{\"tr_cd\": \"AFR\",\"requestLimit\" : \"\"},{\"tr_cd\": \"NS3\",\"requestLimit\" : \"\"},{\"tr_cd\": \"NH1\",\"requestLimit\" : \"\"},{\"tr_cd\": \"NS2\",\"requestLimit\" : \"\"},{\"tr_cd\": \"NYS\",\"requestLimit\" : \"\"},{\"tr_cd\": \"NVI\",\"requestLimit\" : \"\"},{\"tr_cd\": \"NK1\",\"requestLimit\" : \"\"},{\"tr_cd\": \"NPH\",\"requestLimit\" : \"\"},{\"tr_cd\": \"NPM\",\"requestLimit\" : \"\"},{\"tr_cd\": \"NBT\",\"requestLimit\" : \"\"},{\"tr_cd\": \"NBM\",\"requestLimit\" : \"\"},{\"tr_cd\":\"US3\",\"requestLimit\" : \"\"},{\"tr_cd\": \"UH1\",\"requestLimit\" : \"\"},{\"tr_cd\": \"US2\",\"requestLimit\" : \"\"},{\"tr_cd\": \"UYS\",\"requestLimit\" : \"\"},{\"tr_cd\": \"UK1\",\"requestLimit\" : \"\"},{\"tr_cd\":\"UPH\",\"requestLimit\" : \"\"},{\"tr_cd\": \"UBT\",\"requestLimit\" : \"\"},{\"tr_cd\": \"UBM\",\"requestLimit\" : \"\"},{\"tr_cd\": \"UPM\",\"requestLimit\" : \"\"},{\"tr_cd\": \"UVI\",\"requestLimit\" : \"\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "wss://openapi.ls-sec.co.kr:9443",
+      "protocolType": "WEBSOCKET",
+      "simulatedDomain": "wss://openapi.ls-sec.co.kr:29443",
+      "trName": null
+    }
+  ],
+  "2f1eea77-5606-4512-93c6-31b21d2ece90": [
+    {
+      "id": "9f467798-6ce6-4d31-ab93-5a0e2860f89f",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-04T09:28:53.14661+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2026-04-27T11:15:00.568881+09:00",
+      "name": "[선물/옵션] 시세",
+      "accessUrl": "/futureoption/market-data",
+      "description": "주간/야간 선물옵션 종목별 시세 및 미결제약정 등시세관련 데이터를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"t2101|t2105|t2106|t2201|t2203|t2210|t2301|t2405|t2421|t8401|t8402|t8403|t8404|t8405|t8406|t9943|t9944|t8426|t8427|t8432|t8433|t8434|t8435|t8455|t8456|t8457|t8458|t8459|t8460|t2111|t2112|t2212|t2214|t2407|t2424|t8467|t2522\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t2101\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t2111\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t2105\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t2112\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t2106\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t2201\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t2212\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t2203\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t2214\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t2210\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t2301\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t2405\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t2407\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t2421\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t2424\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8401\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8402\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t8403\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t8404\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8405\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8406\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t9943\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t9944\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8426\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8427\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8432\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8467\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t2522\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8433\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8434\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8435\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8455\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8456\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t8457\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8458\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8459\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8460\",\"requestLimit\" : \"2\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t2101\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t2111\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t2105\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t2112\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t2106\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t2201\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t2212\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t2203\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t2214\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t2210\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t2301\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t2405\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t2407\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t2421\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t2424\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8401\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8402\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8403\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"t8404\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8405\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8406\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t9943\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t9944\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8426\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8427\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8432\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8467\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t2522\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8433\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8434\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"t8435\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8455\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8456\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8457\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8458\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8459\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8460\",\"requestLimit\" : \"3\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "47005ce6-8500-4a3d-ad6c-f96ec3251669",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:34:23.027113+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-06-07T08:15:46.315535+09:00",
+      "name": "[선물/옵션] 투자자",
+      "accessUrl": "/futureoption/investor",
+      "description": "상품선물 투자자별 데이터를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"t2541|t8462|t8463|t2545\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t2541\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8462\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8463\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t2545\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t2541\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8462\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8463\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t2545\",\"requestLimit\" : \"3\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "a9b39b08-25c2-427d-848b-675c6228a92b",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:35:17.307867+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2026-04-27T11:15:00.624621+09:00",
+      "name": "[선물/옵션] 차트",
+      "accessUrl": "/futureoption/chart",
+      "description": "주간/야간 선물옵션 기간별 차트를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"t8414|t8415|t8416|t2209|t8461|t2216|t8464|t8465|t8466\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t8414\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8415\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8416\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8464\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8465\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8466\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t2209\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t2216\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t8461\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t8414\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8415\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8416\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8464\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8465\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8466\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t2209\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t2216\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"t8461\",\"requestLimit\" : \"1\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "09a668df-d7e8-4b5c-977f-91d1429b931a",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:36:19.24601+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-11-06T16:14:51.059432+09:00",
+      "name": "[선물/옵션] 계좌",
+      "accessUrl": "/futureoption/accno",
+      "description": "주간/야간 선물옵션 계좌별 거래내역 및 잔고 등 계좌에 관련된 서비스를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"CFOAQ50600|CFOAQ00600|CFOBQ10500|CFOEQ82600|CFOFQ02400|FOCCQ33700|CFOAQ10100|t0434|t0441|CFOEQ11100|CCENQ10100|CCENQ30100|CCENQ90200\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"CFOAQ50600\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CFOAQ00600\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CFOBQ10500\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CFOEQ82600\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CFOFQ02400\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"FOCCQ33700\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CFOAQ10100\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t0434\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"t0441\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CFOEQ11100\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CCENQ10100\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CCENQ30100\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CCENQ90200\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"CFOAQ00600\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CFOBQ10500\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CFOEQ82600\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CFOFQ02400\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"FOCCQ33700\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CFOAQ10100\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t0434\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"t0441\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CFOEQ11100\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"CCENQ10100\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CCENQ30100\",\"requestLimit\" : \"3\"},{\"tr_cd\": \"CCENQ90200\",\"requestLimit\" : \"1\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "b579d38a-3ce5-4b1b-b94e-b0c4bbbf1d27",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:38:35.001972+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-06-07T08:13:25.081867+09:00",
+      "name": "[선물/옵션] 주문",
+      "accessUrl": "/futureoption/order",
+      "description": "주간/야간 선물옵션 주문서비스를 확인할 수 있습니다",
+      "extraParam": "{\"tr_cd\" : \"CFOAT00100|CFOAT00200|CFOAT00300|CFOBQ10800|CCENT00100|CCENT00200|CCENT00300\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"CFOAT00100\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CFOAT00200\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CFOAT00300\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CFOBQ10800\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CCENT00100\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"CCENT00200\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"CCENT00300\",\"requestLimit\" : \"5\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"CFOAT00100\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CFOAT00200\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CFOAT00300\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CFOBQ10800\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CCENT00100\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"CCENT00200\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"CCENT00300\",\"requestLimit\" : \"5\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "98373ce4-042a-4fc8-85ef-b9b8f64101ce",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:39:23.466342+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-05-19T14:16:56.581777+09:00",
+      "name": "[선물/옵션] 기타",
+      "accessUrl": "/futureoption/etc",
+      "description": "파생증거금율에 대해 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"MMDAQ91200\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"MMDAQ91200\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"MMDAQ91200\",\"requestLimit\" : \"2\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "57936c91-b49d-4702-b7f6-3935c6859462",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-06-02T15:36:14.575818+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-06-07T16:27:12.810811+09:00",
+      "name": "[선물/옵션] 실시간 시세",
+      "accessUrl": "/websocket/futureoption",
+      "description": "선물옵션 주문현황 및 시세, 투자정보를 실시간으로 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"FC0|FH0|OC0|OH0|OMG|FD0|OD0|FX0|OX0|O01|H01|JC0|JH0|C01|YFC|YJC|YOC|YC3|JD0|CD0|JX0|DC0|DH0|O02|C02|H02|DD0|DX0|DYC|DBM|DBT\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"FC0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"FH0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"OC0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"OH0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"OMG\",\"requestLimit\" : \"\"},{\"tr_cd\": \"FD0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"OD0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"FX0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"OX0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"O01\",\"requestLimit\" : \"\"},{\"tr_cd\": \"H01\",\"requestLimit\" : \"\"},{\"tr_cd\": \"JC0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"JH0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"C01\",\"requestLimit\" : \"\"},{\"tr_cd\": \"YFC\",\"requestLimit\" : \"\"},{\"tr_cd\": \"YJC\",\"requestLimit\" : \"\"},{\"tr_cd\": \"YOC\",\"requestLimit\" : \"\"},{\"tr_cd\": \"YC3\",\"requestLimit\" : \"\"},{\"tr_cd\": \"JD0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"CD0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"JX0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"DC0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"DH0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"O02\",\"requestLimit\" : \"\"},{\"tr_cd\": \"C02\",\"requestLimit\" : \"\"},{\"tr_cd\": \"H02\",\"requestLimit\" : \"\"},{\"tr_cd\": \"DD0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"DX0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"DYC\",\"requestLimit\" : \"\"},{\"tr_cd\": \"DBM\",\"requestLimit\" : \"\"},{\"tr_cd\": \"DBT\",\"requestLimit\" : \"\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "wss://openapi.ls-sec.co.kr:9443",
+      "protocolType": "WEBSOCKET",
+      "simulatedDomain": "wss://openapi.ls-sec.co.kr:29443",
+      "trName": null
+    }
+  ],
+  "c1ef0e8b-4666-4d8c-a77f-6ab488cfdb39": [
+    {
+      "id": "d61d4f85-9845-41ef-b915-4efa8fd0aad1",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:50:48.954926+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-05-19T14:17:27.471256+09:00",
+      "name": "[해외선물] 시세",
+      "accessUrl": "/overseas-futureoption/market-data",
+      "description": "해외선물옵션 종목별 시세 및 차트 등\r\n시세관련 데이터를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"o3101|o3104|o3105|o3106|o3107|o3116|o3121|o3123|o3125|o3126|o3127|o3128|o3136|o3137\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"o3101\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3104\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3105\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"o3106\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3107\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3116\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3121\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3123\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3125\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"o3126\",\"requestLimit\" : \"2\"},{\"tr_cd\": \"o3127\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3128\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3136\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3137\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"o3101\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"o3104\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3105\",\"requestLimit\" : \"50\"},{\"tr_cd\": \"o3106\",\"requestLimit\" : \"50\"},{\"tr_cd\": \"o3107\",\"requestLimit\" : \"50\"},{\"tr_cd\": \"o3116\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3121\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"o3123\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3125\",\"requestLimit\" : \"50\"},{\"tr_cd\": \"o3126\",\"requestLimit\" : \"50\"},{\"tr_cd\": \"o3127\",\"requestLimit\" : \"50\"},{\"tr_cd\": \"o3128\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3136\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3137\",\"requestLimit\" : \"1\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "44c1c082-c899-48fb-bc66-bb5be2f0ab4e",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:51:30.876152+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-05-19T14:17:37.411809+09:00",
+      "name": "[해외선물] 계좌",
+      "accessUrl": "/overseas-futureoption/accno",
+      "description": "해외선물옵션 계좌별 거래내역 및 잔고 등 계좌에 관련된 서비스를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"CIDBQ01400|CIDBQ01500|CIDBQ01800|CIDBQ05300|CIDBQ03000|CIDEQ00800|CIDBQ02400\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"CIDBQ01400\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CIDBQ01500\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CIDBQ01800\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CIDBQ05300\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CIDBQ03000\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CIDEQ00800\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"CIDBQ02400\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"CIDBQ01400\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CIDBQ01500\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CIDBQ01800\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CIDBQ05300\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CIDBQ03000\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CIDEQ00800\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"CIDBQ02400\",\"requestLimit\" : \"10\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "b820f925-e189-4553-a7d1-8e5f2750fe08",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:52:13.811592+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-07-21T17:25:08.041035+09:00",
+      "name": "[해외선물] 주문",
+      "accessUrl": "/overseas-futureoption/order",
+      "description": "해외선물옵션 주문서비스를 확인할 수 있습니다",
+      "extraParam": "{\"tr_cd\" : \"CIDBT00100|CIDBT00900|CIDBT01000\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"CIDBT00100\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"CIDBT00900\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"CIDBT01000\",\"requestLimit\" : \"5\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"CIDBT00100\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"CIDBT00900\",\"requestLimit\" : \"5\"},{\"tr_cd\": \"CIDBT01000\",\"requestLimit\" : \"5\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "906d2d0a-7a6d-4ecc-b574-ca2154a70bca",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T14:53:09.69456+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-05-19T14:17:58.546344+09:00",
+      "name": "[해외선물] 차트",
+      "accessUrl": "/overseas-futureoption/chart",
+      "description": "해외선물옵션 기간별 차트를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"o3103|o3108|o3117|o3139\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"o3103\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3108\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3117\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3139\",\"requestLimit\" : \"10\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"o3103\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"o3108\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"o3117\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"o3139\",\"requestLimit\" : \"10\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "3dc1c51b-5ff2-456d-ad2a-055e78ba2b03",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-06-02T15:36:52.604391+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-06-13T16:06:21.644461+09:00",
+      "name": "[해외선물] 실시간 시세",
+      "accessUrl": "/websocket/overseas-futureoption",
+      "description": "해외선물옵션 주문현황 및 시세정보를  실시간으로 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"OVC|OVH|WOC|WOH|TC1|TC2|TC3\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"OVC\",\"requestLimit\" : \"\"},{\"tr_cd\": \"OVH\",\"requestLimit\" : \"\"},{\"tr_cd\": \"WOC\",\"requestLimit\" : \"\"},{\"tr_cd\": \"WOH\",\"requestLimit\" : \"\"},{\"tr_cd\": \"TC1\",\"requestLimit\" : \"\"},{\"tr_cd\": \"TC2\",\"requestLimit\" : \"\"},{\"tr_cd\": \"TC3\",\"requestLimit\" : \"\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "wss://openapi.ls-sec.co.kr:9443",
+      "protocolType": "WEBSOCKET",
+      "simulatedDomain": "wss://openapi.ls-sec.co.kr:29443",
+      "trName": null
+    }
+  ],
+  "cdb7e1bc-f7c5-425c-8248-aa83dbb6919f": [
+    {
+      "id": "45b5abe1-a6e1-4833-a9cb-7eb0c408dba3",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2025-04-26T09:56:17.856334+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-04-26T12:12:20.796167+09:00",
+      "name": "[해외주식] 계좌",
+      "accessUrl": "/overseas-stock/accno",
+      "description": "해외주식 계좌별 거래내역 및 잔고 등 계좌에 관련된 서비스를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"COSAQ00102|COSAQ01400|COSOQ00201|COSOQ02701\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"COSAQ00102\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"COSAQ01400\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"COSOQ00201\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"COSOQ02701\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"COSAQ00102\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"COSAQ01400\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"COSOQ00201\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"COSOQ02701\",\"requestLimit\" : \"10\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  },\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "06f2b1bc-7f44-4368-a564-207658af552d",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2025-04-26T09:54:07.365786+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-11-06T16:18:38.034282+09:00",
+      "name": "[해외주식] 시세",
+      "accessUrl": "/overseas-stock/market-data",
+      "description": "해외주식 종목별 시세 및 차트 등 시세관련 데이터를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"g3101|g3102|g3104|g3106|g3190|\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"g3101\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"g3102\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"g3104\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"g3106\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"g3190\",\"requestLimit\" : \"10\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"g3101\",\"requestLimit\" : \"50\"},{\"tr_cd\": \"g3102\",\"requestLimit\" : \"50\"},{\"tr_cd\": \"g3104\",\"requestLimit\" : \"50\"},{\"tr_cd\": \"g3106\",\"requestLimit\" : \"50\"},{\"tr_cd\": \"g3190\",\"requestLimit\" : \"50\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": []\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "0c023f96-5137-48cf-8682-8dd30bbc81be",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2025-04-26T09:58:26.081528+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-04-26T12:11:16.745263+09:00",
+      "name": "[해외주식] 실시간 시세",
+      "accessUrl": "/websocket/overseas-stock",
+      "description": "해외주식 주문현황 및 시세정보를  실시간으로 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"AS0|AS1|AS2|AS3|AS4|GSC|GSH\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"AS0\",\"requestLimit\" : \"\"},{\"tr_cd\": \"AS1\",\"requestLimit\" : \"\"},{\"tr_cd\": \"AS2\",\"requestLimit\" : \"\"},{\"tr_cd\": \"AS3\",\"requestLimit\" : \"\"},{\"tr_cd\": \"AS4\",\"requestLimit\" : \"\"},{\"tr_cd\": \"GSC\",\"requestLimit\" : \"\"},{\"tr_cd\": \"GSH\",\"requestLimit\" : \"\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "wss://openapi.ls-sec.co.kr:9443",
+      "protocolType": "WEBSOCKET",
+      "simulatedDomain": "wss://openapi.ls-sec.co.kr:29443",
+      "trName": null
+    },
+    {
+      "id": "6bafc43c-6080-4541-bfc2-c2608b269ca0",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2025-04-26T09:55:26.647234+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-04-26T12:12:35.153225+09:00",
+      "name": "[해외주식] 주문",
+      "accessUrl": "/overseas-stock/order",
+      "description": "해외주식 주문서비스를 확인할 수 있습니다",
+      "extraParam": "{\"tr_cd\" : \"COSAT00301|COSAT00311|COSAT00400|COSMT00300\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"COSAT00301\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"COSAT00311\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"COSAT00400\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"COSMT00300\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"COSAT00301\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"COSAT00311\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"COSAT00400\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"COSMT00300\",\"requestLimit\" : \"1\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": []\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "4903400b-731d-42b0-98c7-6d50fc504894",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2025-04-26T09:57:17.006879+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-04-26T13:29:16.878725+09:00",
+      "name": "[해외주식] 차트",
+      "accessUrl": "/overseas-stock/chart",
+      "description": "해외주식 기간별 차트를 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"g3103|g3202|g3203|g3204\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"g3103\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"g3202\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"g3203\",\"requestLimit\" : \"1\"},{\"tr_cd\": \"g3204\",\"requestLimit\" : \"1\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"g3103\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"g3202\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"g3203\",\"requestLimit\" : \"10\"},{\"tr_cd\": \"g3204\",\"requestLimit\" : \"10\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": []\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    }
+  ],
+  "6ad419a5-f0ce-47c2-a52a-91685fa86a31": [
+    {
+      "id": "3c452f0d-715e-43b5-a140-3e26f73dec76",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-05-08T13:33:46.333479+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-05-19T15:31:07.653857+09:00",
+      "name": "[기타] 시간조회",
+      "accessUrl": "/etc/time-search",
+      "description": "현재 시간조회가 가능합니다.",
+      "extraParam": "{\"tr_cd\" : \"t0167\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"t0167\",\"requestLimit\" : \"10\"}], \"CorpThroughputQuotaRule\" : [{\"tr_cd\": \"t0167\",\"requestLimit\" : \"50\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.process.inbound\",\n    \"children\": [],\n    \"paramList\": [\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"headerMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"methodList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"contentTypeList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"pathList\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"queryMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"formMap\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonBody\"\n      },\n      {\n        \"value\": \"\",\n        \"conditionalKey\": \"ugwswgg.set.simple.swagger.spec.when.api.creating\",\n        \"name\": \"jsonResponse\"\n      }\n    ]\n  },\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    },
+    {
+      "id": "eddd61f7-d595-4370-b9c3-49c4c6178096",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-06-02T15:38:28.717533+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-06-13T16:10:24.331974+09:00",
+      "name": "[기타] 실시간 시세",
+      "accessUrl": "/websocket/etc",
+      "description": "장운영정보  등 기타 정보를 실시간으로 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"JIF|NWS\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"JIF\",\"requestLimit\" : \"\"},{\"tr_cd\": \"NWS\",\"requestLimit\" : \"\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "wss://openapi.ls-sec.co.kr:9443",
+      "protocolType": "WEBSOCKET",
+      "simulatedDomain": "wss://openapi.ls-sec.co.kr:29443",
+      "trName": null
+    },
+    {
+      "id": "507f87b5-b580-4934-94f4-cb77d423519d",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2025-09-17T15:40:58.72624+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2025-09-17T15:41:55.868059+09:00",
+      "name": "[기타] 핀테크인",
+      "accessUrl": "/etc/fintechin",
+      "description": null,
+      "extraParam": "{\r\n  \"tr_cd\": \"CLNAQ06000\",\r\n  \"ThroughputQuotaRule\": [\r\n    {\r\n      \"tr_cd\": \"CLNAQ06000\",\r\n      \"requestLimit\": \"99\"\r\n    }\r\n  ],\r\n  \"CorpThroughputQuotaRule\": [\r\n    {\r\n      \"tr_cd\": \"CLNAQ06000\",\r\n      \"requestLimit\": \"99\"\r\n    }\r\n  ]\r\n}",
+      "children": "[]",
+      "open": false,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": null,
+      "domain": "https://openapi.ls-sec.co.kr:8080",
+      "protocolType": "REST",
+      "simulatedDomain": null,
+      "trName": null
+    }
+  ],
+  "cd909627-82e5-40c9-b313-1a8fd2d7b119": [
+    {
+      "id": "d67d0790-4b26-447b-82eb-e9642f66057c",
+      "recordState": "ACTIVE",
+      "createdBy": "admin",
+      "createdDate": "2023-06-02T15:37:29.867524+09:00",
+      "lastModifiedBy": "system",
+      "lastModifiedDate": "2023-06-13T16:11:02.002884+09:00",
+      "name": "[실시간 시세 투자정보] 투자정보",
+      "accessUrl": "/websocket/investinfo",
+      "description": "투자정보를  실시간으로 확인할 수 있습니다.",
+      "extraParam": "{\"tr_cd\" : \"BMT|MK2|CUR\", \"ThroughputQuotaRule\" : [{\"tr_cd\": \"BMT\",\"requestLimit\" : \"\"},{\"tr_cd\": \"MK2\",\"requestLimit\" : \"\"},{\"tr_cd\": \"CUR\",\"requestLimit\" : \"\"}]}",
+      "children": "[\n  {\n    \"key\": \"policy.common.error.inboundError\",\n    \"children\": []\n  }\n]",
+      "open": true,
+      "inbound": true,
+      "organization": {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "LS증권",
+        "type": "PROVIDER"
+      },
+      "creator": {
+        "id": "10000000-0000-0000-0001-000000000002",
+        "login": "adm**",
+        "fullName": "운영자",
+        "email": "a****@localhost.com",
+        "grade": null,
+        "mainPhone": "070-0000-0002",
+        "cellPhone": "010-0000-0002",
+        "state": "ACTIVE",
+        "organization": null,
+        "role": {
+          "code": "ROLE_ADMIN",
+          "name": "ADMIN",
+          "organizationType": null
+        },
+        "userAccessControls": []
+      },
+      "status": "RUNNING",
+      "detailStatus": "EMPTY",
+      "billingPolicy": {
+        "id": "10000000-0000-0000-0002-000000000001",
+        "name": "무과금"
+      },
+      "termsOfUse": {
+        "id": "10000000-0000-0000-0010-000000000001",
+        "name": "약관1"
+      },
+      "gatewayCluster": {
+        "id": "b91b70f5-6933-45a5-ba72-dbeca3a31ef5",
+        "name": "Internal G/W"
+      },
+      "manualFile": null,
+      "specFile": null,
+      "errorText": null,
+      "useAppCount": 0,
+      "apiCollectionName": null,
+      "apiCollectionId": null,
+      "httpMethod": "POST",
+      "reqFormat": "JSON",
+      "contentType": "application/json; charset=UTF-8",
+      "domain": "wss://openapi.ls-sec.co.kr:9443",
+      "protocolType": "WEBSOCKET",
+      "simulatedDomain": "wss://openapi.ls-sec.co.kr:29443",
+      "trName": null
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "security-api-reference",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate:docs": "node scripts/generate-docs.mjs",
+    "validate:docs": "node scripts/validate-docs.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
