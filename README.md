@@ -81,7 +81,7 @@ caps.findApis("quote.domesticStock.currentPrice");
 ```
 
 국내주식 시세 조회 도메인 서비스는 현재가, 호가, 복수 현재가 조회를 제공합니다.
-계좌 조회 도메인 서비스는 예수금/주문가능금액, 잔고/평가손익 조회를 제공합니다.
+계좌 조회 도메인 서비스는 예수금/주문가능금액, 잔고/평가손익, 주문/체결 내역 조회를 제공합니다.
 
 ```js
 import { AccountService, KiwoomClient, QuoteService } from "security-api-reference";
@@ -102,6 +102,10 @@ const orderBook = await quote.getDomesticStockOrderBook("kiwoom", "005930");
 const prices = await quote.getDomesticStockMultiCurrentPrice("kiwoom", ["005930", "000660"]);
 const cash = await account.getDomesticStockCash("kiwoom");
 const balance = await account.getDomesticStockBalance("kiwoom");
+const orderHistory = await account.getDomesticStockOrderHistory("kiwoom", {
+  orderDate: "20260518",
+  symbol: "005930"
+});
 ```
 
 실제 API 키 없이 호출 흐름을 확인하려면 [examples](examples/README.md)를 사용합니다.

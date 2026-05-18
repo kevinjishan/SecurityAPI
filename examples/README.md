@@ -18,6 +18,7 @@ npm run examples:mock
 - `QuoteService.getDomesticStockMultiCurrentPrice()` 복수 현재가 형태 확인
 - `AccountService.getDomesticStockCash()` 예수금/주문가능금액 공통 응답 형태 확인
 - `AccountService.getDomesticStockBalance()` 잔고/평가손익 공통 응답 형태 확인
+- `AccountService.getDomesticStockOrderHistory()` 주문/체결 내역 공통 응답 형태 확인
 
 ## Real Credentials
 

@@ -2,6 +2,7 @@ export {
   AccountService,
   normalizeDomesticStockBalance,
   normalizeDomesticStockCash,
+  normalizeDomesticStockOrderHistory,
 } from "./AccountService.mjs";
 
 export {

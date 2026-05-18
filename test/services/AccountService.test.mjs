@@ -6,6 +6,7 @@ import {
   BrokerError,
   normalizeDomesticStockBalance,
   normalizeDomesticStockCash,
+  normalizeDomesticStockOrderHistory,
 } from "../../src/index.mjs";
 import { AccountService as AccountServiceFromPackage } from "security-api-reference/services";
 
@@ -264,6 +265,233 @@ test("gets and normalizes LS domestic stock balance", async () => {
   });
 });
 
+test("gets and normalizes Kiwoom domestic stock order history", async () => {
+  const calls = [];
+  const service = new AccountService({
+    kiwoom: {
+      request: async (id, params, options) => {
+        calls.push({ id, params, options });
+        return brokerSuccess("kiwoom", id, {
+          acnt_ord_cntr_prps_dtl: [
+            {
+              ord_no: "0000050",
+              stk_cd: "A005930",
+              trde_tp: "시장가",
+              ord_qty: "0000000010",
+              ord_uv: "0000070000",
+              cnfm_qty: "0000000008",
+              acpt_tp: "접수",
+              ord_tm: "13:05:43",
+              ori_ord: "0000000",
+              stk_nm: "삼성전자",
+              io_tp_nm: "현금매수",
+              cntr_qty: "0000000008",
+              cntr_uv: "0000069900",
+              ord_remnq: "0000000002",
+              comm_ord_tp: "영웅문4",
+              cnfm_tm: "13:05:44",
+              dmst_stex_tp: "KRX",
+            },
+          ],
+          return_code: 0,
+        });
+      },
+    },
+  });
+
+  const result = await service.getDomesticStockOrderHistory("kiwoom", {
+    orderDate: "2026-05-18",
+    symbol: "005930",
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.capability, "account.domesticStock.orderHistory");
+  assert.equal(result.id, "kt00007");
+  assert.deepEqual(calls, [
+    {
+      id: "kt00007",
+      params: {
+        ord_dt: "20260518",
+        qry_tp: "1",
+        stk_bond_tp: "0",
+        sell_tp: "0",
+        stk_cd: "005930",
+        fr_ord_no: "",
+        dmst_stex_tp: "%",
+      },
+      options: {},
+    },
+  ]);
+  assert.equal(result.data.summary.count, 1);
+  assert.deepEqual(result.data.orders[0], {
+    orderNumber: "0000050",
+    originalOrderNumber: "0000000",
+    executionNumber: null,
+    symbol: "005930",
+    symbolRaw: "A005930",
+    name: "삼성전자",
+    side: "buy",
+    sideRaw: "현금매수",
+    orderType: "시장가",
+    status: "접수",
+    orderQuantity: 10,
+    orderQuantityRaw: "0000000010",
+    orderPrice: 70000,
+    orderPriceRaw: "0000070000",
+    confirmedQuantity: 8,
+    confirmedQuantityRaw: "0000000008",
+    executedQuantity: 8,
+    executedQuantityRaw: "0000000008",
+    executedPrice: 69900,
+    executedPriceRaw: "0000069900",
+    remainingQuantity: 2,
+    remainingQuantityRaw: "0000000002",
+    orderTime: "13:05:43",
+    executionTime: "13:05:44",
+    exchange: "KRX",
+    channel: "영웅문4",
+    raw: {
+      ord_no: "0000050",
+      stk_cd: "A005930",
+      trde_tp: "시장가",
+      ord_qty: "0000000010",
+      ord_uv: "0000070000",
+      cnfm_qty: "0000000008",
+      acpt_tp: "접수",
+      ord_tm: "13:05:43",
+      ori_ord: "0000000",
+      stk_nm: "삼성전자",
+      io_tp_nm: "현금매수",
+      cntr_qty: "0000000008",
+      cntr_uv: "0000069900",
+      ord_remnq: "0000000002",
+      comm_ord_tp: "영웅문4",
+      cnfm_tm: "13:05:44",
+      dmst_stex_tp: "KRX",
+    },
+  });
+});
+
+test("gets and normalizes LS domestic stock order history", async () => {
+  const calls = [];
+  const service = new AccountService({
+    ls: {
+      request: async (id, params, options) => {
+        calls.push({ id, params, options });
+        return brokerSuccess("ls", id, {
+          rsp_cd: "00000",
+          rsp_msg: "정상",
+          CSPAQ13700OutBlock2: {
+            RecCnt: 1,
+            SellOrdQty: 0,
+            BuyOrdQty: 10,
+            BuyExecQty: 8,
+            SellExecQty: 0,
+            BuyExecAmt: 559200,
+            SellExecAmt: 0,
+          },
+          CSPAQ13700OutBlock3: [
+            {
+              OrdNo: "50",
+              OrgOrdNo: "0",
+              ExecNo: "1",
+              IsuNo: "A005930",
+              IsuNm: "삼성전자",
+              BnsTpCode: "2",
+              BnsTpNm: "매수",
+              OrdPtnNm: "현금매수",
+              ExecYn: "1",
+              OrdQty: 10,
+              OrdPrc: 70000,
+              ExecQty: 8,
+              ExecPrc: 69900,
+              MrcAbleQty: 2,
+              OrdDt: "20260518",
+              OrdTime: "130543",
+              ExecTrxTime: "130544",
+              CommdaNm: "API",
+            },
+          ],
+        });
+      },
+    },
+  });
+
+  const result = await service.getDomesticStockOrderHistory("ls", {
+    orderDate: "20260518",
+    symbol: "005930",
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.id, "CSPAQ13700");
+  assert.deepEqual(calls, [
+    {
+      id: "CSPAQ13700",
+      params: {
+        CSPAQ13700InBlock1: {
+          OrdMktCode: "00",
+          BnsTpCode: "0",
+          IsuNo: "A005930",
+          ExecYn: "0",
+          OrdDt: "20260518",
+          SrtOrdNo2: 0,
+          BkseqTpCode: "0",
+          OrdPtnCode: "00",
+        },
+      },
+      options: {},
+    },
+  ]);
+  assert.equal(result.data.summary.recordCount, 1);
+  assert.equal(result.data.summary.buyExecutedAmount, 559200);
+  assert.deepEqual(result.data.orders[0], {
+    orderNumber: "50",
+    originalOrderNumber: "0",
+    executionNumber: "1",
+    symbol: "005930",
+    symbolRaw: "A005930",
+    name: "삼성전자",
+    side: "buy",
+    sideRaw: "매수",
+    orderType: "현금매수",
+    status: "1",
+    orderQuantity: 10,
+    orderQuantityRaw: "10",
+    orderPrice: 70000,
+    orderPriceRaw: "70000",
+    executedQuantity: 8,
+    executedQuantityRaw: "8",
+    executedPrice: 69900,
+    executedPriceRaw: "69900",
+    remainingQuantity: 2,
+    remainingQuantityRaw: "2",
+    orderDate: "20260518",
+    orderTime: "130543",
+    executionTime: "130544",
+    channel: "API",
+    raw: {
+      OrdNo: "50",
+      OrgOrdNo: "0",
+      ExecNo: "1",
+      IsuNo: "A005930",
+      IsuNm: "삼성전자",
+      BnsTpCode: "2",
+      BnsTpNm: "매수",
+      OrdPtnNm: "현금매수",
+      ExecYn: "1",
+      OrdQty: 10,
+      OrdPrc: 70000,
+      ExecQty: 8,
+      ExecPrc: 69900,
+      MrcAbleQty: 2,
+      OrdDt: "20260518",
+      OrdTime: "130543",
+      ExecTrxTime: "130544",
+      CommdaNm: "API",
+    },
+  });
+});
+
 test("supports explicit account source selection and nested parameter overrides", async () => {
   const calls = [];
   const service = new AccountService({
@@ -294,6 +522,45 @@ test("supports explicit account source selection and nested parameter overrides"
         dangb: "0",
         charge: "1",
         cts_expcode: "005930",
+      },
+    },
+  });
+});
+
+test("supports nested parameter overrides for account order history", async () => {
+  const calls = [];
+  const service = new AccountService({
+    ls: {
+      request: async (id, params) => {
+        calls.push({ id, params });
+        return brokerSuccess("ls", id, {
+          rsp_cd: "00000",
+          CSPAQ13700OutBlock2: {},
+          CSPAQ13700OutBlock3: [],
+        });
+      },
+    },
+  });
+
+  const result = await service.getDomesticStockOrderHistory("ls", {
+    trCode: "CSPAQ13700",
+    orderDate: "20260518",
+    params: { CSPAQ13700InBlock1: { ExecYn: "3", SrtOrdNo2: 999999999 } },
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(calls[0], {
+    id: "CSPAQ13700",
+    params: {
+      CSPAQ13700InBlock1: {
+        OrdMktCode: "00",
+        BnsTpCode: "0",
+        IsuNo: "",
+        ExecYn: "3",
+        OrdDt: "20260518",
+        SrtOrdNo2: 999999999,
+        BkseqTpCode: "0",
+        OrdPtnCode: "00",
       },
     },
   });
@@ -352,6 +619,16 @@ test("normalizes account payloads directly", () => {
   assert.equal(balance.summary.purchaseAmount, 1000000);
   assert.equal(balance.positions[0].symbol, "005930");
   assert.equal(balance.positions[0].quantity, 10);
+
+  const history = normalizeDomesticStockOrderHistory("ls", "CSPAQ13700", {
+    CSPAQ13700OutBlock2: { RecCnt: "1" },
+    CSPAQ13700OutBlock3: [{ IsuNo: "A005930", BnsTpNm: "매도", OrdQty: "3" }],
+  });
+
+  assert.equal(history.summary.recordCount, 1);
+  assert.equal(history.orders[0].symbol, "005930");
+  assert.equal(history.orders[0].side, "sell");
+  assert.equal(history.orders[0].orderQuantity, 3);
 });
 
 function brokerSuccess(broker, id, data) {

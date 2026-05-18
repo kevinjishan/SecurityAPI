@@ -3,6 +3,7 @@ import { BrokerError, assertBroker } from "../core/index.mjs";
 
 const CASH_CAPABILITY_ID = "account.domesticStock.cash";
 const BALANCE_CAPABILITY_ID = "account.domesticStock.balance";
+const ORDER_HISTORY_CAPABILITY_ID = "account.domesticStock.orderHistory";
 
 export class AccountService {
   constructor(clients = {}) {
@@ -26,6 +27,16 @@ export class AccountService {
       capabilityId: BALANCE_CAPABILITY_ID,
       request: requestBalance,
       normalize: normalizeDomesticStockBalance,
+    });
+  }
+
+  async getDomesticStockOrderHistory(broker, options = {}) {
+    return this.#requestAccount({
+      broker,
+      options,
+      capabilityId: ORDER_HISTORY_CAPABILITY_ID,
+      request: requestOrderHistory,
+      normalize: normalizeDomesticStockOrderHistory,
     });
   }
 
@@ -110,6 +121,21 @@ export function normalizeDomesticStockBalance(broker, sourceId, payload) {
   });
 }
 
+export function normalizeDomesticStockOrderHistory(broker, sourceId, payload) {
+  if (broker === "kiwoom") {
+    return normalizeKiwoomOrderHistory(sourceId, payload);
+  }
+
+  if (broker === "ls") {
+    return normalizeLsOrderHistory(sourceId, payload);
+  }
+
+  throw BrokerError.unsupported(`Unsupported order history normalization broker: ${broker}`, {
+    broker,
+    details: { sourceId },
+  });
+}
+
 function resolveClient(clients, broker) {
   const client = clients[broker];
   if (!client?.request) {
@@ -166,6 +192,10 @@ function defaultSourceId(broker, capabilityId) {
     return broker === "kiwoom" ? "kt00018" : "t0424";
   }
 
+  if (capabilityId === ORDER_HISTORY_CAPABILITY_ID) {
+    return broker === "kiwoom" ? "kt00007" : "CSPAQ13700";
+  }
+
   return null;
 }
 
@@ -176,6 +206,11 @@ async function requestCash(client, broker, sourceId, options) {
 
 async function requestBalance(client, broker, sourceId, options) {
   const params = mergeParams(defaultBalanceParams(broker, sourceId), options.params);
+  return client.request(sourceId, params, options.requestOptions ?? {});
+}
+
+async function requestOrderHistory(client, broker, sourceId, options) {
+  const params = mergeParams(defaultOrderHistoryParams(broker, sourceId, options), options.params);
   return client.request(sourceId, params, options.requestOptions ?? {});
 }
 
@@ -211,6 +246,44 @@ function defaultBalanceParams(broker, sourceId) {
         dangb: "0",
         charge: "1",
         cts_expcode: "",
+      },
+    };
+  }
+
+  if (broker === "ls") {
+    return { [`${sourceId}InBlock1`]: {} };
+  }
+
+  return {};
+}
+
+function defaultOrderHistoryParams(broker, sourceId, options) {
+  const symbol = normalizeOptionalSymbol(options.symbol);
+  const orderDate = normalizeOptionalOrderDate(options.orderDate, options.now);
+
+  if (broker === "kiwoom") {
+    return {
+      ord_dt: orderDate ?? "",
+      qry_tp: "1",
+      stk_bond_tp: "0",
+      sell_tp: "0",
+      stk_cd: symbol ?? "",
+      fr_ord_no: "",
+      dmst_stex_tp: "%",
+    };
+  }
+
+  if (broker === "ls" && sourceId === "CSPAQ13700") {
+    return {
+      CSPAQ13700InBlock1: {
+        OrdMktCode: "00",
+        BnsTpCode: "0",
+        IsuNo: symbol ? `A${symbol}` : "",
+        ExecYn: "0",
+        OrdDt: orderDate ?? formatYmd(new Date()),
+        SrtOrdNo2: 0,
+        BkseqTpCode: "0",
+        OrdPtnCode: "00",
       },
     };
   }
@@ -332,6 +405,67 @@ function normalizeLsBalance(sourceId, payload) {
   };
 }
 
+function normalizeKiwoomOrderHistory(sourceId, payload) {
+  const rows = Array.isArray(payload?.acnt_ord_cntr_prps_dtl)
+    ? payload.acnt_ord_cntr_prps_dtl
+    : Array.isArray(payload?.acnt_ord_cntr_prst_array)
+      ? payload.acnt_ord_cntr_prst_array
+      : [];
+
+  return {
+    broker: "kiwoom",
+    summary: {
+      sellEstimatedAmount: accountNumber(firstValue(payload, ["sell_grntl_engg_amt"])),
+      sellEstimatedAmountRaw: nullableString(firstValue(payload, ["sell_grntl_engg_amt"])),
+      buyEstimatedAmount: accountNumber(firstValue(payload, ["buy_engg_amt"])),
+      buyEstimatedAmountRaw: nullableString(firstValue(payload, ["buy_engg_amt"])),
+      estimatedAmount: accountNumber(firstValue(payload, ["engg_amt"])),
+      estimatedAmountRaw: nullableString(firstValue(payload, ["engg_amt"])),
+      count: rows.length,
+    },
+    orders: rows.map((row) => normalizeKiwoomOrderHistoryRow(row)),
+    currency: "KRW",
+    source: {
+      broker: "kiwoom",
+      id: sourceId,
+      capabilityId: ORDER_HISTORY_CAPABILITY_ID,
+    },
+  };
+}
+
+function normalizeLsOrderHistory(sourceId, payload) {
+  const summaryBlock = payload?.[`${sourceId}OutBlock2`] ?? payload?.CSPAQ13700OutBlock2 ?? {};
+  const rows = payload?.[`${sourceId}OutBlock3`] ?? payload?.CSPAQ13700OutBlock3 ?? [];
+
+  return {
+    broker: "ls",
+    summary: {
+      recordCount: accountNumber(firstValue(summaryBlock, ["RecCnt"])),
+      recordCountRaw: nullableString(firstValue(summaryBlock, ["RecCnt"])),
+      buyOrderQuantity: accountNumber(firstValue(summaryBlock, ["BuyOrdQty"])),
+      buyOrderQuantityRaw: nullableString(firstValue(summaryBlock, ["BuyOrdQty"])),
+      sellOrderQuantity: accountNumber(firstValue(summaryBlock, ["SellOrdQty"])),
+      sellOrderQuantityRaw: nullableString(firstValue(summaryBlock, ["SellOrdQty"])),
+      buyExecutedQuantity: accountNumber(firstValue(summaryBlock, ["BuyExecQty"])),
+      buyExecutedQuantityRaw: nullableString(firstValue(summaryBlock, ["BuyExecQty"])),
+      sellExecutedQuantity: accountNumber(firstValue(summaryBlock, ["SellExecQty"])),
+      sellExecutedQuantityRaw: nullableString(firstValue(summaryBlock, ["SellExecQty"])),
+      buyExecutedAmount: accountNumber(firstValue(summaryBlock, ["BuyExecAmt"])),
+      buyExecutedAmountRaw: nullableString(firstValue(summaryBlock, ["BuyExecAmt"])),
+      sellExecutedAmount: accountNumber(firstValue(summaryBlock, ["SellExecAmt"])),
+      sellExecutedAmountRaw: nullableString(firstValue(summaryBlock, ["SellExecAmt"])),
+      count: Array.isArray(rows) ? rows.length : 0,
+    },
+    orders: (Array.isArray(rows) ? rows : []).map((row) => normalizeLsOrderHistoryRow(row)),
+    currency: "KRW",
+    source: {
+      broker: "ls",
+      id: sourceId,
+      capabilityId: ORDER_HISTORY_CAPABILITY_ID,
+    },
+  };
+}
+
 function normalizeKiwoomPosition(row) {
   const symbol = nullableString(firstValue(row, ["stk_cd"]));
 
@@ -379,6 +513,73 @@ function normalizeLsPosition(row) {
     profitLossRaw: nullableString(firstValue(row, ["dtsunik"])),
     profitRate: parseNumber(firstValue(row, ["sunikrt"])),
     profitRateRaw: nullableString(firstValue(row, ["sunikrt"])),
+  };
+}
+
+function normalizeKiwoomOrderHistoryRow(row) {
+  const symbol = nullableString(firstValue(row, ["stk_cd"]));
+  const side = inferOrderSide(firstValue(row, ["io_tp_nm"]));
+
+  return {
+    orderNumber: nullableString(firstValue(row, ["ord_no"])),
+    originalOrderNumber: nullableString(firstValue(row, ["ori_ord", "orig_ord_no"])),
+    executionNumber: nullableString(firstValue(row, ["cntr_no"])),
+    symbol: stripKiwoomSymbol(symbol),
+    symbolRaw: symbol,
+    name: nullableString(firstValue(row, ["stk_nm"])),
+    side,
+    sideRaw: nullableString(firstValue(row, ["io_tp_nm"])),
+    orderType: nullableString(firstValue(row, ["trde_tp"])),
+    status: nullableString(firstValue(row, ["acpt_tp"])),
+    orderQuantity: accountNumber(firstValue(row, ["ord_qty"])),
+    orderQuantityRaw: nullableString(firstValue(row, ["ord_qty"])),
+    orderPrice: accountNumber(firstValue(row, ["ord_uv"])),
+    orderPriceRaw: nullableString(firstValue(row, ["ord_uv"])),
+    confirmedQuantity: accountNumber(firstValue(row, ["cnfm_qty"])),
+    confirmedQuantityRaw: nullableString(firstValue(row, ["cnfm_qty"])),
+    executedQuantity: accountNumber(firstValue(row, ["cntr_qty"])),
+    executedQuantityRaw: nullableString(firstValue(row, ["cntr_qty"])),
+    executedPrice: accountNumber(firstValue(row, ["cntr_uv"])),
+    executedPriceRaw: nullableString(firstValue(row, ["cntr_uv"])),
+    remainingQuantity: accountNumber(firstValue(row, ["ord_remnq"])),
+    remainingQuantityRaw: nullableString(firstValue(row, ["ord_remnq"])),
+    orderTime: nullableString(firstValue(row, ["ord_tm"])),
+    executionTime: nullableString(firstValue(row, ["cntr_tm", "cnfm_tm"])),
+    exchange: nullableString(firstValue(row, ["dmst_stex_tp"])),
+    channel: nullableString(firstValue(row, ["comm_ord_tp"])),
+    raw: row,
+  };
+}
+
+function normalizeLsOrderHistoryRow(row) {
+  const issueNumber = nullableString(firstValue(row, ["IsuNo"]));
+
+  return {
+    orderNumber: nullableString(firstValue(row, ["OrdNo"])),
+    originalOrderNumber: nullableString(firstValue(row, ["OrgOrdNo"])),
+    executionNumber: nullableString(firstValue(row, ["ExecNo"])),
+    symbol: stripLsIssueNumber(issueNumber),
+    symbolRaw: issueNumber,
+    name: nullableString(firstValue(row, ["IsuNm"])),
+    side: normalizeLsSide(firstValue(row, ["BnsTpCode", "BnsTpNm"])),
+    sideRaw: nullableString(firstValue(row, ["BnsTpNm", "BnsTpCode"])),
+    orderType: nullableString(firstValue(row, ["OrdPtnNm", "OrdPtnCode"])),
+    status: nullableString(firstValue(row, ["ExecYn", "OrdprcPtnNm"])),
+    orderQuantity: accountNumber(firstValue(row, ["OrdQty"])),
+    orderQuantityRaw: nullableString(firstValue(row, ["OrdQty"])),
+    orderPrice: accountNumber(firstValue(row, ["OrdPrc"])),
+    orderPriceRaw: nullableString(firstValue(row, ["OrdPrc"])),
+    executedQuantity: accountNumber(firstValue(row, ["ExecQty", "AllExecQty"])),
+    executedQuantityRaw: nullableString(firstValue(row, ["ExecQty", "AllExecQty"])),
+    executedPrice: accountNumber(firstValue(row, ["ExecPrc"])),
+    executedPriceRaw: nullableString(firstValue(row, ["ExecPrc"])),
+    remainingQuantity: accountNumber(firstValue(row, ["MrcAbleQty"])),
+    remainingQuantityRaw: nullableString(firstValue(row, ["MrcAbleQty"])),
+    orderDate: nullableString(firstValue(row, ["OrdDt"])),
+    orderTime: nullableString(firstValue(row, ["OrdTime"])),
+    executionTime: nullableString(firstValue(row, ["ExecTrxTime", "LastExecTime"])),
+    channel: nullableString(firstValue(row, ["CommdaNm", "RegCommdaCode"])),
+    raw: row,
   };
 }
 
@@ -492,4 +693,75 @@ function stripKiwoomSymbol(value) {
   }
 
   return String(value).replace(/^A/, "");
+}
+
+function stripLsIssueNumber(value) {
+  if (!value) {
+    return null;
+  }
+
+  return String(value).replace(/^[AJ]/, "");
+}
+
+function normalizeOptionalSymbol(symbol) {
+  const normalized = String(symbol ?? "").trim();
+  return normalized ? normalized.replace(/^[AJ]/, "") : null;
+}
+
+function normalizeOptionalOrderDate(orderDate, now) {
+  if (orderDate === undefined || orderDate === null || orderDate === "") {
+    return null;
+  }
+
+  if (orderDate instanceof Date) {
+    return formatYmd(orderDate);
+  }
+
+  if (now instanceof Date && orderDate === true) {
+    return formatYmd(now);
+  }
+
+  const normalized = String(orderDate).replace(/-/g, "").trim();
+  return normalized || null;
+}
+
+function formatYmd(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}${month}${day}`;
+}
+
+function inferOrderSide(value) {
+  const text = nullableString(value);
+  if (!text) {
+    return null;
+  }
+
+  if (text.includes("매수")) {
+    return "buy";
+  }
+
+  if (text.includes("매도")) {
+    return "sell";
+  }
+
+  return null;
+}
+
+function normalizeLsSide(value) {
+  const text = nullableString(value);
+  if (!text) {
+    return null;
+  }
+
+  if (text === "2" || text.includes("매수")) {
+    return "buy";
+  }
+
+  if (text === "1" || text.includes("매도")) {
+    return "sell";
+  }
+
+  return null;
 }

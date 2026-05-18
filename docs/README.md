@@ -134,6 +134,10 @@ const orderBook = await quote.getDomesticStockOrderBook("kiwoom", "005930");
 const multiPrices = await quote.getDomesticStockMultiCurrentPrice("kiwoom", ["005930", "000660"]);
 const cash = await account.getDomesticStockCash("kiwoom");
 const balance = await account.getDomesticStockBalance("kiwoom");
+const orderHistory = await account.getDomesticStockOrderHistory("kiwoom", {
+  orderDate: "20260518",
+  symbol: "005930"
+});
 ```
 
-현재 구현 범위는 `quote.domesticStock.currentPrice`, `quote.domesticStock.orderBook`, `quote.domesticStock.multiCurrentPrice`, `account.domesticStock.cash`, `account.domesticStock.balance`입니다. 주문과 주문/체결 내역 도메인 함수는 별도 안전 정책과 함께 추가합니다.
+현재 구현 범위는 `quote.domesticStock.currentPrice`, `quote.domesticStock.orderBook`, `quote.domesticStock.multiCurrentPrice`, `account.domesticStock.cash`, `account.domesticStock.balance`, `account.domesticStock.orderHistory`입니다. 실제 주문 실행 도메인 함수는 별도 안전 정책과 함께 추가합니다.

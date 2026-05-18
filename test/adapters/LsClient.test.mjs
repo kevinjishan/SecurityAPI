@@ -236,6 +236,44 @@ test("normalizes LS business API errors", async () => {
   });
 });
 
+test("treats documented LS no-data success codes as successful responses", async () => {
+  const tokenStore = new MemoryTokenStore();
+  tokenStore.set("ls:prod", {
+    accessToken: "cached-token",
+    expiresAt: Date.now() + 60_000,
+  });
+
+  const client = new LsClient({
+    appKey: "app-key",
+    appSecretKey: "secret-key",
+    macAddress: "AABBCCDDEEFF",
+    tokenStore,
+    fetch: async () =>
+      jsonResponse({
+        rsp_cd: "00200",
+        rsp_msg: "조회내역이 없습니다.",
+        CSPAQ13700OutBlock3: [],
+      }),
+  });
+
+  const result = await client.request("CSPAQ13700", {
+    CSPAQ13700InBlock1: {
+      OrdMktCode: "00",
+      BnsTpCode: "0",
+      IsuNo: "",
+      ExecYn: "0",
+      OrdDt: "20260518",
+      SrtOrdNo2: 0,
+      BkseqTpCode: "0",
+      OrdPtnCode: "00",
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.rsp_cd, "00200");
+  assert.deepEqual(result.data.CSPAQ13700OutBlock3, []);
+});
+
 test("returns validation errors for unknown LS TR codes", async () => {
   let fetchCalled = false;
   const client = new LsClient({
