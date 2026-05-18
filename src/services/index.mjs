@@ -16,3 +16,8 @@ export {
   normalizeDomesticStockMultiCurrentPrice,
   normalizeDomesticStockOrderBook,
 } from "./QuoteService.mjs";
+
+export {
+  RealtimeService,
+  normalizeDomesticStockRealtimeMessage,
+} from "./RealtimeService.mjs";

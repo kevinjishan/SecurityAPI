@@ -83,9 +83,10 @@ caps.findApis("quote.domesticStock.currentPrice");
 국내주식 시세 조회 도메인 서비스는 현재가, 호가, 복수 현재가 조회를 제공합니다.
 계좌 조회 도메인 서비스는 예수금/주문가능금액, 잔고/평가손익, 주문/체결 내역 조회를 제공합니다.
 주문 서비스는 기본값으로 dry-run 요청만 생성합니다. 실주문은 `dryRun: false`, `confirm: true`가 모두 필요하고, 시장가 실주문은 `confirmMarketOrder: true`도 필요합니다.
+실시간 서비스는 WebSocket 구독 요청과 수신 메시지 정규화를 제공합니다.
 
 ```js
-import { AccountService, KiwoomClient, OrderService, QuoteService } from "security-api-reference";
+import { AccountService, KiwoomClient, OrderService, QuoteService, RealtimeService } from "security-api-reference";
 
 const clients = {
   kiwoom: new KiwoomClient({
@@ -98,6 +99,7 @@ const clients = {
 const quote = new QuoteService(clients);
 const account = new AccountService(clients);
 const order = new OrderService(clients);
+const realtime = new RealtimeService(clients);
 
 const price = await quote.getDomesticStockCurrentPrice("kiwoom", "005930");
 const orderBook = await quote.getDomesticStockOrderBook("kiwoom", "005930");
@@ -115,6 +117,9 @@ const buyDryRun = await order.buyDomesticStock("kiwoom", {
 }, {
   maxOrderAmount: 100000,
   allowedSymbols: ["005930"]
+});
+const tradeStream = await realtime.subscribeDomesticStockTrades("kiwoom", "005930", {
+  onMessage: (message) => console.log(message.body)
 });
 ```
 

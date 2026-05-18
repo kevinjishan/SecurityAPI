@@ -31,6 +31,8 @@ export {
   BaseBrokerClient,
   KiwoomClient,
   LsClient,
+  WebSocketBrokerClient,
+  normalizeRealtimeMessage,
   parseKiwoomExpiresAt,
   parseKiwoomToken,
   parseLsExpiresAt,
@@ -61,4 +63,6 @@ export {
   normalizeDomesticStockCurrentPrice,
   normalizeDomesticStockMultiCurrentPrice,
   normalizeDomesticStockOrderBook,
+  normalizeDomesticStockRealtimeMessage,
+  RealtimeService,
 } from "./services/index.mjs";

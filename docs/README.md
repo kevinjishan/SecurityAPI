@@ -113,10 +113,10 @@ caps.findApis("account.domesticStock.balance");
 ## Domain Services
 
 도메인 서비스는 Broker Client를 사용하되, 결과를 공통 형태로 얇게 정리합니다.
-현재 국내주식 시세 조회, 계좌 기본 조회, dry-run 기본 주문 서비스를 제공합니다.
+현재 국내주식 시세 조회, 계좌 기본 조회, dry-run 기본 주문, 실시간 WebSocket 구독 서비스를 제공합니다.
 
 ```js
-import { AccountService, KiwoomClient, OrderService, QuoteService } from "security-api-reference";
+import { AccountService, KiwoomClient, OrderService, QuoteService, RealtimeService } from "security-api-reference";
 
 const clients = {
   kiwoom: new KiwoomClient({
@@ -129,6 +129,7 @@ const clients = {
 const quote = new QuoteService(clients);
 const account = new AccountService(clients);
 const order = new OrderService(clients);
+const realtime = new RealtimeService(clients);
 
 const currentPrice = await quote.getDomesticStockCurrentPrice("kiwoom", "005930");
 const orderBook = await quote.getDomesticStockOrderBook("kiwoom", "005930");
@@ -147,6 +148,9 @@ const buyDryRun = await order.buyDomesticStock("kiwoom", {
   maxOrderAmount: 100000,
   allowedSymbols: ["005930"]
 });
+const tradeStream = await realtime.subscribeDomesticStockTrades("kiwoom", "005930", {
+  onMessage: (message) => console.log(message.body)
+});
 ```
 
-현재 구현 범위는 `quote.domesticStock.currentPrice`, `quote.domesticStock.orderBook`, `quote.domesticStock.multiCurrentPrice`, `account.domesticStock.cash`, `account.domesticStock.balance`, `account.domesticStock.orderHistory`, `order.domesticStock.buy`, `order.domesticStock.sell`, `order.domesticStock.modify`, `order.domesticStock.cancel`입니다. 주문 서비스는 기본 dry-run이며 실주문은 `dryRun: false`, `confirm: true`가 모두 필요하고 retry를 비활성화합니다. 안전장치 옵션으로 `maxOrderAmount`, `allowedSymbols`, `blockedSymbols`, `confirmMarketOrder`, `expectedRequest`를 지원합니다.
+현재 구현 범위는 `quote.domesticStock.currentPrice`, `quote.domesticStock.orderBook`, `quote.domesticStock.multiCurrentPrice`, `account.domesticStock.cash`, `account.domesticStock.balance`, `account.domesticStock.orderHistory`, `order.domesticStock.buy`, `order.domesticStock.sell`, `order.domesticStock.modify`, `order.domesticStock.cancel`, `realtime.domesticStock.trade`, `realtime.domesticStock.orderBook`, `realtime.domesticStock.orderEvent`, `realtime.domesticStock.balance`입니다. 주문 서비스는 기본 dry-run이며 실주문은 `dryRun: false`, `confirm: true`가 모두 필요하고 retry를 비활성화합니다. 안전장치 옵션으로 `maxOrderAmount`, `allowedSymbols`, `blockedSymbols`, `confirmMarketOrder`, `expectedRequest`를 지원합니다. 실시간 서비스는 Capability Layer에 등록된 WebSocket API만 구독하며, 실행 환경에서 헤더 지정이 필요한 경우 `webSocketFactory` 또는 호환 WebSocket 구현을 주입합니다.

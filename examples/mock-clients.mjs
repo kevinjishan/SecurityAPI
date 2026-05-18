@@ -1,6 +1,52 @@
 import assert from "node:assert/strict";
 
-import { AccountService, KiwoomClient, LsClient, OrderService, QuoteService } from "security-api-reference";
+import {
+  AccountService,
+  KiwoomClient,
+  LsClient,
+  OrderService,
+  QuoteService,
+  RealtimeService,
+} from "security-api-reference";
+
+class MockRealtimeClient {
+  constructor(broker) {
+    this.broker = broker;
+    this.handlers = new Map();
+    this.subscriptions = [];
+  }
+
+  on(event, handler) {
+    const handlers = this.handlers.get(event) ?? new Set();
+    handlers.add(handler);
+    this.handlers.set(event, handlers);
+    return () => handlers.delete(handler);
+  }
+
+  async subscribe(id, key, options = {}) {
+    const subscription = { id, key, options };
+    this.subscriptions.push(subscription);
+    return {
+      ...subscription,
+      action: "subscribe",
+    };
+  }
+
+  async unsubscribe(id, key, options = {}) {
+    return {
+      id,
+      key,
+      options,
+      action: "unsubscribe",
+    };
+  }
+
+  emit(event, payload) {
+    for (const handler of this.handlers.get(event) ?? []) {
+      handler(payload);
+    }
+  }
+}
 
 const kiwoomCalls = [];
 const kiwoom = new KiwoomClient({
@@ -312,6 +358,26 @@ const lsSellDryRun = await order.sellDomesticStock("ls", {
   maxOrderAmount: 100000,
   blockedSymbols: ["000660"],
 });
+const kiwoomRealtime = new MockRealtimeClient("kiwoom");
+const realtime = new RealtimeService({ kiwoom: kiwoomRealtime });
+const realtimeMessages = [];
+const realtimeSubscription = await realtime.subscribeDomesticStockTrades("kiwoom", "005930", {
+  onMessage: (message) => realtimeMessages.push(message),
+});
+
+kiwoomRealtime.emit("realtime", {
+  data: {
+    trnm: "REAL",
+    data: [
+      {
+        type: "0B",
+        name: "주식체결",
+        item: "005930",
+        values: { 10: "70000" },
+      },
+    ],
+  },
+});
 
 assert.equal(kiwoomQuote.ok, true);
 assert.equal(kiwoomQuote.data.price, 70000);
@@ -345,6 +411,11 @@ assert.equal(lsSellDryRun.ok, true);
 assert.equal(lsSellDryRun.dryRun, true);
 assert.equal(lsSellDryRun.data.request.CSPAT00601InBlock1.BnsTpCode, "1");
 assert.equal(lsSellDryRun.data.safety.allowed, true);
+assert.equal(realtimeSubscription.ok, true);
+assert.equal(realtimeSubscription.id, "0B");
+assert.equal(kiwoomRealtime.subscriptions[0].id, "0B");
+assert.equal(kiwoomRealtime.subscriptions[0].key, "005930");
+assert.equal(realtimeMessages[0].body["10"], "70000");
 
 console.log("Mock Kiwoom result:", kiwoomResult.data);
 console.log("Mock LS result:", lsResult.data);
@@ -363,6 +434,8 @@ console.log("Mock QuoteService results:", {
   lsOrderHistory: lsOrderHistory.data,
   kiwoomBuyDryRun: kiwoomBuyDryRun.data,
   lsSellDryRun: lsSellDryRun.data,
+  realtimeSubscription,
+  realtimeMessage: realtimeMessages[0],
 });
 console.log("Mock broker client examples passed.");
 
