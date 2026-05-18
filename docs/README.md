@@ -94,3 +94,18 @@ const result = await ls.request("t1101", {
 ```
 
 `LsClient`는 manifest에서 endpoint와 content type을 조회하고, 토큰 발급/캐시, `authorization`, `tr_cd`, `tr_cont`, `tr_cont_key`, `mac_address` 헤더, `rsp_cd` 기반 업무 오류 변환을 처리합니다.
+
+## Capability Layer
+
+증권사별 문서상 지원 기능은 Capability Layer에서 조회합니다. 이 레이어는 실제 도메인 함수를 실행하지 않고, 기능과 API ID/TR 코드의 연결을 제공합니다.
+
+```js
+import { getCapabilities } from "security-api-reference";
+
+const caps = getCapabilities("kiwoom");
+
+caps.supports("order.domesticStock");
+caps.findApis("account.domesticStock.balance");
+```
+
+매핑된 API ID/TR 코드는 `npm test`에서 generated manifest 존재 여부를 검증합니다.

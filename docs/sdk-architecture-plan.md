@@ -240,34 +240,53 @@ const res = await ls.request("t1101", {
 
 ### 3.5 Broker Adapter / Capability Layer
 
-이 레이어는 1차 SDK에서는 최소만 구현하고, 2차에서 확장한다.
+이 레이어는 1차 SDK에서 문서상 지원 기능과 API ID/TR 코드의 연결표로 구현한다.
 
 목표는 증권사별 지원 범위를 명시적으로 드러내는 것이다.
 
+구현 파일:
+
+```text
+src/capabilities/definitions.mjs
+src/capabilities/kiwoom.mjs
+src/capabilities/ls.mjs
+src/capabilities/registry.mjs
+src/capabilities/index.mjs
+```
+
 예시:
 
-```ts
-kiwoom.capabilities
-ls.capabilities
+```js
+import { getCapabilities } from "security-api-reference";
+
+const caps = getCapabilities("ls");
+
+caps.supports("quote.domesticStock.currentPrice");
+caps.findApis("quote.domesticStock.currentPrice");
 ```
 
 초기 capability 예시:
 
-```ts
-{
-  supportsDomesticStock: true,
-  supportsOverseasStock: false,
-  supportsRealtime: true,
-  supportsMock: true,
-  supportsContinuation: true
-}
+```text
+auth.oauth.issueToken
+auth.oauth.revokeToken
+quote.domesticStock.currentPrice
+quote.domesticStock.orderBook
+account.domesticStock.balance
+order.domesticStock.buy
+realtime.domesticStock.trade
+overseasStock.quote.currentPrice
+futureOption.order.new
 ```
 
 주의사항:
 
 - capability는 기능을 흉내내기 위한 것이 아니라, 지원 여부를 명확히 드러내기 위한 장치다.
-- 불가능한 기능은 조용히 fallback하지 않고 `UnsupportedCapabilityError`로 실패한다.
+- `status = "documented"`는 공식 문서상 API가 존재한다는 뜻이다.
+- 불가능한 기능은 조용히 fallback하지 않고 `UNSUPPORTED_CAPABILITY`로 실패한다.
 - 주문/계좌/실시간처럼 위험하거나 복잡한 영역은 도메인 계층에서 별도로 설계한다.
+- 주문 API는 capability에 포함하되 기본 retry 대상이 아니다.
+- 매핑된 API ID/TR 코드는 generated manifest 존재 여부를 테스트에서 검증한다.
 
 ### 3.6 Domain Service Layer
 

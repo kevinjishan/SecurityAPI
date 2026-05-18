@@ -36,3 +36,16 @@ export {
   parseLsExpiresAt,
   parseLsToken,
 } from "./adapters/index.mjs";
+
+export {
+  BrokerCapabilities,
+  CAPABILITY_DEFINITIONS,
+  KIWOOM_CAPABILITIES,
+  LS_CAPABILITIES,
+  assertCapabilityReferences,
+  getCapabilities,
+  getCapabilityDefinition,
+  listCapabilityDefinitions,
+  listCapabilityIds,
+  validateCapabilityReferences,
+} from "./capabilities/index.mjs";

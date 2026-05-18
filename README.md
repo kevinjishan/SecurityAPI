@@ -69,6 +69,17 @@ const result = await ls.request("t1101", {
 });
 ```
 
+증권사별 문서상 지원 기능은 Capability Layer에서 조회할 수 있습니다.
+
+```js
+import { getCapabilities } from "security-api-reference";
+
+const caps = getCapabilities("ls");
+
+caps.supports("quote.domesticStock"); // true
+caps.findApis("quote.domesticStock.currentPrice");
+```
+
 실제 API 키 없이 호출 흐름을 확인하려면 [examples](examples/README.md)를 사용합니다.
 
 ## 공식 출처
