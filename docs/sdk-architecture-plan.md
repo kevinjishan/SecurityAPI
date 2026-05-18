@@ -1,0 +1,415 @@
+# SecurityAPI SDK Architecture Plan
+
+이 문서는 현재의 API 문서/메타데이터 저장소를 재사용 가능한 증권사 API SDK로 확장하기 위한 종합 방향성과 레이어별 구현 계획을 정리한다.
+
+## 1. 방향성
+
+현재 저장소의 1차 자산은 다음이다.
+
+- `docs/`: AI 코딩 참고용 Markdown 레퍼런스
+- `data/raw/`: 공식 문서에서 수집한 원본 JSON 스냅샷
+- `scripts/`: 공식 문서 재수집 및 문서 검증 스크립트
+
+다음 단계의 목표는 이 저장소 위에 얇은 SDK를 추가하는 것이다. 1차 SDK는 도메인 의미를 크게 추상화하지 않고, 문서의 API ID/TR 코드와 요청 파라미터만 알면 안전하게 호출할 수 있는 공통 호출 계층을 제공한다.
+
+```ts
+await kiwoom.request("ka10001", { stk_cd: "005930" });
+
+await ls.request("t1101", {
+  t1101InBlock: { shcode: "005930" }
+});
+```
+
+핵심 원칙은 다음과 같다.
+
+- 공통화 대상은 인증, 요청 전송, 헤더 구성, 에러 정규화, 연속조회 보조 같은 반복 작업이다.
+- API 의미, 요청/응답 필드명, 주문 파라미터, 실시간 시세 방식은 증권사별 특성을 유지한다.
+- 응답은 정규화된 wrapper와 원본 응답을 모두 제공한다.
+- 실제 API 키 없이도 테스트 가능한 구조를 우선한다.
+- 주문 API 자동 retry처럼 위험한 동작은 기본 제공하지 않는다.
+
+## 2. 최종 계층 구조
+
+```text
+Application / Strategy Layer
+  - 자동매매 전략
+  - 포트폴리오/리밸런싱
+  - 알림/리포트
+
+Domain Service Layer
+  - getCurrentPrice(symbol)
+  - getBalance()
+  - placeOrder(order)
+  - cancelOrder(orderId)
+
+Broker Adapter Layer
+  - KiwoomAdapter
+  - LsAdapter
+  - 증권사별 필드 변환
+  - capability 기반 지원 여부 판단
+
+Common SDK Layer
+  - KiwoomClient.request(apiId, params, options)
+  - LsClient.request(trCode, params, options)
+  - 인증/토큰 캐시
+  - HTTP 요청/응답 처리
+  - timeout/retry/error/pagination
+
+Metadata Layer
+  - data/raw/*
+  - data/generated/*-manifest.json
+  - docs/*
+```
+
+이 저장소에서 우선 구현할 범위는 `Metadata Layer`와 `Common SDK Layer`다. `Broker Adapter Layer`의 초기 형태는 `KiwoomClient`, `LsClient`에 포함해도 된다. `Domain Service Layer` 이상은 2차 작업으로 분리한다.
+
+## 3. 레이어별 계획
+
+### 3.1 Metadata Layer
+
+목표는 런타임 SDK가 Markdown을 파싱하지 않도록, `data/raw`에서 호출에 필요한 최소 manifest를 생성하는 것이다.
+
+상세 설계는 [Metadata Layer Detailed Plan](metadata-layer-plan.md)을 기준으로 한다.
+
+추가 파일:
+
+```text
+data/generated/kiwoom-manifest.json
+data/generated/ls-manifest.json
+scripts/generate-manifest.mjs
+```
+
+manifest 예시:
+
+```json
+{
+  "ka10001": {
+    "broker": "kiwoom",
+    "name": "주식기본정보요청",
+    "method": "POST",
+    "path": "/api/dostk/stkinfo",
+    "contentType": "application/json;charset=UTF-8",
+    "authRequired": true,
+    "requestFields": ["stk_cd"],
+    "responseFields": ["stk_cd", "stk_nm", "cur_prc"]
+  }
+}
+```
+
+구현 범위:
+
+- 키움은 `data/raw/kiwoom/api-info-list.json`에서 `apiInfo`, `commonHeader`, `apiTrIo`를 추출한다.
+- LS는 `data/raw/ls/api-details-by-id.json`, `trs-by-api-id.json`, `properties-by-tr-id.json`를 조합한다.
+- 필수 필드, content type, endpoint, rate limit, auth 여부, 연속조회 헤더를 manifest에 포함한다.
+- manifest 생성 후 기존 `npm run validate:docs`와 별도로 `npm run validate:manifest`를 추가한다.
+
+완료 기준:
+
+- 키움 manifest API 수가 207개다.
+- LS manifest TR 수가 365개다.
+- 각 항목은 `method`, `path`, `contentType`, `authRequired`를 가진다.
+
+### 3.2 Core SDK Layer
+
+목표는 증권사와 무관하게 재사용되는 HTTP, 토큰 저장, 에러 타입을 제공하는 것이다.
+
+상세 설계는 [Core SDK Layer Detailed Plan](core-sdk-layer-plan.md)을 기준으로 한다.
+
+예상 구조:
+
+```text
+src/core/HttpClient.ts
+src/core/TokenStore.ts
+src/core/BrokerError.ts
+src/core/types.ts
+```
+
+공통 타입:
+
+```ts
+export type Broker = "kiwoom" | "ls";
+
+export type BrokerResponse<T = unknown> = {
+  ok: boolean;
+  broker: Broker;
+  id: string;
+  data: T | null;
+  raw: unknown;
+  headers: Record<string, string>;
+  continuation?: {
+    hasNext: boolean;
+    key?: string;
+  };
+  error?: BrokerError;
+};
+```
+
+구현 범위:
+
+- `HttpClient`: fetch wrapper, timeout, JSON/text 파싱, header normalize.
+- `TokenStore`: memory token cache, 만료 시각 관리, clear 기능.
+- `BrokerError`: HTTP error, auth error, API error, unsupported capability error 구분.
+- retry는 기본 off 또는 조회 API 한정 opt-in으로 둔다.
+
+완료 기준:
+
+- fetch를 mock으로 주입할 수 있다.
+- 네트워크 없이 token/cache/error 테스트가 가능하다.
+- 응답 원본과 정규화된 `BrokerResponse`가 함께 반환된다.
+
+### 3.3 Kiwoom Client Layer
+
+목표는 키움 REST API 문서의 API ID를 그대로 사용해 호출할 수 있게 하는 것이다.
+
+상세 설계는 [Broker Client Layer Detailed Plan](broker-client-layer-plan.md)을 기준으로 한다.
+
+예상 사용법:
+
+```ts
+const kiwoom = new KiwoomClient({
+  appKey: process.env.KIWOOM_APP_KEY!,
+  secretKey: process.env.KIWOOM_SECRET_KEY!,
+  env: "mock"
+});
+
+const res = await kiwoom.request("ka10001", {
+  stk_cd: "005930"
+});
+```
+
+구현 범위:
+
+- 토큰 발급: `au10001`, `/oauth2/token`.
+- 토큰 폐기: `au10002`, `/oauth2/revoke`.
+- 도메인 선택: `prod`, `dev`, `mock`.
+- 요청 헤더 자동 구성:
+  - `authorization: Bearer {token}`
+  - `api-id: {apiId}`
+  - `cont-yn`, `next-key` optional
+  - `Content-Type` manifest 기반
+- 요청 body는 기본 JSON.
+- 응답 헤더에서 `cont-yn`, `next-key`를 읽어 `continuation`으로 제공한다.
+- API 응답의 `return_code`, `return_msg`가 있으면 공통 에러 처리에 반영한다.
+
+완료 기준:
+
+- `request("ka10001", params)`가 올바른 URL, 헤더, body로 fetch를 호출한다.
+- 토큰이 없거나 만료되면 자동 발급한다.
+- 연속조회 옵션을 넣으면 다음 요청 헤더에 반영한다.
+
+### 3.4 LS Client Layer
+
+목표는 LS증권 OPEN API의 TR 코드를 그대로 사용해 호출할 수 있게 하는 것이다.
+
+상세 설계는 [Broker Client Layer Detailed Plan](broker-client-layer-plan.md)을 기준으로 한다.
+
+예상 사용법:
+
+```ts
+const ls = new LsClient({
+  appKey: process.env.LS_APP_KEY!,
+  appSecretKey: process.env.LS_APP_SECRET_KEY!,
+  env: "prod"
+});
+
+const res = await ls.request("t1101", {
+  t1101InBlock: { shcode: "005930" }
+});
+```
+
+구현 범위:
+
+- 토큰 발급: `token`, `/oauth2/token`.
+- 토큰 폐기: `revoke`, `/oauth2/revoke`.
+- 도메인은 공식 문서의 `domain`을 기본 사용한다.
+- 요청 헤더 자동 구성:
+  - `authorization: Bearer {token}`
+  - `tr_cd: {trCode}`
+  - `tr_cont: N` 기본값
+  - `tr_cont_key` optional
+  - `Content-Type` manifest 기반
+  - `mac_address`는 설정값이 있을 때만 자동 삽입하고, 필수인데 없으면 명확히 실패한다.
+- JSON API와 form-urlencoded OAuth 요청을 분리 처리한다.
+- 응답 헤더에서 `tr_cont`, `tr_cont_key`를 읽어 `continuation`으로 제공한다.
+
+완료 기준:
+
+- `request("t1101", params)`가 올바른 URL, 헤더, body로 fetch를 호출한다.
+- TR 코드 중복이 있을 경우 manifest에서 충돌을 감지한다.
+- `mac_address`가 필요한 요청에서 설정 누락 시 `MissingRequiredConfigError`를 반환한다.
+
+### 3.5 Broker Adapter / Capability Layer
+
+이 레이어는 1차 SDK에서는 최소만 구현하고, 2차에서 확장한다.
+
+목표는 증권사별 지원 범위를 명시적으로 드러내는 것이다.
+
+예시:
+
+```ts
+kiwoom.capabilities
+ls.capabilities
+```
+
+초기 capability 예시:
+
+```ts
+{
+  supportsDomesticStock: true,
+  supportsOverseasStock: false,
+  supportsRealtime: true,
+  supportsMock: true,
+  supportsContinuation: true
+}
+```
+
+주의사항:
+
+- capability는 기능을 흉내내기 위한 것이 아니라, 지원 여부를 명확히 드러내기 위한 장치다.
+- 불가능한 기능은 조용히 fallback하지 않고 `UnsupportedCapabilityError`로 실패한다.
+- 주문/계좌/실시간처럼 위험하거나 복잡한 영역은 도메인 계층에서 별도로 설계한다.
+
+### 3.6 Domain Service Layer
+
+이 레이어는 2차 작업이다.
+
+목표는 사용자가 증권사별 API ID/TR 코드를 몰라도 도메인 함수로 호출하게 하는 것이다.
+
+예상 예시:
+
+```ts
+await broker.getCurrentPrice("005930");
+await broker.getBalance();
+await broker.placeOrder({
+  symbol: "005930",
+  side: "buy",
+  quantity: 10,
+  orderType: "limit",
+  price: 70000
+});
+```
+
+2차에서 다룰 것:
+
+- 공통 종목/가격/잔고/주문 모델 정의
+- 키움/LS 응답을 공통 모델로 변환
+- 주문 가능 여부와 주문 타입 검증
+- 실시간 시세/체결 이벤트 추상화
+- 계좌/주문 API는 별도의 안전 정책 문서 작성
+
+## 4. 패키지/개발 환경 계획
+
+현재 `package.json`은 문서 생성용 Node.js 스크립트만 가진다. SDK 구현 시 다음을 추가한다.
+
+```text
+src/
+test/
+tsconfig.json
+```
+
+권장 도구:
+
+- TypeScript
+- Node.js `fetch` 기반 구현
+- 테스트 러너는 Node 내장 test runner 또는 Vitest 중 하나
+- 외부 런타임 의존성은 최소화
+
+권장 npm scripts:
+
+```json
+{
+  "build": "tsc",
+  "test": "node --test dist/test/**/*.test.js",
+  "generate:manifest": "node scripts/generate-manifest.mjs",
+  "validate:manifest": "node scripts/validate-manifest.mjs",
+  "check": "npm run validate:docs && npm run validate:manifest && npm run build && npm test"
+}
+```
+
+## 5. 구현 단계
+
+### Phase 1: SDK 기반 준비
+
+- TypeScript 빌드 설정 추가.
+- `data/raw`에서 `data/generated/*-manifest.json` 생성.
+- manifest 검증 스크립트 추가.
+- README에 SDK 목표와 manifest 생성법 추가.
+
+### Phase 2: Core SDK
+
+- `HttpClient`, `TokenStore`, `BrokerError`, 공통 타입 구현.
+- fetch mock 기반 단위 테스트 작성.
+- timeout, response parsing, error normalize 검증.
+
+### Phase 3: KiwoomClient
+
+- 토큰 발급/캐싱 구현.
+- API ID 기반 request 구현.
+- mock fetch로 헤더/body/URL 검증.
+- 연속조회 helper 검증.
+
+### Phase 4: LsClient
+
+- 토큰 발급/캐싱 구현.
+- TR 코드 기반 request 구현.
+- JSON/form-urlencoded 분기 검증.
+- `tr_cont`, `tr_cont_key`, `mac_address` 처리 검증.
+
+### Phase 5: Public API 정리
+
+- `src/index.ts`에서 public export 정리.
+- README에 사용 예제 작성.
+- 다른 서버에서 `npm install git+https://github.com/kevinjishan/SecurityAPI.git`로 사용할 수 있게 패키지 엔트리 정리.
+
+### Phase 6: Domain Layer 후보 선정
+
+- 가장 안전한 조회성 API부터 도메인 함수 후보를 정한다.
+- 1차 후보:
+  - 현재가 조회
+  - 종목 기본정보
+  - 일봉/분봉 차트
+  - 계좌 잔고 조회
+- 주문 API는 별도 위험 분석 후 진행한다.
+
+## 6. 테스트 전략
+
+실제 API 키가 없어도 대부분의 SDK 검증이 가능해야 한다.
+
+필수 테스트:
+
+- manifest 생성 개수 검증.
+- KiwoomClient가 `ka10001` 호출 시 `api-id`, `authorization`, JSON body를 올바르게 구성.
+- LsClient가 `t1101` 호출 시 `tr_cd`, `tr_cont`, JSON body를 올바르게 구성.
+- OAuth 요청은 각 증권사별 content type과 body 형식을 맞춤.
+- 토큰 만료 시 자동 갱신.
+- continuation key가 응답에서 추출됨.
+- HTTP 실패와 API 실패가 `BrokerError`로 정규화됨.
+
+실제 API 연동 테스트는 별도 opt-in으로 둔다.
+
+```bash
+npm run test:integration
+```
+
+통합 테스트는 `.env`나 서버 secret을 요구하고, 기본 CI에서는 실행하지 않는다.
+
+## 7. 운영/보안 원칙
+
+- API 키, secret, 계좌번호는 저장소에 커밋하지 않는다.
+- `.env`는 `.gitignore`에 포함한다.
+- 주문 API는 자동 retry 기본값을 사용하지 않는다.
+- 로그에는 authorization, app secret, 계좌번호를 남기지 않는다.
+- SDK는 원본 응답을 제공하되 민감정보 마스킹 옵션을 둔다.
+
+## 8. 당장 만들 첫 PR 권장 범위
+
+첫 SDK PR은 너무 욕심내지 않고 아래만 포함한다.
+
+- TypeScript 빌드 설정
+- `generate:manifest`, `validate:manifest`
+- `src/core` 기본 타입
+- `KiwoomClient`, `LsClient`의 skeleton
+- mock fetch 테스트 4~6개
+- README 사용 예시 초안
+
+이 PR에서는 실제 API 호출 성공까지 목표로 하지 않는다. 목표는 SDK 구조가 문서 메타데이터와 연결되고, 인증/요청 구성의 방향이 테스트로 고정되는 것이다.

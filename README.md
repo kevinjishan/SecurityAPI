@@ -11,6 +11,10 @@ npm run validate:docs
 
 생성 결과는 `docs/`에, 원본 JSON 스냅샷은 `data/raw/`에 저장됩니다.
 
+## SDK 확장 계획
+
+문서 레퍼런스를 공통 증권사 API SDK로 확장하기 위한 방향성은 [docs/sdk-architecture-plan.md](docs/sdk-architecture-plan.md)에 정리되어 있습니다.
+
 ## 공식 출처
 
 - 키움 REST API: https://openapi.kiwoom.com/guide/apiguide?dummyVal=0

@@ -16,6 +16,7 @@
 - API ID/TR 코드로 찾기: `rg "ka10001|t1101|token" docs/`
 - 요청/응답 필드로 찾기: `rg "종목코드|authorization|cont-yn" docs/`
 - 증권사별 보기: [키움증권](kiwoom/README.md), [LS증권](ls/README.md)
+- SDK 확장 계획: [SecurityAPI SDK Architecture Plan](sdk-architecture-plan.md)
 
 ## 생성 규칙
 
