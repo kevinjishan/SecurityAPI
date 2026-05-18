@@ -61,7 +61,7 @@ Core SDK는 실제 증권사 인증/주문 의미를 알지 않고, fetch 호출
 
 ## Broker Clients
 
-현재 키움 REST API client가 구현되어 있습니다.
+현재 키움 REST API client와 LS증권 OPEN API client가 구현되어 있습니다.
 
 ```js
 import { KiwoomClient } from "security-api-reference";
@@ -78,3 +78,19 @@ const result = await kiwoom.request("ka10001", {
 ```
 
 `KiwoomClient`는 manifest에서 endpoint와 content type을 조회하고, 토큰 발급/캐시, `authorization`, `api-id`, 연속조회 헤더, `return_code` 기반 업무 오류 변환을 처리합니다.
+
+```js
+import { LsClient } from "security-api-reference";
+
+const ls = new LsClient({
+  appKey: process.env.LS_APP_KEY,
+  appSecretKey: process.env.LS_APP_SECRET_KEY,
+  macAddress: process.env.LS_MAC_ADDRESS
+});
+
+const result = await ls.request("t1101", {
+  t1101InBlock: { shcode: "005930" }
+});
+```
+
+`LsClient`는 manifest에서 endpoint와 content type을 조회하고, 토큰 발급/캐시, `authorization`, `tr_cd`, `tr_cont`, `tr_cont_key`, `mac_address` 헤더, `rsp_cd` 기반 업무 오류 변환을 처리합니다.

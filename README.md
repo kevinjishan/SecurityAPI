@@ -52,6 +52,22 @@ const result = await kiwoom.request("ka10001", {
 });
 ```
 
+LS증권 OPEN API는 TR 코드 기반으로 호출할 수 있습니다.
+
+```js
+import { LsClient } from "security-api-reference";
+
+const ls = new LsClient({
+  appKey: process.env.LS_APP_KEY,
+  appSecretKey: process.env.LS_APP_SECRET_KEY,
+  macAddress: process.env.LS_MAC_ADDRESS
+});
+
+const result = await ls.request("t1101", {
+  t1101InBlock: { shcode: "005930" }
+});
+```
+
 ## 공식 출처
 
 - 키움 REST API: https://openapi.kiwoom.com/guide/apiguide?dummyVal=0

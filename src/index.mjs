@@ -30,6 +30,9 @@ export {
 export {
   BaseBrokerClient,
   KiwoomClient,
+  LsClient,
   parseKiwoomExpiresAt,
   parseKiwoomToken,
+  parseLsExpiresAt,
+  parseLsToken,
 } from "./adapters/index.mjs";

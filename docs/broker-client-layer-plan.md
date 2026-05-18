@@ -4,13 +4,15 @@
 
 ## 구현 상태
 
-현재 1차 구현은 키움 REST API client까지 완료되어 있다.
+현재 1차 구현은 키움 REST API client와 LS증권 OPEN API client까지 완료되어 있다.
 
 ```text
 src/adapters/BaseBrokerClient.mjs
 src/adapters/KiwoomClient.mjs
+src/adapters/LsClient.mjs
 src/adapters/index.mjs
 test/adapters/KiwoomClient.test.mjs
+test/adapters/LsClient.test.mjs
 ```
 
 완료된 범위:
@@ -24,7 +26,19 @@ test/adapters/KiwoomClient.test.mjs
 - `return_code !== 0` 업무 오류를 `API_ERROR`로 변환
 - 실제 API 키 없는 mock fetch 테스트
 
-다음 구현 대상은 `LsClient`다.
+LS 완료 범위:
+
+- `LsClient.request(trCode, params, options)`
+- `token` 접근토큰 발급 및 memory token cache
+- `revoke` 접근토큰 폐기
+- manifest 기반 endpoint/content type 조회
+- `authorization`, `tr_cd`, `tr_cont`, `tr_cont_key`, `mac_address` 헤더 구성
+- 응답 header의 연속조회 정보 추출
+- `rsp_cd !== "00000"` 업무 오류를 `API_ERROR`로 변환
+- OAuth form body와 일반 TR JSON body 분리
+- 실제 API 키 없는 mock fetch 테스트
+
+다음 구현 대상은 capability 정의와 공통 사용 예제다.
 
 ## 1. 목표와 범위
 
