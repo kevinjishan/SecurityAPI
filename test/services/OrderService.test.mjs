@@ -92,6 +92,122 @@ test("requires explicit confirmation for live orders", async () => {
   assert.equal(called, false);
 });
 
+test("requires explicit market order confirmation for live market orders", async () => {
+  let called = false;
+  const service = new OrderService({
+    kiwoom: {
+      request: async () => {
+        called = true;
+      },
+    },
+  });
+
+  const result = await service.buyDomesticStock("kiwoom", {
+    symbol: "005930",
+    quantity: 1,
+  }, {
+    dryRun: false,
+    confirm: true,
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "VALIDATION_ERROR");
+  assert.equal(result.error.details.requiresMarketOrderConfirmation, true);
+  assert.equal(called, false);
+});
+
+test("enforces order amount and symbol safety rules", async () => {
+  const service = new OrderService({});
+
+  const tooLarge = await service.buyDomesticStock("ls", {
+    symbol: "005930",
+    quantity: 2,
+    price: 70000,
+    orderType: "limit",
+  }, {
+    maxOrderAmount: 100000,
+  });
+  const blocked = await service.buyDomesticStock("ls", {
+    symbol: "005930",
+    quantity: 1,
+    price: 70000,
+    orderType: "limit",
+  }, {
+    blockedSymbols: ["005930"],
+  });
+  const notAllowed = await service.buyDomesticStock("ls", {
+    symbol: "005930",
+    quantity: 1,
+    price: 70000,
+    orderType: "limit",
+  }, {
+    allowedSymbols: ["000660"],
+  });
+
+  assert.equal(tooLarge.ok, false);
+  assert.equal(tooLarge.error.details.failedCode, "ORDER_VALUE_EXCEEDED");
+  assert.equal(blocked.ok, false);
+  assert.equal(blocked.error.details.failedCode, "SYMBOL_BLOCKED");
+  assert.equal(notAllowed.ok, false);
+  assert.equal(notAllowed.error.details.failedCode, "SYMBOL_NOT_ALLOWED");
+});
+
+test("uses estimatedPrice for market order amount checks", async () => {
+  const service = new OrderService({});
+
+  const missingEstimate = await service.buyDomesticStock("kiwoom", {
+    symbol: "005930",
+    quantity: 1,
+  }, {
+    maxOrderAmount: 100000,
+  });
+  const withinLimit = await service.buyDomesticStock("kiwoom", {
+    symbol: "005930",
+    quantity: 1,
+    estimatedPrice: 70000,
+  }, {
+    maxOrderAmount: 100000,
+  });
+
+  assert.equal(missingEstimate.ok, false);
+  assert.equal(missingEstimate.error.details.failedCode, "ORDER_VALUE_REQUIRED");
+  assert.equal(withinLimit.ok, true);
+  assert.equal(withinLimit.data.safety.orderValue, 70000);
+});
+
+test("requires expectedRequest match for live orders", async () => {
+  let called = false;
+  const service = new OrderService({
+    kiwoom: {
+      request: async () => {
+        called = true;
+      },
+    },
+  });
+
+  const result = await service.buyDomesticStock("kiwoom", {
+    symbol: "005930",
+    quantity: 1,
+  }, {
+    dryRun: false,
+    confirm: true,
+    confirmMarketOrder: true,
+    expectedRequest: {
+      dmst_stex_tp: "KRX",
+      stk_cd: "000660",
+      ord_qty: "1",
+      ord_uv: "",
+      trde_tp: "3",
+      cond_uv: "",
+    },
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "VALIDATION_ERROR");
+  assert.equal(result.error.details.actualRequest.stk_cd, "005930");
+  assert.equal(called, false);
+});
+
 test("submits a confirmed Kiwoom live order with retry disabled", async () => {
   const calls = [];
   const service = new OrderService({
@@ -114,6 +230,7 @@ test("submits a confirmed Kiwoom live order with retry disabled", async () => {
   }, {
     dryRun: false,
     confirm: true,
+    confirmMarketOrder: true,
     requestOptions: { timeoutMs: 3000, retryable: true },
   });
 
@@ -135,6 +252,15 @@ test("submits a confirmed Kiwoom live order with retry disabled", async () => {
   ]);
   assert.equal(result.data.orderNumber, "0000024");
   assert.equal(result.data.message, "정상적으로 처리되었습니다");
+  assert.equal(result.audit.safety.requiresMarketOrderConfirmation, true);
+  assert.deepEqual(result.audit.request, {
+    dmst_stex_tp: "KRX",
+    stk_cd: "005930",
+    ord_qty: "1",
+    ord_uv: "",
+    trde_tp: "3",
+    cond_uv: "",
+  });
 });
 
 test("builds Kiwoom modify and cancel dry runs", async () => {
@@ -259,6 +385,7 @@ test("preserves broker client order failures", async () => {
   }, {
     dryRun: false,
     confirm: true,
+    confirmMarketOrder: true,
   });
 
   assert.equal(result.ok, false);

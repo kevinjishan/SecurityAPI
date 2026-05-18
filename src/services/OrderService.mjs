@@ -76,8 +76,23 @@ export class OrderService {
       }
 
       source = selectOrderSource(normalizedBroker, capabilities, capabilityId, options);
-      const params = request(normalizedBroker, source.id, side, order);
+      const prepared = request(normalizedBroker, source.id, side, order);
+      const params = prepared.params;
+      const safety = evaluateOrderSafety(prepared.normalized, params, options);
       const dryRun = options.dryRun !== false;
+
+      if (!safety.allowed) {
+        return failureResponse({
+          broker: normalizedBroker,
+          source,
+          capabilityId,
+          error: BrokerError.validation(safety.reason, {
+            broker: normalizedBroker,
+            id: source.id,
+            details: safety,
+          }),
+        });
+      }
 
       if (dryRun) {
         return previewResponse({
@@ -86,7 +101,8 @@ export class OrderService {
           capabilityId,
           side,
           params,
-          order,
+          normalizedOrder: prepared.normalized,
+          safety,
         });
       }
 
@@ -102,6 +118,35 @@ export class OrderService {
               capabilityId,
               dryRun,
               confirm: options.confirm ?? false,
+            },
+          }),
+        });
+      }
+
+      if (safety.requiresMarketOrderConfirmation && options.confirmMarketOrder !== true) {
+        return failureResponse({
+          broker: normalizedBroker,
+          source,
+          capabilityId,
+          error: BrokerError.validation("Market live order requires options.confirmMarketOrder === true", {
+            broker: normalizedBroker,
+            id: source.id,
+            details: safety,
+          }),
+        });
+      }
+
+      if (options.expectedRequest !== undefined && !deepEqual(params, options.expectedRequest)) {
+        return failureResponse({
+          broker: normalizedBroker,
+          source,
+          capabilityId,
+          error: BrokerError.validation("Live order request does not match expectedRequest", {
+            broker: normalizedBroker,
+            id: source.id,
+            details: {
+              expectedRequest: options.expectedRequest,
+              actualRequest: params,
             },
           }),
         });
@@ -142,6 +187,7 @@ export class OrderService {
         capabilityId,
         side,
         params,
+        safety,
         data: normalizeDomesticStockOrder(normalizedBroker, source.id, side, result.data),
       });
     } catch (error) {
@@ -199,11 +245,15 @@ function selectOrderSource(broker, capabilities, capabilityId, options) {
 
 function buildNewOrderRequest(broker, sourceId, side, order) {
   const normalized = normalizeNewOrder(order);
+  normalized.side = side;
   const params = broker === "kiwoom"
     ? buildKiwoomNewOrder(side, normalized)
     : buildLsNewOrder(side, normalized);
 
-  return mergeParams(params, order.params);
+  return {
+    normalized,
+    params: mergeParams(params, order.params),
+  };
 }
 
 function buildModifyOrderRequest(broker, sourceId, side, order) {
@@ -212,7 +262,10 @@ function buildModifyOrderRequest(broker, sourceId, side, order) {
     ? buildKiwoomModifyOrder(normalized)
     : buildLsModifyOrder(normalized);
 
-  return mergeParams(params, order.params);
+  return {
+    normalized,
+    params: mergeParams(params, order.params),
+  };
 }
 
 function buildCancelOrderRequest(broker, sourceId, side, order) {
@@ -221,7 +274,10 @@ function buildCancelOrderRequest(broker, sourceId, side, order) {
     ? buildKiwoomCancelOrder(normalized)
     : buildLsCancelOrder(normalized);
 
-  return mergeParams(params, order.params);
+  return {
+    normalized,
+    params: mergeParams(params, order.params),
+  };
 }
 
 function buildKiwoomNewOrder(side, order) {
@@ -302,6 +358,7 @@ function normalizeNewOrder(order) {
 
 function normalizeModifyOrder(order) {
   const normalized = normalizeBaseOrder(order);
+  normalized.side = "modify";
   normalized.originalOrderNumber = normalizeRequiredString(order.originalOrderNumber, "originalOrderNumber");
   validatePriceForOrderType(normalized);
   return normalized;
@@ -311,16 +368,21 @@ function normalizeCancelOrder(order) {
   return {
     symbol: normalizeSymbol(order.symbol),
     quantity: normalizeQuantity(order.quantity),
+    side: "cancel",
     exchange: normalizeExchange(order.exchange),
     originalOrderNumber: normalizeRequiredString(order.originalOrderNumber, "originalOrderNumber"),
   };
 }
 
 function normalizeBaseOrder(order) {
+  const price = normalizeOptionalPrice(order.price);
+  const estimatedPrice = normalizeOptionalPrice(order.estimatedPrice);
+
   return {
     symbol: normalizeSymbol(order.symbol),
     quantity: normalizeQuantity(order.quantity),
-    price: normalizeOptionalPrice(order.price),
+    price,
+    estimatedPrice,
     orderType: normalizeOrderType(order.orderType),
     exchange: normalizeExchange(order.exchange),
     conditionPrice: order.conditionPrice,
@@ -409,6 +471,105 @@ function normalizeOptionalString(value, fallback) {
   return normalized;
 }
 
+function evaluateOrderSafety(order, params, options) {
+  const rules = {
+    maxOrderAmount: normalizeOptionalPositiveNumber(options.maxOrderAmount, "maxOrderAmount"),
+    allowedSymbols: normalizeSymbolSet(options.allowedSymbols),
+    blockedSymbols: normalizeSymbolSet(options.blockedSymbols),
+  };
+  const orderValue = estimateOrderValue(order);
+  const checks = [];
+
+  if (rules.allowedSymbols && !rules.allowedSymbols.has(order.symbol)) {
+    checks.push({
+      ok: false,
+      code: "SYMBOL_NOT_ALLOWED",
+      message: `Symbol ${order.symbol} is not in allowedSymbols`,
+    });
+  }
+
+  if (rules.blockedSymbols?.has(order.symbol)) {
+    checks.push({
+      ok: false,
+      code: "SYMBOL_BLOCKED",
+      message: `Symbol ${order.symbol} is in blockedSymbols`,
+    });
+  }
+
+  if (rules.maxOrderAmount !== null) {
+    if (orderValue === null) {
+      checks.push({
+        ok: false,
+        code: "ORDER_VALUE_REQUIRED",
+        message: "maxOrderAmount requires price or estimatedPrice",
+      });
+    } else if (orderValue > rules.maxOrderAmount) {
+      checks.push({
+        ok: false,
+        code: "ORDER_VALUE_EXCEEDED",
+        message: `Order value ${orderValue} exceeds maxOrderAmount ${rules.maxOrderAmount}`,
+      });
+    }
+  }
+
+  const failed = checks.find((check) => !check.ok);
+
+  return {
+    allowed: !failed,
+    reason: failed?.message ?? "Order safety checks passed",
+    failedCode: failed?.code ?? null,
+    requiresMarketOrderConfirmation: order.orderType === "market" && order.side !== "cancel",
+    orderValue,
+    rules: {
+      maxOrderAmount: rules.maxOrderAmount,
+      allowedSymbols: rules.allowedSymbols ? [...rules.allowedSymbols] : null,
+      blockedSymbols: rules.blockedSymbols ? [...rules.blockedSymbols] : null,
+    },
+    checks,
+    auditRequest: maskOrderRequest(params),
+  };
+}
+
+function estimateOrderValue(order) {
+  if (order.side === "cancel") {
+    return 0;
+  }
+
+  const price = order.price ?? order.estimatedPrice;
+  if (price === null) {
+    return null;
+  }
+
+  return order.quantity * price;
+}
+
+function normalizeOptionalPositiveNumber(value, field) {
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+
+  const normalized = Number(value);
+  if (!Number.isFinite(normalized) || normalized <= 0) {
+    throw BrokerError.validation(`${field} must be a positive number`, {
+      details: { [field]: value },
+    });
+  }
+
+  return normalized;
+}
+
+function normalizeSymbolSet(symbols) {
+  if (symbols === undefined || symbols === null) {
+    return null;
+  }
+
+  if (!Array.isArray(symbols)) {
+    throw BrokerError.validation("Symbol safety lists must be arrays");
+  }
+
+  return new Set(symbols.map((symbol) => normalizeSymbol(symbol)));
+}
+
 function kiwoomTradeType(orderType) {
   return orderType === "market" ? "3" : "0";
 }
@@ -489,7 +650,7 @@ function capabilityIdForSide(side) {
   return CANCEL_CAPABILITY_ID;
 }
 
-function previewResponse({ broker, source, capabilityId, side, params, order }) {
+function previewResponse({ broker, source, capabilityId, side, params, normalizedOrder, safety }) {
   return {
     ok: true,
     broker,
@@ -500,7 +661,8 @@ function previewResponse({ broker, source, capabilityId, side, params, order }) 
       broker,
       side,
       request: params,
-      normalized: redactOrder(order),
+      normalized: redactOrder(normalizedOrder),
+      safety,
       source: {
         broker,
         id: source.id,
@@ -514,7 +676,7 @@ function previewResponse({ broker, source, capabilityId, side, params, order }) 
   };
 }
 
-function successResponse({ broker, source, result, data, capabilityId, params }) {
+function successResponse({ broker, source, result, data, capabilityId, params, safety }) {
   return {
     ok: true,
     broker,
@@ -523,6 +685,10 @@ function successResponse({ broker, source, result, data, capabilityId, params })
     dryRun: false,
     data,
     request: params,
+    audit: {
+      request: safety.auditRequest,
+      safety,
+    },
     raw: result.raw,
     headers: result.headers ?? {},
     status: result.status ?? 0,
@@ -584,6 +750,31 @@ function mergeParams(base, override) {
   }
 
   return merged;
+}
+
+function deepEqual(left, right) {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function maskOrderRequest(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => maskOrderRequest(item));
+  }
+
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  const masked = {};
+  for (const [key, child] of Object.entries(value)) {
+    if (/acnt|pwd|password|inptpwd/i.test(key)) {
+      masked[key] = "***";
+    } else {
+      masked[key] = maskOrderRequest(child);
+    }
+  }
+
+  return masked;
 }
 
 function firstValue(source, keys) {

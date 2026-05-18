@@ -141,8 +141,12 @@ const orderHistory = await account.getDomesticStockOrderHistory("kiwoom", {
 });
 const buyDryRun = await order.buyDomesticStock("kiwoom", {
   symbol: "005930",
-  quantity: 1
+  quantity: 1,
+  estimatedPrice: 70000
+}, {
+  maxOrderAmount: 100000,
+  allowedSymbols: ["005930"]
 });
 ```
 
-현재 구현 범위는 `quote.domesticStock.currentPrice`, `quote.domesticStock.orderBook`, `quote.domesticStock.multiCurrentPrice`, `account.domesticStock.cash`, `account.domesticStock.balance`, `account.domesticStock.orderHistory`, `order.domesticStock.buy`, `order.domesticStock.sell`, `order.domesticStock.modify`, `order.domesticStock.cancel`입니다. 주문 서비스는 기본 dry-run이며 실주문은 `dryRun: false`, `confirm: true`가 모두 필요하고 retry를 비활성화합니다.
+현재 구현 범위는 `quote.domesticStock.currentPrice`, `quote.domesticStock.orderBook`, `quote.domesticStock.multiCurrentPrice`, `account.domesticStock.cash`, `account.domesticStock.balance`, `account.domesticStock.orderHistory`, `order.domesticStock.buy`, `order.domesticStock.sell`, `order.domesticStock.modify`, `order.domesticStock.cancel`입니다. 주문 서비스는 기본 dry-run이며 실주문은 `dryRun: false`, `confirm: true`가 모두 필요하고 retry를 비활성화합니다. 안전장치 옵션으로 `maxOrderAmount`, `allowedSymbols`, `blockedSymbols`, `confirmMarketOrder`, `expectedRequest`를 지원합니다.
