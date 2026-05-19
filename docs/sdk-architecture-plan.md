@@ -36,6 +36,12 @@ Application / Strategy Layer
   - 포트폴리오/리밸런싱
   - 알림/리포트
 
+Signal / Decision Input Layer
+  - buildSignalInputs(symbol)
+  - subscribeSignalInputs(symbol)
+  - 가격 모멘텀/거래량 급증/호가 불균형 계산
+  - 매수/매도 판단은 하지 않음
+
 Domain Service Layer
   - getCurrentPrice(symbol)
   - getBalance()
@@ -61,7 +67,7 @@ Metadata Layer
   - docs/*
 ```
 
-이 저장소에서 우선 구현할 범위는 `Metadata Layer`와 `Common SDK Layer`다. `Broker Adapter Layer`의 초기 형태는 `KiwoomClient`, `LsClient`에 포함해도 된다. `Domain Service Layer` 이상은 2차 작업으로 분리한다.
+이 저장소에서 우선 구현할 범위는 `Metadata Layer`와 `Common SDK Layer`다. `Broker Adapter Layer`의 초기 형태는 `KiwoomClient`, `LsClient`에 포함해도 된다. `Domain Service Layer`와 `Signal / Decision Input Layer`는 조회성 서비스부터 점진적으로 확장한다.
 
 ## 3. 레이어별 계획
 
@@ -307,12 +313,15 @@ await quote.getDomesticStockOrderBook("kiwoom", "005930");
 await quote.getDomesticStockMultiCurrentPrice("ls", ["005930", "000660"]);
 ```
 
+`SignalInputService`는 현재 코드 구조상 `src/services`에 함께 두지만, 논리적으로는 Domain Service 결과를 조합하는 `Signal / Decision Input Layer`에 속한다. 이 레이어는 다른 앱의 전략 코드가 읽을 입력값을 만들 뿐, 매수/매도 같은 애플리케이션 판단은 수행하지 않는다.
+
 현재 구현:
 
 ```text
 src/services/QuoteService.mjs
 src/services/MarketDataService.mjs
 src/services/ScannerService.mjs
+src/services/SignalInputService.mjs
 src/services/AccountService.mjs
 src/services/OrderService.mjs
 src/services/RealtimeService.mjs
@@ -320,6 +329,7 @@ src/services/index.mjs
 test/services/QuoteService.test.mjs
 test/services/MarketDataService.test.mjs
 test/services/ScannerService.test.mjs
+test/services/SignalInputService.test.mjs
 ```
 
 현재 범위:
@@ -353,13 +363,17 @@ test/services/ScannerService.test.mjs
 - 호가는 `asks`, `bids`, `totals`, `timestamp`, `source` 공통 형태 제공
 - OHLCV는 `date`, `time`, `timestamp`, `open`, `high`, `low`, `close`, `volume`, `value`, `raw` 공통 형태 제공
 - 스캐너 랭킹은 `rank`, `symbol`, `name`, `price`, `change`, `changeRate`, `volume`, `value`, `turnoverRate`, `raw` 공통 형태 제공
+- `SignalInputService`는 현재가, 호가, 종목 기본정보, 일봉/분봉, 선택적 랭킹을 조합해 `metrics`와 `signals`를 제공
+- 시그널 입력값은 가격 모멘텀, 거래량 급증 비율, 호가 불균형, 당일 고저 범위 위치를 포함하며 매수/매도 판단은 포함하지 않음
+- `DomesticStockRealtimeSignalState`는 초기 시그널 스냅샷에 실시간 체결/호가 메시지를 적용해 `signal.domesticStock.realtimeInputs`를 갱신
+- `subscribeDomesticStockSignalInputs()`는 `RealtimeService` 구독을 사용해 체결/호가 업데이트마다 최신 입력값을 `onUpdate`로 전달
 
 추후 다룰 것:
 
 - 공통 종목/가격/잔고/주문 모델 정의
 - 키움/LS 응답을 공통 모델로 변환
 - 조건검색, 수급, 업종/지수, 시장 이벤트 조회
-- 판단 입력값을 만드는 `SignalInputService`
+- 실시간 체결을 장중 누적 지표로 보존하는 장기 window/TTL 정책
 
 ## 4. 패키지/개발 환경 계획
 

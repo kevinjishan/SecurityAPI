@@ -9,6 +9,7 @@ import {
   QuoteService,
   RealtimeService,
   ScannerService,
+  SignalInputService,
 } from "security-api-reference";
 
 class MockRealtimeClient {
@@ -111,6 +112,34 @@ const kiwoom = new KiwoomClient({
       });
     }
 
+    if (init.headers["api-id"] === "ka10080") {
+      return jsonResponse({
+        stk_cd: "005930",
+        stk_min_pole_chart_qry: [
+          {
+            cntr_tm: "20260519093000",
+            open_pric: "69900",
+            high_pric: "70100",
+            low_pric: "69800",
+            cur_prc: "70000",
+            trde_qty: "100",
+            trde_prica: "7000000",
+          },
+          {
+            cntr_tm: "20260519093500",
+            open_pric: "70000",
+            high_pric: "70200",
+            low_pric: "69900",
+            cur_prc: "70100",
+            trde_qty: "300",
+            trde_prica: "21030000",
+          },
+        ],
+        return_code: 0,
+        return_msg: "정상적으로 처리되었습니다",
+      });
+    }
+
     if (init.headers["api-id"] === "ka10030") {
       return jsonResponse({
         tdy_trde_qty_upper: [
@@ -123,6 +152,43 @@ const kiwoom = new KiwoomClient({
             trde_qty: "34954641",
             trde_amt: "5308092",
             trde_tern_rt: "+48.21",
+          },
+        ],
+        return_code: 0,
+        return_msg: "정상적으로 처리되었습니다",
+      });
+    }
+
+    if (init.headers["api-id"] === "ka10032") {
+      return jsonResponse({
+        trde_prica_upper: [
+          {
+            rank: "2",
+            stk_cd: "005930",
+            stk_nm: "삼성전자",
+            cur_prc: "-152000",
+            pred_pre: "-100",
+            flu_rt: "-0.07",
+            trde_qty: "34954641",
+            trde_prica: "5308092",
+          },
+        ],
+        return_code: 0,
+        return_msg: "정상적으로 처리되었습니다",
+      });
+    }
+
+    if (init.headers["api-id"] === "ka10027") {
+      return jsonResponse({
+        pred_pre_flu_rt_upper: [
+          {
+            rank: "3",
+            stk_cd: "005930",
+            stk_nm: "삼성전자",
+            cur_prc: "-152000",
+            pred_pre: "-100",
+            flu_rt: "-0.07",
+            now_trde_qty: "34954641",
           },
         ],
         return_code: 0,
@@ -452,6 +518,12 @@ const kiwoomVolumeRankings = await scanner.getDomesticStockVolumeRankings("kiwoo
 const lsValueRankings = await scanner.getDomesticStockValueRankings("ls", {
   market: "kospi",
 });
+const signalInputs = await new SignalInputService({ kiwoom, ls }).getDomesticStockSignalInputs("kiwoom", "005930", {
+  includeRankings: true,
+  intervalMinutes: 5,
+  minuteCount: 2,
+  market: "kospi",
+});
 const account = new AccountService({ kiwoom, ls });
 const kiwoomCash = await account.getDomesticStockCash("kiwoom");
 const lsCash = await account.getDomesticStockCash("ls");
@@ -485,6 +557,19 @@ const lsSellDryRun = await order.sellDomesticStock("ls", {
 });
 const kiwoomRealtime = new MockRealtimeClient("kiwoom");
 const realtime = new RealtimeService({ kiwoom: kiwoomRealtime });
+const realtimeSignalUpdates = [];
+const realtimeSignalSubscription = await new SignalInputService({
+  quote: {},
+  marketData: {},
+  scanner: {},
+  realtime,
+}).subscribeDomesticStockSignalInputs("kiwoom", "005930", {
+  onUpdate: (data) => realtimeSignalUpdates.push(data),
+}, {
+  initialInputs: signalInputs.data,
+  intervalMinutes: 5,
+  tradeDate: "20260519",
+});
 const realtimeMessages = [];
 const realtimeSubscription = await realtime.subscribeDomesticStockTrades("kiwoom", "005930", {
   onMessage: (message) => realtimeMessages.push(message),
@@ -498,7 +583,36 @@ kiwoomRealtime.emit("realtime", {
         type: "0B",
         name: "주식체결",
         item: "005930",
-        values: { 10: "70000" },
+        values: {
+          10: "70150",
+          13: "1000050",
+          15: "+50",
+          16: "69900",
+          17: "70200",
+          18: "69800",
+          20: "093501",
+        },
+      },
+    ],
+  },
+});
+kiwoomRealtime.emit("realtime", {
+  data: {
+    trnm: "REAL",
+    data: [
+      {
+        type: "0D",
+        name: "주식호가잔량",
+        item: "005930",
+        values: {
+          21: "093502",
+          41: "70200",
+          51: "70100",
+          61: "100",
+          71: "300",
+          121: "100",
+          125: "300",
+        },
       },
     ],
   },
@@ -526,6 +640,16 @@ assert.equal(kiwoomVolumeRankings.ok, true);
 assert.equal(kiwoomVolumeRankings.data.items[0].volume, 34954641);
 assert.equal(lsValueRankings.ok, true);
 assert.equal(lsValueRankings.data.items[0].value, 874631);
+assert.equal(signalInputs.ok, true);
+assert.equal(signalInputs.data.metrics.price.current, 70000);
+assert.equal(signalInputs.data.metrics.orderBook.bestAskPrice, 70100);
+assert.equal(signalInputs.data.rankings.volume.rank, 1);
+assert.equal(realtimeSignalSubscription.ok, true);
+assert.equal(realtimeSignalUpdates.length, 2);
+assert.equal(realtimeSignalUpdates[0].quote.price, 70150);
+assert.equal(realtimeSignalUpdates[0].realtime.tradeCount, 1);
+assert.equal(realtimeSignalUpdates[1].metrics.orderBook.bestBidPrice, 70100);
+assert.equal(realtimeSignalUpdates[1].realtime.orderBookUpdateCount, 1);
 assert.equal(kiwoomCash.ok, true);
 assert.equal(kiwoomCash.data.summary.orderableAmount, 750000);
 assert.equal(lsCash.ok, true);
@@ -548,12 +672,12 @@ assert.equal(lsSellDryRun.data.request.CSPAT00601InBlock1.BnsTpCode, "1");
 assert.equal(lsSellDryRun.data.safety.allowed, true);
 assert.equal(realtimeSubscription.ok, true);
 assert.equal(realtimeSubscription.id, "0B");
-assert.equal(kiwoomRealtime.subscriptions[0].id, "0B");
-assert.equal(kiwoomRealtime.subscriptions[0].key, "005930");
+assert.equal(kiwoomRealtime.subscriptions.some((subscription) => subscription.id === "0B" && subscription.key === "005930"), true);
+assert.equal(kiwoomRealtime.subscriptions.some((subscription) => subscription.id === "0D" && subscription.key === "005930"), true);
 assert.equal(realtimeMessages[0].kind, "trade");
 assert.equal(realtimeMessages[0].symbol, "005930");
-assert.equal(realtimeMessages[0].price, 70000);
-assert.equal(realtimeMessages[0].body["10"], "70000");
+assert.equal(realtimeMessages[0].price, 70150);
+assert.equal(realtimeMessages[0].body["10"], "70150");
 
 console.log("Mock Kiwoom result:", kiwoomResult.data);
 console.log("Mock LS result:", lsResult.data);
@@ -569,6 +693,8 @@ console.log("Mock QuoteService results:", {
   lsBasicInfo: lsBasicInfo.data,
   kiwoomVolumeRankings: kiwoomVolumeRankings.data,
   lsValueRankings: lsValueRankings.data,
+  signalInputs: signalInputs.data,
+  realtimeSignalInputs: realtimeSignalUpdates.at(-1),
   kiwoomCash: kiwoomCash.data,
   lsCash: lsCash.data,
   kiwoomBalance: kiwoomBalance.data,

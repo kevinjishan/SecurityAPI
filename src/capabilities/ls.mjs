@@ -62,6 +62,18 @@ export const LS_CAPABILITIES = [
     apis: [{ id: "t1441", role: "changeRateRanking", transport: "rest" }],
   },
   {
+    id: "signal.domesticStock.inputs",
+    status: "composed",
+    apis: [],
+    caution: "시그널 입력값은 여러 조회성 API 결과를 조합한 SDK 계산값이며 매수/매도 판단을 포함하지 않는다.",
+  },
+  {
+    id: "signal.domesticStock.realtimeInputs",
+    status: "composed",
+    apis: [],
+    caution: "실시간 시그널 입력값은 체결/호가 WebSocket 메시지를 누적한 SDK 계산값이며 매수/매도 판단을 포함하지 않는다.",
+  },
+  {
     id: "account.domesticStock.cash",
     status: "documented",
     apis: [

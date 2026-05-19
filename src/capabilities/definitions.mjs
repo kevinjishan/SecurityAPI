@@ -43,6 +43,14 @@ export const CAPABILITY_DEFINITIONS = Object.freeze({
     area: "scanner",
     label: "국내주식 등락률 상위",
   },
+  "signal.domesticStock.inputs": {
+    area: "signal",
+    label: "국내주식 판단 입력값",
+  },
+  "signal.domesticStock.realtimeInputs": {
+    area: "signal",
+    label: "국내주식 실시간 판단 입력값",
+  },
   "account.domesticStock.cash": {
     area: "account",
     label: "국내주식 예수금/주문가능금액",

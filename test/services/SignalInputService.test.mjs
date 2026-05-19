@@ -1,0 +1,500 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import {
+  DomesticStockRealtimeSignalState,
+  SignalInputService,
+  applyDomesticStockRealtimeSignalMessage,
+  buildDomesticStockSignalInputs,
+  createDomesticStockRealtimeSignalState,
+} from "../../src/index.mjs";
+import {
+  DomesticStockRealtimeSignalState as DomesticStockRealtimeSignalStateFromPackage,
+  SignalInputService as SignalInputServiceFromPackage,
+} from "security-api-reference/services";
+
+test("exports SignalInputService through package service entry", () => {
+  assert.equal(SignalInputServiceFromPackage, SignalInputService);
+  assert.equal(DomesticStockRealtimeSignalStateFromPackage, DomesticStockRealtimeSignalState);
+});
+
+test("gets and builds Kiwoom domestic stock signal inputs", async () => {
+  const client = new FakeClient("kiwoom");
+  const service = new SignalInputService({ kiwoom: client });
+
+  const result = await service.getDomesticStockSignalInputs("kiwoom", "005930", {
+    includeRankings: true,
+    intervalMinutes: 5,
+    minuteCount: 3,
+    dailyCount: 3,
+    generatedAt: "2026-05-19T00:00:00.000Z",
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(client.calls.map((call) => call.id).sort(), [
+    "ka10001",
+    "ka10001",
+    "ka10004",
+    "ka10027",
+    "ka10030",
+    "ka10032",
+    "ka10080",
+    "ka10081",
+  ]);
+  assert.equal(client.calls.find((call) => call.id === "ka10080").params.tic_scope, "5");
+  assert.equal(result.data.generatedAt, "2026-05-19T00:00:00.000Z");
+  assert.equal(result.data.metrics.price.current, 70100);
+  assert.equal(result.data.metrics.intraday.range, 1500);
+  assert.ok(closeTo(result.data.metrics.intraday.rangePosition, 0.7333333333));
+  assert.ok(closeTo(result.data.metrics.momentum.minuteCloseChangeRate, 0.5738880918));
+  assert.equal(result.data.metrics.volume.minuteVolumeRatio, 2.5);
+  assert.ok(closeTo(result.data.metrics.orderBook.imbalance, 0.3333333333));
+  assert.equal(result.data.signals.priceMomentum.direction, "up");
+  assert.equal(result.data.signals.volumeSpike.active, true);
+  assert.equal(result.data.signals.orderBookImbalance.direction, "bid");
+  assert.equal(result.data.rankings.volume.rank, 1);
+  assert.equal(result.data.rankings.value.rank, 2);
+  assert.equal(result.data.rankings.changeRate.rank, 3);
+  assert.equal(result.data.warnings.length, 0);
+});
+
+test("can use injected services for signal inputs", async () => {
+  const result = await new SignalInputService({
+    quote: {
+      async getDomesticStockCurrentPrice() {
+        return okResult("quote.domesticStock.currentPrice", "ka10001", {
+          broker: "kiwoom",
+          symbol: "005930",
+          price: 100,
+          change: 5,
+          changeRate: 5.26,
+          volume: 1000,
+        });
+      },
+      async getDomesticStockOrderBook() {
+        return okResult("quote.domesticStock.orderBook", "ka10004", {
+          asks: [{ level: 1, price: 101, quantity: 100 }],
+          bids: [{ level: 1, price: 100, quantity: 300 }],
+          totals: { askQuantity: 100, bidQuantity: 300 },
+        });
+      },
+    },
+    marketData: {
+      async getDomesticStockBasicInfo() {
+        return okResult("marketData.domesticStock.basicInfo", "ka10001", {
+          open: 95,
+          high: 105,
+          low: 90,
+        });
+      },
+      async getDomesticStockDailyCandles() {
+        return okResult("marketData.domesticStock.dailyCandles", "ka10081", {
+          candles: [],
+        });
+      },
+      async getDomesticStockMinuteCandles() {
+        return okResult("marketData.domesticStock.minuteCandles", "ka10080", {
+          candles: [],
+        });
+      },
+    },
+    scanner: {},
+  }).getDomesticStockSignalInputs("kiwoom", "005930", {
+    includeDailyCandles: false,
+    includeMinuteCandles: false,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.metrics.price.current, 100);
+  assert.equal(result.data.metrics.orderBook.askQuantity, 100);
+  assert.equal(result.data.signals.dayRange.zone, "middle");
+});
+
+test("returns config errors when the current price source fails", async () => {
+  const service = new SignalInputService({});
+
+  const result = await service.getDomesticStockSignalInputs("kiwoom", "005930");
+
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "CONFIG_ERROR");
+});
+
+test("builds signal inputs directly from normalized service results", () => {
+  const data = buildDomesticStockSignalInputs({
+    broker: "kiwoom",
+    symbol: "005930",
+    options: {
+      generatedAt: "2026-05-19T00:00:00.000Z",
+      thresholds: {
+        nearHighRangePosition: 0.7,
+      },
+    },
+    results: {
+      currentPrice: okResult("quote.domesticStock.currentPrice", "ka10001", {
+        price: 108,
+      }),
+      basicInfo: okResult("marketData.domesticStock.basicInfo", "ka10001", {
+        open: 100,
+        high: 110,
+        low: 90,
+      }),
+      orderBook: okResult("quote.domesticStock.orderBook", "ka10004", {
+        asks: [{ level: 1, price: 109, quantity: 100 }],
+        bids: [{ level: 1, price: 108, quantity: 100 }],
+        totals: { askQuantity: 100, bidQuantity: 100 },
+      }),
+      dailyCandles: okResult("marketData.domesticStock.dailyCandles", "ka10081", {
+        candles: [
+          { timestamp: "20260518", close: 100, volume: 1000 },
+          { timestamp: "20260519", close: 108, volume: 2000 },
+        ],
+      }),
+      minuteCandles: okResult("marketData.domesticStock.minuteCandles", "ka10080", {
+        candles: [
+          { timestamp: "20260519090000", close: 100, volume: 100 },
+          { timestamp: "20260519090500", close: 108, volume: 300 },
+        ],
+      }),
+    },
+  });
+
+  assert.equal(data.signals.dayRange.zone, "nearHigh");
+  assert.equal(data.metrics.momentum.dailyCloseChange, 8);
+  assert.equal(data.metrics.volume.minuteVolumeRatio, 3);
+});
+
+test("updates signal inputs from realtime trade and order book messages", () => {
+  const initialInputs = sampleSignalInputs();
+  const state = createDomesticStockRealtimeSignalState(initialInputs, {
+    intervalMinutes: 5,
+    tradeDate: "20260519",
+    startedAt: "2026-05-19T00:00:00.000Z",
+  });
+
+  const tradeUpdate = state.applyRealtimeMessage({
+    kind: "trade",
+    broker: "kiwoom",
+    symbol: "005930",
+    tradeTime: "094212",
+    price: 104,
+    priceRaw: "104",
+    change: 4,
+    changeRate: 4,
+    tradeQuantity: 200,
+    volume: 1500,
+    open: 100,
+    high: 104,
+    low: 99,
+    currency: "KRW",
+  }, {
+    updatedAt: "2026-05-19T00:01:00.000Z",
+  });
+
+  assert.equal(tradeUpdate.updated, true);
+  assert.equal(tradeUpdate.data.quote.price, 104);
+  assert.equal(tradeUpdate.data.basicInfo.high, 104);
+  assert.equal(tradeUpdate.data.candles.minute.at(-1).timestamp, "20260519094000");
+  assert.equal(tradeUpdate.data.candles.minute.at(-1).close, 104);
+  assert.equal(tradeUpdate.data.candles.minute.at(-1).volume, 300);
+  assert.equal(tradeUpdate.data.metrics.volume.minuteVolumeRatio, 3);
+  assert.equal(tradeUpdate.data.signals.volumeSpike.active, true);
+  assert.equal(tradeUpdate.data.realtime.tradeCount, 1);
+  assert.equal(tradeUpdate.data.realtime.lastMessageKind, "trade");
+
+  const orderBookUpdate = state.applyRealtimeMessage({
+    kind: "orderBook",
+    broker: "kiwoom",
+    symbol: "005930",
+    timestamp: "094213",
+    asks: [{ level: 1, price: 105, quantity: 100 }],
+    bids: [{ level: 1, price: 104, quantity: 400 }],
+    totals: { askQuantity: 100, bidQuantity: 400 },
+  }, {
+    updatedAt: "2026-05-19T00:02:00.000Z",
+  });
+
+  assert.equal(orderBookUpdate.updated, true);
+  assert.equal(orderBookUpdate.data.metrics.orderBook.bestBidPrice, 104);
+  assert.equal(orderBookUpdate.data.signals.orderBookImbalance.direction, "bid");
+  assert.equal(orderBookUpdate.data.realtime.orderBookUpdateCount, 1);
+
+  const ignored = state.applyRealtimeMessage({
+    kind: "trade",
+    broker: "kiwoom",
+    symbol: "000660",
+    price: 200,
+  });
+
+  assert.equal(ignored.updated, false);
+  assert.equal(ignored.reason, "symbol_mismatch");
+  assert.equal(ignored.data.realtime.ignoredCount, 1);
+});
+
+test("applies one realtime message through the helper", () => {
+  const update = applyDomesticStockRealtimeSignalMessage(sampleSignalInputs(), {
+    kind: "trade",
+    broker: "kiwoom",
+    symbol: "005930",
+    tradeTime: "094200",
+    price: 103,
+    tradeQuantity: 50,
+  }, {
+    intervalMinutes: 5,
+    tradeDate: "20260519",
+    updatedAt: "2026-05-19T00:01:00.000Z",
+  });
+
+  assert.equal(update.updated, true);
+  assert.equal(update.data.quote.price, 103);
+  assert.equal(update.data.realtime.tradeCount, 1);
+});
+
+test("subscribes to realtime signal input updates", async () => {
+  const realtime = new FakeRealtimeService();
+  const updates = [];
+  const service = new SignalInputService({
+    quote: {},
+    marketData: {},
+    scanner: {},
+    realtime,
+  });
+
+  const result = await service.subscribeDomesticStockSignalInputs("kiwoom", "005930", {
+    onUpdate: (data, message) => updates.push({ data, message }),
+  }, {
+    initialInputs: sampleSignalInputs(),
+    intervalMinutes: 5,
+    tradeDate: "20260519",
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.capability, "signal.domesticStock.realtimeInputs");
+  assert.deepEqual(realtime.subscriptions.map((subscription) => subscription.kind), ["trade", "orderBook"]);
+
+  realtime.emitTrade({
+    kind: "trade",
+    broker: "kiwoom",
+    symbol: "005930",
+    tradeTime: "094212",
+    price: 104,
+    tradeQuantity: 100,
+  });
+  realtime.emitOrderBook({
+    kind: "orderBook",
+    broker: "kiwoom",
+    symbol: "005930",
+    asks: [{ level: 1, price: 105, quantity: 50 }],
+    bids: [{ level: 1, price: 104, quantity: 150 }],
+    totals: { askQuantity: 50, bidQuantity: 150 },
+  });
+
+  assert.equal(updates.length, 2);
+  assert.equal(updates[0].data.quote.price, 104);
+  assert.equal(updates[1].data.realtime.orderBookUpdateCount, 1);
+
+  const unsubscribe = await result.unsubscribe();
+  assert.deepEqual(unsubscribe, ["trade-unsubscribed", "order-book-unsubscribed"]);
+});
+
+class FakeClient {
+  constructor(broker) {
+    this.broker = broker;
+    this.calls = [];
+  }
+
+  async request(id, params, options = {}) {
+    this.calls.push({ id, params, options });
+    return {
+      ok: true,
+      broker: this.broker,
+      id,
+      data: fakePayload(id),
+      raw: fakePayload(id),
+      headers: {},
+      status: 200,
+    };
+  }
+}
+
+class FakeRealtimeService {
+  constructor() {
+    this.subscriptions = [];
+    this.tradeHandlers = null;
+    this.orderBookHandlers = null;
+  }
+
+  async subscribeDomesticStockTrades(broker, symbol, handlers, options) {
+    this.tradeHandlers = handlers;
+    this.subscriptions.push({ kind: "trade", broker, symbol, options });
+
+    return {
+      ok: true,
+      broker,
+      id: "0B",
+      symbol,
+      unsubscribe: async () => "trade-unsubscribed",
+    };
+  }
+
+  async subscribeDomesticStockOrderBook(broker, symbol, handlers, options) {
+    this.orderBookHandlers = handlers;
+    this.subscriptions.push({ kind: "orderBook", broker, symbol, options });
+
+    return {
+      ok: true,
+      broker,
+      id: "0D",
+      symbol,
+      unsubscribe: async () => "order-book-unsubscribed",
+    };
+  }
+
+  emitTrade(message) {
+    this.tradeHandlers?.onMessage(message);
+  }
+
+  emitOrderBook(message) {
+    this.orderBookHandlers?.onMessage(message);
+  }
+}
+
+function fakePayload(id) {
+  if (id === "ka10001") {
+    return {
+      stk_cd: "005930",
+      stk_nm: "삼성전자",
+      cur_prc: "70100",
+      pred_pre: "+600",
+      flu_rt: "+0.86",
+      trde_qty: "1000000",
+      open_pric: "69600",
+      high_pric: "70500",
+      low_pric: "69000",
+      base_pric: "69500",
+    };
+  }
+
+  if (id === "ka10004") {
+    return {
+      bid_req_base_tm: "093000",
+      sel_fpr_bid: "70200",
+      sel_fpr_req: "100",
+      buy_fpr_bid: "70000",
+      buy_fpr_req: "200",
+      tot_sel_req: "100",
+      tot_buy_req: "200",
+    };
+  }
+
+  if (id === "ka10081") {
+    return {
+      stk_dt_pole_chart_qry: [
+        { dt: "20260517", open_pric: "68000", high_pric: "70000", low_pric: "67500", cur_prc: "69000", trde_qty: "8000000" },
+        { dt: "20260518", open_pric: "69000", high_pric: "70000", low_pric: "68500", cur_prc: "69500", trde_qty: "8500000" },
+        { dt: "20260519", open_pric: "69600", high_pric: "70500", low_pric: "69000", cur_prc: "70100", trde_qty: "10000000" },
+      ],
+    };
+  }
+
+  if (id === "ka10080") {
+    return {
+      stk_min_pole_chart_qry: [
+        { cntr_tm: "20260519093000", open_pric: "69600", high_pric: "69800", low_pric: "69500", cur_prc: "69700", trde_qty: "300" },
+        { cntr_tm: "20260519093500", open_pric: "69700", high_pric: "70000", low_pric: "69600", cur_prc: "69900", trde_qty: "500" },
+        { cntr_tm: "20260519094000", open_pric: "69900", high_pric: "70200", low_pric: "69800", cur_prc: "70100", trde_qty: "1000" },
+      ],
+    };
+  }
+
+  if (id === "ka10030") {
+    return {
+      tdy_trde_qty_upper: [
+        { rank: "1", stk_cd: "005930", stk_nm: "삼성전자", cur_prc: "70100", flu_rt: "+0.86", trde_qty: "1000000", trde_amt: "70100000" },
+      ],
+    };
+  }
+
+  if (id === "ka10032") {
+    return {
+      trde_prica_upper: [
+        { rank: "2", stk_cd: "005930", stk_nm: "삼성전자", cur_prc: "70100", flu_rt: "+0.86", trde_qty: "1000000", trde_prica: "70100000" },
+      ],
+    };
+  }
+
+  if (id === "ka10027") {
+    return {
+      pred_pre_flu_rt_upper: [
+        { rank: "3", stk_cd: "005930", stk_nm: "삼성전자", cur_prc: "70100", flu_rt: "+0.86", now_trde_qty: "1000000" },
+      ],
+    };
+  }
+
+  return {};
+}
+
+function sampleSignalInputs() {
+  return buildDomesticStockSignalInputs({
+    broker: "kiwoom",
+    symbol: "005930",
+    options: {
+      generatedAt: "2026-05-19T00:00:00.000Z",
+    },
+    results: {
+      currentPrice: okResult("quote.domesticStock.currentPrice", "ka10001", {
+        broker: "kiwoom",
+        symbol: "005930",
+        price: 102,
+        change: 2,
+        changeRate: 2,
+        volume: 1000,
+      }),
+      basicInfo: okResult("marketData.domesticStock.basicInfo", "ka10001", {
+        broker: "kiwoom",
+        symbol: "005930",
+        price: 102,
+        open: 100,
+        high: 103,
+        low: 99,
+        referencePrice: 100,
+        volume: 1000,
+      }),
+      orderBook: okResult("quote.domesticStock.orderBook", "ka10004", {
+        broker: "kiwoom",
+        symbol: "005930",
+        asks: [{ level: 1, price: 103, quantity: 100 }],
+        bids: [{ level: 1, price: 102, quantity: 100 }],
+        totals: { askQuantity: 100, bidQuantity: 100 },
+      }),
+      dailyCandles: okResult("marketData.domesticStock.dailyCandles", "ka10081", {
+        candles: [
+          { timestamp: "20260518", close: 100, volume: 1000 },
+          { timestamp: "20260519", close: 102, volume: 1500 },
+        ],
+      }),
+      minuteCandles: okResult("marketData.domesticStock.minuteCandles", "ka10080", {
+        candles: [
+          { date: "20260519", time: "093500", timestamp: "20260519093500", open: 100, high: 101, low: 99, close: 100, volume: 100 },
+          { date: "20260519", time: "094000", timestamp: "20260519094000", open: 101, high: 102, low: 100, close: 102, volume: 100 },
+        ],
+      }),
+    },
+  });
+}
+
+function okResult(capability, id, data) {
+  return {
+    ok: true,
+    broker: "kiwoom",
+    capability,
+    id,
+    data,
+    raw: data,
+    headers: {},
+    status: 200,
+  };
+}
+
+function closeTo(actual, expected, tolerance = 0.000001) {
+  return Math.abs(actual - expected) <= tolerance;
+}

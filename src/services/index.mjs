@@ -32,6 +32,14 @@ export {
 } from "./ScannerService.mjs";
 
 export {
+  DomesticStockRealtimeSignalState,
+  SignalInputService,
+  applyDomesticStockRealtimeSignalMessage,
+  buildDomesticStockSignalInputs,
+  createDomesticStockRealtimeSignalState,
+} from "./SignalInputService.mjs";
+
+export {
   RealtimeService,
   normalizeDomesticStockRealtimeOrderBook,
   normalizeDomesticStockRealtimeOrderEvent,
