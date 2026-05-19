@@ -2,6 +2,8 @@
 
 이 문서는 외부 서버나 앱이 SecurityAPI를 SDK로 사용할 때 의존해도 되는 public API와 response contract를 정의한다.
 
+실제 외부 앱 연동 순서와 예제는 [SDK Usage Guide](sdk-usage-guide.md)를 함께 본다.
+
 ## Package Status
 
 현재 `package.json`은 `private: true`다. 따라서 이 문서는 npm public package 배포 계약이 아니라, 같은 저장소/사설 패키지/Git dependency로 참조할 때의 SDK contract 기준이다. public package로 전환할 때는 이 문서를 semver 기준으로 사용한다.
