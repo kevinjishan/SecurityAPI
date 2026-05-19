@@ -3,6 +3,9 @@ import test from "node:test";
 
 import {
   RealtimeService,
+  normalizeDomesticStockRealtimeOrderBook,
+  normalizeDomesticStockRealtimeOrderEvent,
+  normalizeDomesticStockRealtimeTrade,
   normalizeDomesticStockRealtimeMessage,
 } from "../../src/index.mjs";
 import { RealtimeService as RealtimeServiceFromPackage } from "security-api-reference/services";
@@ -33,6 +36,9 @@ test("subscribes to domestic stock trade stream by capability", async () => {
 
   assert.equal(messages.length, 1);
   assert.equal(messages[0].id, "0B");
+  assert.equal(messages[0].kind, "trade");
+  assert.equal(messages[0].symbol, "005930");
+  assert.equal(messages[0].price, 70000);
   assert.equal(messages[0].body["10"], "70000");
 });
 
@@ -63,12 +69,101 @@ test("returns unsupported response for unavailable realtime balance", async () =
 test("normalizes domestic stock realtime messages through service export", () => {
   const messages = normalizeDomesticStockRealtimeMessage("ls", {
     header: { tr_cd: "S3_", tr_key: "005930" },
-    body: { shcode: "005930", price: "70000" },
+    body: { shcode: "005930", chetime: "093001", price: "70000", cvolume: "10", cgubun: "+" },
   });
 
   assert.equal(messages[0].broker, "ls");
   assert.equal(messages[0].id, "S3_");
   assert.equal(messages[0].key, "005930");
+  assert.equal(messages[0].kind, "trade");
+  assert.equal(messages[0].tradeTime, "093001");
+  assert.equal(messages[0].tradeQuantity, 10);
+  assert.equal(messages[0].tradeSide, "buy");
+});
+
+test("normalizes Kiwoom realtime order book messages", () => {
+  const [message] = normalizeDomesticStockRealtimeOrderBook("kiwoom", {
+    trnm: "REAL",
+    data: [{
+      type: "0D",
+      name: "주식호가잔량",
+      item: "005930",
+      values: {
+        21: "093000",
+        41: "-70100",
+        51: "-70000",
+        61: "10",
+        71: "15",
+        121: "100",
+        125: "200",
+      },
+    }],
+  });
+
+  assert.equal(message.kind, "orderBook");
+  assert.equal(message.symbol, "005930");
+  assert.equal(message.timestamp, "093000");
+  assert.equal(message.asks[0].price, 70100);
+  assert.equal(message.bids[0].quantity, 15);
+  assert.equal(message.totals.bidQuantity, 200);
+});
+
+test("normalizes LS realtime order events", () => {
+  const [message] = normalizeDomesticStockRealtimeOrderEvent("ls", {
+    header: { tr_cd: "SC1" },
+    body: {
+      accno: "12345678901",
+      ordno: "50",
+      execno: "1",
+      shtnIsuno: "A005930",
+      Isunm: "삼성전자",
+      bnstp: "2",
+      ordxctptncode: "11",
+      ordqty: "10",
+      ordprc: "70000",
+      execqty: "8",
+      execprc: "69900",
+      unercqty: "2",
+      exectime: "130544000",
+    },
+  });
+
+  assert.equal(message.kind, "orderEvent");
+  assert.equal(message.accountId, "12345678901");
+  assert.equal(message.orderId, "50");
+  assert.equal(message.executionId, "1");
+  assert.equal(message.symbol, "005930");
+  assert.equal(message.side, "buy");
+  assert.equal(message.status, "11");
+  assert.equal(message.orderQuantity, 10);
+  assert.equal(message.executedQuantity, 8);
+  assert.equal(message.executedPrice, 69900);
+  assert.equal(message.remainingQuantity, 2);
+});
+
+test("normalizes Kiwoom realtime trades with signed trade side", () => {
+  const [message] = normalizeDomesticStockRealtimeTrade("kiwoom", {
+    trnm: "REAL",
+    data: [{
+      type: "0B",
+      item: "005930",
+      values: {
+        20: "130501",
+        10: "-70000",
+        11: "-100",
+        12: "-0.14",
+        15: "-3",
+        13: "1000",
+      },
+    }],
+  });
+
+  assert.equal(message.kind, "trade");
+  assert.equal(message.symbol, "005930");
+  assert.equal(message.price, 70000);
+  assert.equal(message.change, -100);
+  assert.equal(message.tradeQuantity, 3);
+  assert.equal(message.tradeSide, "sell");
 });
 
 class FakeRealtimeClient {

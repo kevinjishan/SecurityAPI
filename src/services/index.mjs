@@ -19,5 +19,8 @@ export {
 
 export {
   RealtimeService,
+  normalizeDomesticStockRealtimeOrderBook,
+  normalizeDomesticStockRealtimeOrderEvent,
+  normalizeDomesticStockRealtimeTrade,
   normalizeDomesticStockRealtimeMessage,
 } from "./RealtimeService.mjs";

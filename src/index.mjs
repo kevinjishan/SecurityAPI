@@ -63,6 +63,9 @@ export {
   normalizeDomesticStockCurrentPrice,
   normalizeDomesticStockMultiCurrentPrice,
   normalizeDomesticStockOrderBook,
+  normalizeDomesticStockRealtimeOrderBook,
+  normalizeDomesticStockRealtimeOrderEvent,
+  normalizeDomesticStockRealtimeTrade,
   normalizeDomesticStockRealtimeMessage,
   RealtimeService,
 } from "./services/index.mjs";

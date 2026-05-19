@@ -415,6 +415,9 @@ assert.equal(realtimeSubscription.ok, true);
 assert.equal(realtimeSubscription.id, "0B");
 assert.equal(kiwoomRealtime.subscriptions[0].id, "0B");
 assert.equal(kiwoomRealtime.subscriptions[0].key, "005930");
+assert.equal(realtimeMessages[0].kind, "trade");
+assert.equal(realtimeMessages[0].symbol, "005930");
+assert.equal(realtimeMessages[0].price, 70000);
 assert.equal(realtimeMessages[0].body["10"], "70000");
 
 console.log("Mock Kiwoom result:", kiwoomResult.data);
