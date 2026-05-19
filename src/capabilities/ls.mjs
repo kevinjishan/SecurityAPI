@@ -32,6 +32,36 @@ export const LS_CAPABILITIES = [
     apis: [{ id: "t8407", role: "multiCurrentPrice", transport: "rest" }],
   },
   {
+    id: "marketData.domesticStock.basicInfo",
+    status: "documented",
+    apis: [{ id: "t1102", role: "stockBasicInfo", transport: "rest" }],
+  },
+  {
+    id: "marketData.domesticStock.dailyCandles",
+    status: "documented",
+    apis: [{ id: "t8410", role: "dailyChart", transport: "rest" }],
+  },
+  {
+    id: "marketData.domesticStock.minuteCandles",
+    status: "documented",
+    apis: [{ id: "t8412", role: "minuteChart", transport: "rest" }],
+  },
+  {
+    id: "scanner.domesticStock.volumeRanking",
+    status: "documented",
+    apis: [{ id: "t1452", role: "volumeRanking", transport: "rest" }],
+  },
+  {
+    id: "scanner.domesticStock.valueRanking",
+    status: "documented",
+    apis: [{ id: "t1463", role: "tradingValueRanking", transport: "rest" }],
+  },
+  {
+    id: "scanner.domesticStock.changeRateRanking",
+    status: "documented",
+    apis: [{ id: "t1441", role: "changeRateRanking", transport: "rest" }],
+  },
+  {
     id: "account.domesticStock.cash",
     status: "documented",
     apis: [

@@ -25,6 +25,36 @@ export const KIWOOM_CAPABILITIES = [
     apis: [{ id: "ka10095", role: "watchListInfo", transport: "rest" }],
   },
   {
+    id: "marketData.domesticStock.basicInfo",
+    status: "documented",
+    apis: [{ id: "ka10001", role: "stockBasicInfo", transport: "rest" }],
+  },
+  {
+    id: "marketData.domesticStock.dailyCandles",
+    status: "documented",
+    apis: [{ id: "ka10081", role: "dailyChart", transport: "rest" }],
+  },
+  {
+    id: "marketData.domesticStock.minuteCandles",
+    status: "documented",
+    apis: [{ id: "ka10080", role: "minuteChart", transport: "rest" }],
+  },
+  {
+    id: "scanner.domesticStock.volumeRanking",
+    status: "documented",
+    apis: [{ id: "ka10030", role: "todayVolumeRanking", transport: "rest" }],
+  },
+  {
+    id: "scanner.domesticStock.valueRanking",
+    status: "documented",
+    apis: [{ id: "ka10032", role: "tradingValueRanking", transport: "rest" }],
+  },
+  {
+    id: "scanner.domesticStock.changeRateRanking",
+    status: "documented",
+    apis: [{ id: "ka10027", role: "changeRateRanking", transport: "rest" }],
+  },
+  {
     id: "account.domesticStock.cash",
     status: "documented",
     apis: [

@@ -4,9 +4,11 @@ import {
   AccountService,
   KiwoomClient,
   LsClient,
+  MarketDataService,
   OrderService,
   QuoteService,
   RealtimeService,
+  ScannerService,
 } from "security-api-reference";
 
 class MockRealtimeClient {
@@ -83,6 +85,45 @@ const kiwoom = new KiwoomClient({
         atn_stk_infr: [
           { stk_cd: "005930", stk_nm: "삼성전자", cur_prc: "70000" },
           { stk_cd: "000660", stk_nm: "SK하이닉스", cur_prc: "120000" },
+        ],
+        return_code: 0,
+        return_msg: "정상적으로 처리되었습니다",
+      });
+    }
+
+    if (init.headers["api-id"] === "ka10081") {
+      return jsonResponse({
+        stk_cd: "005930",
+        stk_dt_pole_chart_qry: [
+          {
+            dt: "20260519",
+            open_pric: "69800",
+            high_pric: "70500",
+            low_pric: "69600",
+            cur_prc: "70100",
+            trde_qty: "9263135",
+            trde_prica: "648525",
+            pred_pre: "+600",
+          },
+        ],
+        return_code: 0,
+        return_msg: "정상적으로 처리되었습니다",
+      });
+    }
+
+    if (init.headers["api-id"] === "ka10030") {
+      return jsonResponse({
+        tdy_trde_qty_upper: [
+          {
+            stk_cd: "005930",
+            stk_nm: "삼성전자",
+            cur_prc: "-152000",
+            pred_pre: "-100",
+            flu_rt: "-0.07",
+            trde_qty: "34954641",
+            trde_amt: "5308092",
+            trde_tern_rt: "+48.21",
+          },
         ],
         return_code: 0,
         return_msg: "정상적으로 처리되었습니다",
@@ -207,6 +248,73 @@ const ls = new LsClient({
       });
     }
 
+    if (init.headers.tr_cd === "t1102") {
+      return jsonResponse({
+        rsp_cd: "00000",
+        rsp_msg: "정상적으로 조회가 완료되었습니다.",
+        t1102OutBlock: {
+          shcode: "005930",
+          hname: "삼성전자",
+          price: 70000,
+          recprice: 69000,
+          open: 69900,
+          high: 71000,
+          low: 69500,
+          volume: 1000000,
+          total: 417000000,
+          listing: 5969783,
+        },
+      });
+    }
+
+    if (init.headers.tr_cd === "t8412") {
+      return jsonResponse({
+        rsp_cd: "00000",
+        rsp_msg: "정상적으로 조회가 완료되었습니다.",
+        t8412OutBlock: {
+          shcode: "005930",
+          jiclose: 69000,
+          highend: 89700,
+          lowend: 48300,
+          rec_count: 1,
+        },
+        t8412OutBlock1: [
+          {
+            date: "20260519",
+            time: "093000",
+            open: 69900,
+            high: 70100,
+            low: 69800,
+            close: 70000,
+            jdiff_vol: 100,
+            value: 7000000,
+          },
+        ],
+      });
+    }
+
+    if (init.headers.tr_cd === "t1463") {
+      return jsonResponse({
+        rsp_cd: "00000",
+        rsp_msg: "정상적으로 조회가 완료되었습니다.",
+        t1463OutBlock: { idx: 20 },
+        t1463OutBlock1: [
+          {
+            shcode: "005930",
+            hname: "삼성전자",
+            price: 71800,
+            change: 400,
+            diff: "0.56",
+            volume: 4817961,
+            value: 874631,
+            jnilvolume: 12161798,
+            jnilvalue: 874631,
+            total: 417000000,
+          },
+        ],
+      });
+    }
+
     if (init.headers.tr_cd === "CSPAQ12200") {
       return jsonResponse({
         rsp_cd: "00000",
@@ -327,6 +435,23 @@ const kiwoomOrderBook = await quote.getDomesticStockOrderBook("kiwoom", "005930"
 const lsOrderBook = await quote.getDomesticStockOrderBook("ls", "005930");
 const kiwoomMultiQuote = await quote.getDomesticStockMultiCurrentPrice("kiwoom", ["005930", "000660"]);
 const lsMultiQuote = await quote.getDomesticStockMultiCurrentPrice("ls", ["005930", "000660"]);
+const marketData = new MarketDataService({ kiwoom, ls });
+const kiwoomDailyCandles = await marketData.getDomesticStockDailyCandles("kiwoom", "005930", {
+  baseDate: "20260519",
+});
+const lsMinuteCandles = await marketData.getDomesticStockMinuteCandles("ls", "005930", {
+  intervalMinutes: 5,
+  count: 1,
+  endDate: "20260519",
+});
+const lsBasicInfo = await marketData.getDomesticStockBasicInfo("ls", "005930");
+const scanner = new ScannerService({ kiwoom, ls });
+const kiwoomVolumeRankings = await scanner.getDomesticStockVolumeRankings("kiwoom", {
+  market: "kospi",
+});
+const lsValueRankings = await scanner.getDomesticStockValueRankings("ls", {
+  market: "kospi",
+});
 const account = new AccountService({ kiwoom, ls });
 const kiwoomCash = await account.getDomesticStockCash("kiwoom");
 const lsCash = await account.getDomesticStockCash("ls");
@@ -391,6 +516,16 @@ assert.equal(kiwoomMultiQuote.ok, true);
 assert.equal(kiwoomMultiQuote.data.length, 2);
 assert.equal(lsMultiQuote.ok, true);
 assert.equal(lsMultiQuote.data.length, 2);
+assert.equal(kiwoomDailyCandles.ok, true);
+assert.equal(kiwoomDailyCandles.data.candles[0].close, 70100);
+assert.equal(lsMinuteCandles.ok, true);
+assert.equal(lsMinuteCandles.data.candles[0].timestamp, "20260519093000");
+assert.equal(lsBasicInfo.ok, true);
+assert.equal(lsBasicInfo.data.listedShares, 5969783);
+assert.equal(kiwoomVolumeRankings.ok, true);
+assert.equal(kiwoomVolumeRankings.data.items[0].volume, 34954641);
+assert.equal(lsValueRankings.ok, true);
+assert.equal(lsValueRankings.data.items[0].value, 874631);
 assert.equal(kiwoomCash.ok, true);
 assert.equal(kiwoomCash.data.summary.orderableAmount, 750000);
 assert.equal(lsCash.ok, true);
@@ -429,6 +564,11 @@ console.log("Mock QuoteService results:", {
   lsOrderBook: lsOrderBook.data,
   kiwoomMultiQuote: kiwoomMultiQuote.data,
   lsMultiQuote: lsMultiQuote.data,
+  kiwoomDailyCandles: kiwoomDailyCandles.data,
+  lsMinuteCandles: lsMinuteCandles.data,
+  lsBasicInfo: lsBasicInfo.data,
+  kiwoomVolumeRankings: kiwoomVolumeRankings.data,
+  lsValueRankings: lsValueRankings.data,
   kiwoomCash: kiwoomCash.data,
   lsCash: lsCash.data,
   kiwoomBalance: kiwoomBalance.data,

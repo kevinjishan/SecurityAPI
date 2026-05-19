@@ -19,6 +19,30 @@ export const CAPABILITY_DEFINITIONS = Object.freeze({
     area: "quote",
     label: "국내주식 복수 현재가",
   },
+  "marketData.domesticStock.basicInfo": {
+    area: "marketData",
+    label: "국내주식 종목 기본정보",
+  },
+  "marketData.domesticStock.dailyCandles": {
+    area: "marketData",
+    label: "국내주식 일봉 OHLCV",
+  },
+  "marketData.domesticStock.minuteCandles": {
+    area: "marketData",
+    label: "국내주식 분봉 OHLCV",
+  },
+  "scanner.domesticStock.volumeRanking": {
+    area: "scanner",
+    label: "국내주식 거래량 상위",
+  },
+  "scanner.domesticStock.valueRanking": {
+    area: "scanner",
+    label: "국내주식 거래대금 상위",
+  },
+  "scanner.domesticStock.changeRateRanking": {
+    area: "scanner",
+    label: "국내주식 등락률 상위",
+  },
   "account.domesticStock.cash": {
     area: "account",
     label: "국내주식 예수금/주문가능금액",

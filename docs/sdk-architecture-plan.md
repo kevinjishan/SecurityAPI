@@ -290,7 +290,7 @@ futureOption.order.new
 
 ### 3.6 Domain Service Layer
 
-이 레이어는 2차 작업이며, 현재 첫 구현으로 국내주식 시세 조회를 제공한다.
+이 레이어는 2차 작업이며, 현재 국내주식 시세, 시장 데이터, 계좌, 주문, 실시간 구독의 기본 구현을 제공한다.
 
 목표는 사용자가 증권사별 API ID/TR 코드를 몰라도 도메인 함수로 호출하게 하는 것이다.
 
@@ -311,8 +311,15 @@ await quote.getDomesticStockMultiCurrentPrice("ls", ["005930", "000660"]);
 
 ```text
 src/services/QuoteService.mjs
+src/services/MarketDataService.mjs
+src/services/ScannerService.mjs
+src/services/AccountService.mjs
+src/services/OrderService.mjs
+src/services/RealtimeService.mjs
 src/services/index.mjs
 test/services/QuoteService.test.mjs
+test/services/MarketDataService.test.mjs
+test/services/ScannerService.test.mjs
 ```
 
 현재 범위:
@@ -320,21 +327,39 @@ test/services/QuoteService.test.mjs
 - `quote.domesticStock.currentPrice` capability 확인
 - `quote.domesticStock.orderBook` capability 확인
 - `quote.domesticStock.multiCurrentPrice` capability 확인
+- `marketData.domesticStock.basicInfo` capability 확인
+- `marketData.domesticStock.dailyCandles` capability 확인
+- `marketData.domesticStock.minuteCandles` capability 확인
+- `scanner.domesticStock.volumeRanking` capability 확인
+- `scanner.domesticStock.valueRanking` capability 확인
+- `scanner.domesticStock.changeRateRanking` capability 확인
 - 키움 `ka10001` 호출
 - 키움 `ka10004` 호가 호출
 - 키움 `ka10095` 복수 현재가 호출
+- 키움 `ka10081` 일봉 차트 호출
+- 키움 `ka10080` 분봉 차트 호출
+- 키움 `ka10030` 당일 거래량 상위 호출
+- 키움 `ka10032` 거래대금 상위 호출
+- 키움 `ka10027` 전일대비 등락률 상위 호출
 - LS `t1101` 현재가/호가 기본 호출, 옵션으로 `t1102` 등 명시 가능
 - LS `t8407` 복수 현재가 호출
+- LS `t1102` 종목 기본정보 호출
+- LS `t8410` 일봉 차트 호출
+- LS `t8412` 분봉 차트 호출
+- LS `t1452` 거래량 상위 호출
+- LS `t1463` 거래대금 상위 호출
+- LS `t1441` 등락률 상위 호출
 - `symbol`, `name`, `price`, `change`, `changeRate`, `volume`, `currency`, `source` 공통 형태 제공
 - 호가는 `asks`, `bids`, `totals`, `timestamp`, `source` 공통 형태 제공
+- OHLCV는 `date`, `time`, `timestamp`, `open`, `high`, `low`, `close`, `volume`, `value`, `raw` 공통 형태 제공
+- 스캐너 랭킹은 `rank`, `symbol`, `name`, `price`, `change`, `changeRate`, `volume`, `value`, `turnoverRate`, `raw` 공통 형태 제공
 
 추후 다룰 것:
 
 - 공통 종목/가격/잔고/주문 모델 정의
 - 키움/LS 응답을 공통 모델로 변환
-- 주문 가능 여부와 주문 타입 검증
-- 실시간 시세/체결 이벤트 추상화
-- 계좌/주문 API는 별도의 안전 정책 문서 작성
+- 조건검색, 수급, 업종/지수, 시장 이벤트 조회
+- 판단 입력값을 만드는 `SignalInputService`
 
 ## 4. 패키지/개발 환경 계획
 

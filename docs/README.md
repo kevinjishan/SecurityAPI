@@ -113,10 +113,10 @@ caps.findApis("account.domesticStock.balance");
 ## Domain Services
 
 도메인 서비스는 Broker Client를 사용하되, 결과를 공통 형태로 얇게 정리합니다.
-현재 국내주식 시세 조회, 계좌 기본 조회, dry-run 기본 주문, 실시간 WebSocket 구독 서비스를 제공합니다.
+현재 국내주식 시세 조회, 시장 데이터 조회, 종목 스캐너, 계좌 기본 조회, dry-run 기본 주문, 실시간 WebSocket 구독 서비스를 제공합니다.
 
 ```js
-import { AccountService, KiwoomClient, OrderService, QuoteService, RealtimeService } from "security-api-reference";
+import { AccountService, KiwoomClient, MarketDataService, OrderService, QuoteService, RealtimeService, ScannerService } from "security-api-reference";
 
 const clients = {
   kiwoom: new KiwoomClient({
@@ -127,6 +127,8 @@ const clients = {
 };
 
 const quote = new QuoteService(clients);
+const marketData = new MarketDataService(clients);
+const scanner = new ScannerService(clients);
 const account = new AccountService(clients);
 const order = new OrderService(clients);
 const realtime = new RealtimeService(clients);
@@ -134,6 +136,17 @@ const realtime = new RealtimeService(clients);
 const currentPrice = await quote.getDomesticStockCurrentPrice("kiwoom", "005930");
 const orderBook = await quote.getDomesticStockOrderBook("kiwoom", "005930");
 const multiPrices = await quote.getDomesticStockMultiCurrentPrice("kiwoom", ["005930", "000660"]);
+const basicInfo = await marketData.getDomesticStockBasicInfo("kiwoom", "005930");
+const dailyCandles = await marketData.getDomesticStockDailyCandles("kiwoom", "005930", {
+  baseDate: "20260519"
+});
+const minuteCandles = await marketData.getDomesticStockMinuteCandles("kiwoom", "005930", {
+  intervalMinutes: 5
+});
+const volumeRankings = await scanner.getDomesticStockVolumeRankings("kiwoom", {
+  market: "kospi"
+});
+const valueRankings = await scanner.getDomesticStockValueRankings("kiwoom");
 const cash = await account.getDomesticStockCash("kiwoom");
 const balance = await account.getDomesticStockBalance("kiwoom");
 const orderHistory = await account.getDomesticStockOrderHistory("kiwoom", {
@@ -153,4 +166,4 @@ const tradeStream = await realtime.subscribeDomesticStockTrades("kiwoom", "00593
 });
 ```
 
-현재 구현 범위는 `quote.domesticStock.currentPrice`, `quote.domesticStock.orderBook`, `quote.domesticStock.multiCurrentPrice`, `account.domesticStock.cash`, `account.domesticStock.balance`, `account.domesticStock.orderHistory`, `order.domesticStock.buy`, `order.domesticStock.sell`, `order.domesticStock.modify`, `order.domesticStock.cancel`, `realtime.domesticStock.trade`, `realtime.domesticStock.orderBook`, `realtime.domesticStock.orderEvent`, `realtime.domesticStock.balance`입니다. 주문 서비스는 기본 dry-run이며 실주문은 `dryRun: false`, `confirm: true`가 모두 필요하고 retry를 비활성화합니다. 안전장치 옵션으로 `maxOrderAmount`, `allowedSymbols`, `blockedSymbols`, `confirmMarketOrder`, `expectedRequest`를 지원합니다. 실시간 서비스는 Capability Layer에 등록된 WebSocket API만 구독하며, 체결/호가/주문 이벤트는 `kind`, `symbol`, `price`, `asks`, `bids`, `orderId`, `executedQuantity` 같은 공통 필드로 정규화합니다. WebSocket Client는 중복 구독 방지, 연결 종료 시 backoff 재연결, 기존 구독 복구, heartbeat stale 감지, `connected`/`disconnected`/`reconnecting`/`resubscribed` 상태 이벤트를 지원합니다. 실행 환경에서 헤더 지정이 필요한 경우 `webSocketFactory` 또는 호환 WebSocket 구현을 주입합니다.
+현재 구현 범위는 `quote.domesticStock.currentPrice`, `quote.domesticStock.orderBook`, `quote.domesticStock.multiCurrentPrice`, `marketData.domesticStock.basicInfo`, `marketData.domesticStock.dailyCandles`, `marketData.domesticStock.minuteCandles`, `scanner.domesticStock.volumeRanking`, `scanner.domesticStock.valueRanking`, `scanner.domesticStock.changeRateRanking`, `account.domesticStock.cash`, `account.domesticStock.balance`, `account.domesticStock.orderHistory`, `order.domesticStock.buy`, `order.domesticStock.sell`, `order.domesticStock.modify`, `order.domesticStock.cancel`, `realtime.domesticStock.trade`, `realtime.domesticStock.orderBook`, `realtime.domesticStock.orderEvent`, `realtime.domesticStock.balance`입니다. 주문 서비스는 기본 dry-run이며 실주문은 `dryRun: false`, `confirm: true`가 모두 필요하고 retry를 비활성화합니다. 안전장치 옵션으로 `maxOrderAmount`, `allowedSymbols`, `blockedSymbols`, `confirmMarketOrder`, `expectedRequest`를 지원합니다. 실시간 서비스는 Capability Layer에 등록된 WebSocket API만 구독하며, 체결/호가/주문 이벤트는 `kind`, `symbol`, `price`, `asks`, `bids`, `orderId`, `executedQuantity` 같은 공통 필드로 정규화합니다. WebSocket Client는 중복 구독 방지, 연결 종료 시 backoff 재연결, 기존 구독 복구, heartbeat stale 감지, `connected`/`disconnected`/`reconnecting`/`resubscribed` 상태 이벤트를 지원합니다. 실행 환경에서 헤더 지정이 필요한 경우 `webSocketFactory` 또는 호환 WebSocket 구현을 주입합니다.

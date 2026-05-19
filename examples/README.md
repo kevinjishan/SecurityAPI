@@ -16,6 +16,9 @@ npm run examples:mock
 - `QuoteService.getDomesticStockCurrentPrice()` 공통 응답 형태 확인
 - `QuoteService.getDomesticStockOrderBook()` 공통 호가 형태 확인
 - `QuoteService.getDomesticStockMultiCurrentPrice()` 복수 현재가 형태 확인
+- `MarketDataService.getDomesticStockDailyCandles()` / `getDomesticStockMinuteCandles()` OHLCV 공통 응답 형태 확인
+- `MarketDataService.getDomesticStockBasicInfo()` 종목 기본정보 공통 응답 형태 확인
+- `ScannerService.getDomesticStockVolumeRankings()` / `getDomesticStockValueRankings()` 랭킹 공통 응답 형태 확인
 - `AccountService.getDomesticStockCash()` 예수금/주문가능금액 공통 응답 형태 확인
 - `AccountService.getDomesticStockBalance()` 잔고/평가손익 공통 응답 형태 확인
 - `AccountService.getDomesticStockOrderHistory()` 주문/체결 내역 공통 응답 형태 확인

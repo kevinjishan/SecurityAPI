@@ -81,12 +81,14 @@ caps.findApis("quote.domesticStock.currentPrice");
 ```
 
 국내주식 시세 조회 도메인 서비스는 현재가, 호가, 복수 현재가 조회를 제공합니다.
+시장 데이터 서비스는 종목 기본정보, 일봉/분봉 OHLCV 조회를 제공합니다.
+스캐너 서비스는 거래량/거래대금/등락률 랭킹으로 종목 탐색을 돕습니다.
 계좌 조회 도메인 서비스는 예수금/주문가능금액, 잔고/평가손익, 주문/체결 내역 조회를 제공합니다.
 주문 서비스는 기본값으로 dry-run 요청만 생성합니다. 실주문은 `dryRun: false`, `confirm: true`가 모두 필요하고, 시장가 실주문은 `confirmMarketOrder: true`도 필요합니다.
 실시간 서비스는 WebSocket 구독 요청, 수신 메시지 정규화, 자동 재연결과 구독 복구를 제공합니다.
 
 ```js
-import { AccountService, KiwoomClient, OrderService, QuoteService, RealtimeService } from "security-api-reference";
+import { AccountService, KiwoomClient, MarketDataService, OrderService, QuoteService, RealtimeService, ScannerService } from "security-api-reference";
 
 const clients = {
   kiwoom: new KiwoomClient({
@@ -97,6 +99,8 @@ const clients = {
 };
 
 const quote = new QuoteService(clients);
+const marketData = new MarketDataService(clients);
+const scanner = new ScannerService(clients);
 const account = new AccountService(clients);
 const order = new OrderService(clients);
 const realtime = new RealtimeService(clients);
@@ -104,6 +108,16 @@ const realtime = new RealtimeService(clients);
 const price = await quote.getDomesticStockCurrentPrice("kiwoom", "005930");
 const orderBook = await quote.getDomesticStockOrderBook("kiwoom", "005930");
 const prices = await quote.getDomesticStockMultiCurrentPrice("kiwoom", ["005930", "000660"]);
+const dailyCandles = await marketData.getDomesticStockDailyCandles("kiwoom", "005930", {
+  baseDate: "20260519"
+});
+const minuteCandles = await marketData.getDomesticStockMinuteCandles("kiwoom", "005930", {
+  intervalMinutes: 5
+});
+const volumeRankings = await scanner.getDomesticStockVolumeRankings("kiwoom", {
+  market: "kospi"
+});
+const valueRankings = await scanner.getDomesticStockValueRankings("kiwoom");
 const cash = await account.getDomesticStockCash("kiwoom");
 const balance = await account.getDomesticStockBalance("kiwoom");
 const orderHistory = await account.getDomesticStockOrderHistory("kiwoom", {
