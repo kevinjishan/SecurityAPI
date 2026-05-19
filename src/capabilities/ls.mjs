@@ -47,6 +47,37 @@ export const LS_CAPABILITIES = [
     apis: [{ id: "t8412", role: "minuteChart", transport: "rest" }],
   },
   {
+    id: "marketContext.domesticIndex.current",
+    status: "documented",
+    apis: [{ id: "t1511", role: "sectorIndexCurrent", transport: "rest" }],
+  },
+  {
+    id: "marketContext.domesticIndex.dailyCandles",
+    status: "documented",
+    apis: [{ id: "t1514", role: "sectorIndexPeriodTrend", transport: "rest" }],
+  },
+  {
+    id: "marketContext.domesticIndex.expected",
+    status: "documented",
+    apis: [{ id: "t1485", role: "expectedIndex", transport: "rest" }],
+  },
+  {
+    id: "marketContext.domesticMarket.snapshot",
+    status: "composed",
+    apis: [],
+    caution: "시장 컨텍스트 스냅샷은 주요 지수 현재가를 여러 번 호출해 조합한 SDK 계산값이다.",
+  },
+  {
+    id: "marketFlow.domesticInvestor.netBuy",
+    status: "documented",
+    apis: [{ id: "t1602", role: "investorTimeSeriesByMarket", transport: "rest" }],
+  },
+  {
+    id: "marketFlow.programTrading.trend",
+    status: "documented",
+    apis: [{ id: "t1632", role: "programTradingTimeTrend", transport: "rest" }],
+  },
+  {
     id: "scanner.domesticStock.volumeRanking",
     status: "documented",
     apis: [{ id: "t1452", role: "volumeRanking", transport: "rest" }],

@@ -110,6 +110,86 @@ test("can use injected services for signal inputs", async () => {
   assert.equal(result.data.signals.dayRange.zone, "middle");
 });
 
+test("can include market context and flow in signal inputs", async () => {
+  const client = new FakeClient("kiwoom");
+  const service = new SignalInputService({ kiwoom: client });
+
+  const result = await service.getDomesticStockSignalInputs("kiwoom", "005930", {
+    includeOrderBook: false,
+    includeBasicInfo: false,
+    includeDailyCandles: false,
+    includeMinuteCandles: false,
+    includeMarketContext: true,
+    includeMarketIndexCandles: true,
+    includeMarketFlow: true,
+    market: "kospi",
+    baseDate: "20260519",
+    generatedAt: "2026-05-19T00:00:00.000Z",
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(client.calls.map((call) => call.id).sort(), [
+    "ka10001",
+    "ka10051",
+    "ka20001",
+    "ka20001",
+    "ka20006",
+    "ka90005",
+  ]);
+  assert.equal(result.data.market.targetMarket, "kospi");
+  assert.equal(result.data.market.snapshot.indexes.length, 2);
+  assert.equal(result.data.market.indexDailyCandles.candles.length, 2);
+  assert.equal(result.data.market.metrics.flow.foreignInstitutionalNetBuy, 1500);
+  assert.equal(result.data.metrics.market.flow.programTotalNetBuy, 17);
+  assert.equal(result.data.signals.market.indexMomentum, "positive");
+  assert.equal(result.data.signals.market.foreignInstitutionalFlow, "positive");
+  assert.equal(result.data.warnings.length, 0);
+});
+
+test("can include expected index in signal inputs", async () => {
+  const result = await new SignalInputService({
+    quote: {
+      async getDomesticStockCurrentPrice() {
+        return okResult("quote.domesticStock.currentPrice", "t1101", {
+          broker: "ls",
+          symbol: "005930",
+          price: 100,
+        });
+      },
+    },
+    marketData: {},
+    marketContext: {
+      async getDomesticExpectedIndex() {
+        return okResult("marketContext.domesticIndex.expected", "t1485", {
+          broker: "ls",
+          index: "kospi",
+          session: "1",
+          summary: {
+            latestTime: "084000",
+            latestExpectedIndex: 2601.36,
+            latestChangeRate: 0.6,
+          },
+          timeline: [],
+        });
+      },
+    },
+    marketFlow: {},
+    scanner: {},
+  }).getDomesticStockSignalInputs("ls", "005930", {
+    includeOrderBook: false,
+    includeBasicInfo: false,
+    includeDailyCandles: false,
+    includeMinuteCandles: false,
+    includeExpectedIndex: true,
+    market: "kospi",
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.market.expectedIndex.summary.latestExpectedIndex, 2601.36);
+  assert.equal(result.data.metrics.market.expectedIndex.latestChangeRate, 0.6);
+  assert.equal(result.data.signals.market.expectedIndex, "positive");
+});
+
 test("returns config errors when the current price source fails", async () => {
   const service = new SignalInputService({});
 
@@ -426,6 +506,80 @@ function fakePayload(id) {
     return {
       pred_pre_flu_rt_upper: [
         { rank: "3", stk_cd: "005930", stk_nm: "삼성전자", cur_prc: "70100", flu_rt: "+0.86", now_trde_qty: "1000000" },
+      ],
+    };
+  }
+
+  if (id === "ka20001") {
+    return {
+      inds_cd: "001",
+      inds_nm: "KOSPI",
+      cur_prc: "285000",
+      pred_pre: "+500",
+      flu_rt: "+0.18",
+      open_pric: "284000",
+      high_pric: "286000",
+      low_pric: "283500",
+      trde_qty: "1000000",
+      trde_prica: "500000",
+      rising: "500",
+      stdns: "100",
+      fall: "320",
+    };
+  }
+
+  if (id === "ka20006") {
+    return {
+      inds_dt_pole_qry: [
+        { dt: "20260518", open_pric: "283000", high_pric: "285000", low_pric: "282000", cur_prc: "284500", trde_qty: "1000000" },
+        { dt: "20260519", open_pric: "284500", high_pric: "286000", low_pric: "284000", cur_prc: "285000", trde_qty: "1200000" },
+      ],
+    };
+  }
+
+  if (id === "ka10051") {
+    return {
+      inds_netprps: [
+        {
+          inds_cd: "001",
+          inds_nm: "KOSPI",
+          cur_prc: "285000",
+          pred_pre: "+500",
+          flu_rt: "+0.18",
+          ind_netprps: "-2000",
+          frgnr_netprps: "1000",
+          orgn_netprps: "500",
+          sc_netprps: "100",
+          invtrt_netprps: "200",
+          bank_netprps: "30",
+          insrnc_netprps: "40",
+          jnsinkm_netprps: "0",
+          endw_netprps: "50",
+          natn_netprps: "0",
+          samo_fund_netprps: "80",
+          etc_corp_netprps: "10",
+        },
+      ],
+    };
+  }
+
+  if (id === "ka90005") {
+    return {
+      prm_trde_trnsn: [
+        {
+          cntr_tm: "170500",
+          all_buy: "100",
+          all_sel: "83",
+          all_netprps: "17",
+          dfrt_trde_buy: "20",
+          dfrt_trde_sel: "20",
+          dfrt_trde_netprps: "0",
+          ndiffpro_trde_buy: "80",
+          ndiffpro_trde_sel: "63",
+          ndiffpro_trde_netprps: "17",
+          kospi200: "47839",
+          basis: "-146.59",
+        },
       ],
     };
   }

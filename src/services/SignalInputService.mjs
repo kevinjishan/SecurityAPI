@@ -1,5 +1,7 @@
 import { BrokerError, assertBroker } from "../core/index.mjs";
+import { MarketContextService } from "./MarketContextService.mjs";
 import { MarketDataService } from "./MarketDataService.mjs";
+import { MarketFlowService } from "./MarketFlowService.mjs";
 import { QuoteService } from "./QuoteService.mjs";
 import { RealtimeService } from "./RealtimeService.mjs";
 import { ScannerService } from "./ScannerService.mjs";
@@ -9,10 +11,17 @@ const REALTIME_SIGNAL_INPUT_CAPABILITY_ID = "signal.domesticStock.realtimeInputs
 
 export class SignalInputService {
   constructor(dependencies = {}) {
-    const hasServiceDependencies = dependencies.quote || dependencies.marketData || dependencies.realtime || dependencies.scanner;
+    const hasServiceDependencies = dependencies.quote
+      || dependencies.marketData
+      || dependencies.marketContext
+      || dependencies.marketFlow
+      || dependencies.realtime
+      || dependencies.scanner;
     this.clients = hasServiceDependencies ? dependencies.clients ?? {} : dependencies;
     this.quote = dependencies.quote ?? new QuoteService(this.clients);
     this.marketData = dependencies.marketData ?? new MarketDataService(this.clients);
+    this.marketContext = dependencies.marketContext ?? new MarketContextService(this.clients);
+    this.marketFlow = dependencies.marketFlow ?? new MarketFlowService(this.clients);
     this.scanner = dependencies.scanner ?? new ScannerService(this.clients);
     this.realtime = dependencies.realtime ?? new RealtimeService(this.clients, dependencies.realtimeOptions ?? {});
   }
@@ -28,6 +37,8 @@ export class SignalInputService {
       const results = await collectSignalSources({
         quote: this.quote,
         marketData: this.marketData,
+        marketContext: this.marketContext,
+        marketFlow: this.marketFlow,
         scanner: this.scanner,
         broker: normalizedBroker,
         symbol: normalizedSymbol,
@@ -182,6 +193,9 @@ export function buildDomesticStockSignalInputs({ broker, symbol, results = {}, o
   const minuteCandles = normalizeCandles(results.minuteCandles?.data?.candles);
   const rankingContext = buildRankingContext(symbol, results.rankings);
   const thresholds = normalizeThresholds(options.thresholds);
+  const market = options.marketBackground === undefined
+    ? buildMarketBackground({ results, options })
+    : clone(options.marketBackground);
 
   const metrics = buildMetrics({
     currentPrice,
@@ -196,6 +210,7 @@ export function buildDomesticStockSignalInputs({ broker, symbol, results = {}, o
     broker,
     symbol,
     generatedAt: options.generatedAt ?? new Date().toISOString(),
+    market,
     quote: currentPrice,
     basicInfo,
     orderBook,
@@ -204,8 +219,14 @@ export function buildDomesticStockSignalInputs({ broker, symbol, results = {}, o
       minute: minuteCandles,
     },
     rankings: rankingContext,
-    metrics,
-    signals: buildSignals(metrics, thresholds),
+    metrics: {
+      ...metrics,
+      market: market?.metrics ?? null,
+    },
+    signals: {
+      ...buildSignals(metrics, thresholds),
+      market: market?.indicators ?? null,
+    },
     thresholds,
     realtime: options.realtime ?? null,
     source: buildSourceSummary(results),
@@ -307,7 +328,7 @@ export function applyDomesticStockRealtimeSignalMessage(initialInputs, message, 
   return state.applyRealtimeMessage(message, options);
 }
 
-async function collectSignalSources({ quote, marketData, scanner, broker, symbol, options }) {
+async function collectSignalSources({ quote, marketData, marketContext, marketFlow, scanner, broker, symbol, options }) {
   const tasks = [
     ["currentPrice", quote.getDomesticStockCurrentPrice(broker, symbol, options.currentPriceOptions)],
   ];
@@ -334,6 +355,38 @@ async function collectSignalSources({ quote, marketData, scanner, broker, symbol
     tasks.push(["changeRateRanking", scanner.getDomesticStockChangeRateRankings(broker, options.rankingOptions)]);
   }
 
+  if (options.includeMarketContext) {
+    tasks.push(["marketSnapshot", marketContext.getDomesticMarketSnapshot(broker, options.marketContextOptions)]);
+  }
+
+  if (options.includeMarketIndexCandles) {
+    tasks.push([
+      "marketIndexDailyCandles",
+      marketContext.getDomesticIndexDailyCandles(broker, options.marketIndex, options.marketIndexDailyCandlesOptions),
+    ]);
+  }
+
+  if (options.includeExpectedIndex) {
+    tasks.push([
+      "expectedIndex",
+      marketContext.getDomesticExpectedIndex(broker, options.marketIndex, options.expectedIndexOptions),
+    ]);
+  }
+
+  if (options.includeMarketFlow) {
+    tasks.push([
+      "domesticInvestorFlow",
+      marketFlow.getDomesticInvestorFlow(broker, options.marketFlowMarket, options.domesticInvestorFlowOptions),
+    ]);
+  }
+
+  if (options.includeProgramTrading) {
+    tasks.push([
+      "programTrading",
+      marketFlow.getProgramTradingTrend(broker, options.programTradingMarket, options.programTradingOptions),
+    ]);
+  }
+
   const settled = await Promise.all(tasks.map(async ([key, promise]) => [key, await promise]));
   const results = Object.fromEntries(settled);
 
@@ -352,12 +405,27 @@ async function collectSignalSources({ quote, marketData, scanner, broker, symbol
 }
 
 function normalizeOptions(options) {
+  const market = normalizeMarketTarget(options.market ?? "kospi");
+  const marketIndex = normalizeMarketTarget(options.marketIndex ?? market);
+  const marketFlowMarket = normalizeMarketTarget(options.marketFlowMarket ?? market);
+  const programTradingMarket = normalizeMarketTarget(options.programTradingMarket ?? marketFlowMarket);
+  const includeMarketFlow = Boolean(options.includeMarketFlow);
+
   return {
     includeOrderBook: options.includeOrderBook !== false,
     includeBasicInfo: options.includeBasicInfo !== false,
     includeDailyCandles: options.includeDailyCandles !== false,
     includeMinuteCandles: options.includeMinuteCandles !== false,
     includeRankings: Boolean(options.includeRankings),
+    includeMarketContext: Boolean(options.includeMarketContext),
+    includeMarketIndexCandles: Boolean(options.includeMarketIndexCandles),
+    includeExpectedIndex: Boolean(options.includeExpectedIndex),
+    includeMarketFlow,
+    includeProgramTrading: Boolean(options.includeProgramTrading) || (includeMarketFlow && options.includeProgramTrading !== false),
+    market,
+    marketIndex,
+    marketFlowMarket,
+    programTradingMarket,
     currentPriceOptions: options.currentPriceOptions ?? {},
     orderBookOptions: options.orderBookOptions ?? {},
     basicInfoOptions: options.basicInfoOptions ?? {},
@@ -374,6 +442,130 @@ function normalizeOptions(options) {
       market: options.market,
       exchange: options.exchange,
       ...(options.rankingOptions ?? {}),
+    },
+    marketContextOptions: {
+      indexes: normalizeMarketIndexes(options.marketIndexes ?? options.indexes ?? ["kospi", "kosdaq"]),
+      generatedAt: options.generatedAt,
+      ...(options.marketContextOptions ?? {}),
+    },
+    marketIndexDailyCandlesOptions: {
+      count: options.marketIndexDailyCount ?? 20,
+      baseDate: options.baseDate,
+      ...(options.marketIndexDailyCandlesOptions ?? {}),
+    },
+    expectedIndexOptions: {
+      session: options.expectedIndexSession ?? options.session,
+      ...(options.expectedIndexOptions ?? {}),
+    },
+    domesticInvestorFlowOptions: {
+      unit: options.marketFlowUnit ?? options.unit,
+      baseDate: options.baseDate,
+      exchange: options.exchange,
+      ...(options.marketFlowOptions ?? {}),
+      ...(options.domesticInvestorFlowOptions ?? {}),
+    },
+    programTradingOptions: {
+      unit: options.marketFlowUnit ?? options.unit,
+      date: options.date ?? options.baseDate,
+      exchange: options.exchange,
+      ...(options.marketFlowOptions ?? {}),
+      ...(options.programTradingOptions ?? {}),
+    },
+  };
+}
+
+function buildMarketBackground({ results, options }) {
+  const snapshot = resultData(results.marketSnapshot);
+  const indexDailyCandles = resultData(results.marketIndexDailyCandles);
+  const expectedIndex = resultData(results.expectedIndex);
+  const investorFlow = resultData(results.domesticInvestorFlow);
+  const programTrading = resultData(results.programTrading);
+
+  if (!snapshot && !indexDailyCandles && !expectedIndex && !investorFlow && !programTrading) {
+    return null;
+  }
+
+  const targetMarket = normalizeMarketTarget(options.market ?? "kospi");
+  const indexCandles = normalizeCandles(indexDailyCandles?.candles);
+  const currentIndex = findMarketIndex(snapshot, targetMarket)
+    ?? findMarketIndex(snapshot, options.marketIndex)
+    ?? snapshot?.indexes?.[0]
+    ?? null;
+  const latestIndexCandle = latest(indexCandles);
+  const previousIndexCandle = previous(latestIndex(indexCandles), indexCandles);
+  const breadth = snapshot?.breadth ?? currentIndex?.breadth ?? null;
+  const breadthBalance = Number.isFinite(breadth?.rising) && Number.isFinite(breadth?.falling)
+    ? breadth.rising - breadth.falling
+    : null;
+  const indexChange = firstNumber([
+    currentIndex?.change,
+    Number.isFinite(latestIndexCandle?.close) && Number.isFinite(previousIndexCandle?.close)
+      ? latestIndexCandle.close - previousIndexCandle.close
+      : null,
+  ]);
+  const indexChangeRate = firstNumber([
+    currentIndex?.changeRate,
+    Number.isFinite(latestIndexCandle?.close) && Number.isFinite(previousIndexCandle?.close) && previousIndexCandle.close !== 0
+      ? percentageChange(latestIndexCandle.close, previousIndexCandle.close)
+      : null,
+  ]);
+  const foreignInstitutionalNetBuy = investorFlow?.summary?.foreignInstitutionalNetBuy ?? null;
+  const programTotalNetBuy = programTrading?.summary?.totalNetBuy ?? null;
+
+  const metrics = {
+    index: currentIndex ? {
+      index: currentIndex.index,
+      name: currentIndex.name,
+      price: currentIndex.price,
+      change: indexChange,
+      changeRate: indexChangeRate,
+    } : null,
+    expectedIndex: expectedIndex ? {
+      index: expectedIndex.index,
+      session: expectedIndex.session,
+      latestTime: expectedIndex.summary?.latestTime ?? null,
+      latestExpectedIndex: expectedIndex.summary?.latestExpectedIndex ?? null,
+      latestChangeRate: expectedIndex.summary?.latestChangeRate ?? null,
+    } : null,
+    breadth: {
+      rising: breadth?.rising ?? null,
+      steady: breadth?.steady ?? null,
+      falling: breadth?.falling ?? null,
+      risingRate: breadth?.risingRate ?? null,
+      balance: breadthBalance,
+      advanceDeclineRatio: ratio(breadth?.rising, breadth?.falling),
+    },
+    flow: {
+      individualNetBuy: investorFlow?.summary?.individualNetBuy ?? null,
+      foreignNetBuy: investorFlow?.summary?.foreignNetBuy ?? null,
+      institutionalNetBuy: investorFlow?.summary?.institutionalNetBuy ?? null,
+      foreignInstitutionalNetBuy,
+      programTotalNetBuy,
+      programArbitrageNetBuy: programTrading?.summary?.arbitrageNetBuy ?? null,
+      programNonArbitrageNetBuy: programTrading?.summary?.nonArbitrageNetBuy ?? null,
+    },
+  };
+
+  return {
+    targetMarket,
+    snapshot,
+    indexDailyCandles: indexDailyCandles ? {
+      ...indexDailyCandles,
+      candles: indexCandles,
+    } : null,
+    expectedIndex,
+    flow: {
+      investor: investorFlow,
+      programTrading,
+    },
+    metrics,
+    indicators: {
+      marketDirection: snapshot?.direction ?? signedDirection(indexChangeRate, 0.1),
+      indexMomentum: signedDirection(indexChangeRate, 0.1),
+      expectedIndex: signedDirection(expectedIndex?.summary?.latestChangeRate, 0.1),
+      breadth: signedDirection(breadthBalance, 0),
+      foreignInstitutionalFlow: signedDirection(foreignInstitutionalNetBuy, 0),
+      programFlow: signedDirection(programTotalNetBuy, 0),
     },
   };
 }
@@ -450,6 +642,19 @@ function buildMetrics({ currentPrice, basicInfo, orderBook, dailyCandles, minute
     orderBook: orderBookMetrics,
     rankings: rankingContext,
   };
+}
+
+function resultData(result) {
+  return result?.ok ? result.data ?? null : null;
+}
+
+function findMarketIndex(snapshot, market) {
+  const normalizedMarket = nullableString(market);
+  if (!normalizedMarket || !Array.isArray(snapshot?.indexes)) {
+    return null;
+  }
+
+  return snapshot.indexes.find((index) => index?.index === normalizedMarket) ?? null;
 }
 
 function buildOrderBookMetrics(orderBook, price) {
@@ -781,6 +986,14 @@ function normalizeRealtimeTime(tradeTime, intervalMinutes) {
 }
 
 function rebuildSignalDataFromSnapshot(data, options) {
+  const marketResults = data.market ? {
+    marketSnapshot: signalResult("marketSnapshot", data.market.snapshot, data),
+    marketIndexDailyCandles: signalResult("marketIndexDailyCandles", data.market.indexDailyCandles, data),
+    expectedIndex: signalResult("expectedIndex", data.market.expectedIndex, data),
+    domesticInvestorFlow: signalResult("domesticInvestorFlow", data.market.flow?.investor, data),
+    programTrading: signalResult("programTrading", data.market.flow?.programTrading, data),
+  } : {};
+
   return buildDomesticStockSignalInputs({
     broker: data.broker,
     symbol: data.symbol,
@@ -788,6 +1001,8 @@ function rebuildSignalDataFromSnapshot(data, options) {
       generatedAt: options.updatedAt,
       thresholds: options.thresholds ?? data.thresholds,
       realtime: options.realtime,
+      market: data.market?.targetMarket,
+      marketBackground: data.market,
     },
     results: {
       currentPrice: signalResult("currentPrice", data.quote, data),
@@ -800,6 +1015,7 @@ function rebuildSignalDataFromSnapshot(data, options) {
         value: rankingResult("value", data.rankings?.value, data),
         changeRate: rankingResult("changeRate", data.rankings?.changeRate, data),
       },
+      ...marketResults,
     },
   });
 }
@@ -960,6 +1176,22 @@ function dayRangeZone(value, thresholds) {
   return "middle";
 }
 
+function signedDirection(value, flatThreshold = 0) {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "unknown";
+  }
+
+  if (value > flatThreshold) {
+    return "positive";
+  }
+
+  if (value < -flatThreshold) {
+    return "negative";
+  }
+
+  return "neutral";
+}
+
 function normalizeSymbol(symbol) {
   const normalized = String(symbol ?? "").trim();
 
@@ -970,6 +1202,20 @@ function normalizeSymbol(symbol) {
   }
 
   return normalized;
+}
+
+function normalizeMarketTarget(value) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  return normalized || "kospi";
+}
+
+function normalizeMarketIndexes(value) {
+  const rawIndexes = Array.isArray(value) ? value : [value];
+  const indexes = rawIndexes
+    .map(normalizeMarketTarget)
+    .filter(Boolean);
+
+  return indexes.length ? indexes : ["kospi", "kosdaq"];
 }
 
 function normalizeSymbolCode(value) {

@@ -31,6 +31,30 @@ export const CAPABILITY_DEFINITIONS = Object.freeze({
     area: "marketData",
     label: "국내주식 분봉 OHLCV",
   },
+  "marketContext.domesticIndex.current": {
+    area: "marketContext",
+    label: "국내 주요 지수 현재가",
+  },
+  "marketContext.domesticIndex.dailyCandles": {
+    area: "marketContext",
+    label: "국내 주요 지수 일봉 추이",
+  },
+  "marketContext.domesticIndex.expected": {
+    area: "marketContext",
+    label: "국내 주요 지수 예상지수",
+  },
+  "marketContext.domesticMarket.snapshot": {
+    area: "marketContext",
+    label: "국내 시장 컨텍스트 스냅샷",
+  },
+  "marketFlow.domesticInvestor.netBuy": {
+    area: "marketFlow",
+    label: "국내 시장 투자자 순매수",
+  },
+  "marketFlow.programTrading.trend": {
+    area: "marketFlow",
+    label: "국내 프로그램 매매 추이",
+  },
   "scanner.domesticStock.volumeRanking": {
     area: "scanner",
     label: "국내주식 거래량 상위",

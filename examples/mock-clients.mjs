@@ -4,6 +4,8 @@ import {
   AccountService,
   KiwoomClient,
   LsClient,
+  MarketContextService,
+  MarketFlowService,
   MarketDataService,
   OrderService,
   QuoteService,
@@ -196,6 +198,108 @@ const kiwoom = new KiwoomClient({
       });
     }
 
+    if (init.headers["api-id"] === "ka20001") {
+      return jsonResponse({
+        cur_prc: "2725.12",
+        pred_pre_sig: "2",
+        pred_pre: "+15.50",
+        flu_rt: "+0.57",
+        trde_qty: "500000",
+        trde_prica: "12000000",
+        trde_frmatn_stk_num: "900",
+        trde_frmatn_rt: "93.75",
+        open_pric: "2710.00",
+        high_pric: "2730.00",
+        low_pric: "2700.00",
+        upl: "2",
+        rising: "520",
+        stdns: "80",
+        fall: "360",
+        lst: "1",
+        return_code: 0,
+        return_msg: "정상적으로 처리되었습니다",
+      });
+    }
+
+    if (init.headers["api-id"] === "ka20006") {
+      return jsonResponse({
+        inds_cd: "001",
+        inds_dt_pole_qry: [
+          {
+            dt: "20260519",
+            open_pric: "271000",
+            high_pric: "273000",
+            low_pric: "270000",
+            cur_prc: "272512",
+            trde_qty: "500000",
+            trde_prica: "12000000",
+          },
+        ],
+        return_code: 0,
+        return_msg: "정상적으로 처리되었습니다",
+      });
+    }
+
+    if (init.headers["api-id"] === "ka10051") {
+      return jsonResponse({
+        inds_netprps: [
+          {
+            inds_cd: "001_AL",
+            inds_nm: "종합(KOSPI)",
+            cur_prc: "+272512",
+            pre_smbol: "2",
+            pred_pre: "+1550",
+            flu_rt: "57",
+            trde_qty: "500000",
+            sc_netprps: "+255",
+            insrnc_netprps: "+0",
+            invtrt_netprps: "+0",
+            bank_netprps: "+0",
+            jnsinkm_netprps: "+0",
+            endw_netprps: "+0",
+            etc_corp_netprps: "+0",
+            ind_netprps: "-16",
+            frgnr_netprps: "-622",
+            native_trmt_frgnr_netprps: "+4",
+            natn_netprps: "+0",
+            samo_fund_netprps: "+1",
+            orgn_netprps: "+601",
+          },
+        ],
+        return_code: 0,
+        return_msg: "정상적으로 처리되었습니다",
+      });
+    }
+
+    if (init.headers["api-id"] === "ka90005") {
+      return jsonResponse({
+        prm_trde_trnsn: [
+          {
+            cntr_tm: "170500",
+            dfrt_trde_sel: "0",
+            dfrt_trde_buy: "0",
+            dfrt_trde_netprps: "0",
+            ndiffpro_trde_sel: "1",
+            ndiffpro_trde_buy: "17",
+            ndiffpro_trde_netprps: "+17",
+            dfrt_trde_sell_qty: "0",
+            dfrt_trde_buy_qty: "0",
+            dfrt_trde_netprps_qty: "0",
+            ndiffpro_trde_sell_qty: "0",
+            ndiffpro_trde_buy_qty: "0",
+            ndiffpro_trde_netprps_qty: "+0",
+            all_sel: "1",
+            all_buy: "17",
+            all_netprps: "+17",
+            kospi200: "+47839",
+            basis: "-146.59",
+          },
+        ],
+        return_code: 0,
+        return_msg: "정상적으로 처리되었습니다",
+      });
+    }
+
     if (init.headers["api-id"] === "kt00001") {
       return jsonResponse({
         entr: "1000000",
@@ -381,6 +485,163 @@ const ls = new LsClient({
       });
     }
 
+    if (init.headers.tr_cd === "t1511") {
+      const body = JSON.parse(init.body);
+      const isKosdaq = body.t1511InBlock.upcode === "301";
+
+      return jsonResponse({
+        rsp_cd: "00000",
+        rsp_msg: "정상적으로 조회가 완료되었습니다.",
+        t1511OutBlock: {
+          upcode: isKosdaq ? "301" : "001",
+          hname: isKosdaq ? "코스닥" : "종합",
+          pricejisu: isKosdaq ? "850.12" : "2725.12",
+          jniljisu: isKosdaq ? "848.00" : "2709.62",
+          sign: "2",
+          change: isKosdaq ? "2.12" : "15.50",
+          diffjisu: isKosdaq ? "0.25" : "0.57",
+          volume: isKosdaq ? 300000 : 500000,
+          value: isKosdaq ? 6000000 : 12000000,
+          openjisu: isKosdaq ? "849.00" : "2710.00",
+          highjisu: isKosdaq ? "852.00" : "2730.00",
+          lowjisu: isKosdaq ? "846.00" : "2700.00",
+          highjo: isKosdaq ? 420 : 520,
+          unchgjo: isKosdaq ? 50 : 80,
+          lowjo: isKosdaq ? 310 : 360,
+          upjo: isKosdaq ? 1 : 2,
+          downjo: isKosdaq ? 0 : 1,
+        },
+      });
+    }
+
+    if (init.headers.tr_cd === "t1514") {
+      return jsonResponse({
+        rsp_cd: "00000",
+        rsp_msg: "정상적으로 조회가 완료되었습니다.",
+        t1514OutBlock: {
+          cts_date: "20260518",
+        },
+        t1514OutBlock1: [
+          {
+            date: "20260519",
+            upcode: "001",
+            jisu: "2725.12",
+            sign: "2",
+            change: "15.50",
+            diff: "0.57",
+            volume: 500000,
+            diff_vol: "12.50",
+            value2: 12000000,
+            high: 520,
+            unchg: 80,
+            low: 360,
+            uprate: "54.17",
+            frgsvolume: 200,
+            orgsvolume: -120,
+            openjisu: "2710.00",
+            highjisu: "2730.00",
+            lowjisu: "2700.00",
+            up: 2,
+            down: 1,
+            totjo: 960,
+            rate: "1.20",
+            divrate: "0.80",
+          },
+        ],
+      });
+    }
+
+    if (init.headers.tr_cd === "t1485") {
+      return jsonResponse({
+        rsp_cd: "00000",
+        rsp_msg: "조회완료",
+        t1485OutBlock: {
+          pricejisu: "2610.62",
+          sign: "2",
+          change: "9.26",
+          volume: 263165,
+          yhighjo: 5,
+          yupjo: 0,
+          yunchgjo: 944,
+          ylowjo: 1,
+          ydownjo: 0,
+          ytrajo: 7,
+        },
+        t1485OutBlock1: [
+          {
+            chetime: "084000",
+            jisu: "2601.36",
+            sign: "3",
+            change: "0.00",
+            volume: 488,
+            volcha: 0,
+            diff: "0.00",
+          },
+        ],
+      });
+    }
+
+    if (init.headers.tr_cd === "t1602") {
+      return jsonResponse({
+        rsp_cd: "00000",
+        rsp_msg: "정상적으로 조회가 완료되었습니다.",
+        t1602OutBlock: {
+          cts_time: "10263000",
+          ex_upcode: "001",
+          ms_08: 205539,
+          md_08: 213937,
+          svolume_08: -8398,
+          rate_08: 0,
+          ms_17: 12000,
+          md_17: 8750,
+          svolume_17: 3250,
+          rate_17: 0,
+          ms_18: 12247,
+          md_18: 7099,
+          svolume_18: 5148,
+          rate_18: 0,
+        },
+        t1602OutBlock1: [
+          {
+            time: "10263000",
+            sv_08: -200,
+            sv_17: 80,
+            sv_18: 120,
+          },
+        ],
+      });
+    }
+
+    if (init.headers.tr_cd === "t1632") {
+      return jsonResponse({
+        rsp_cd: "00000",
+        rsp_msg: "정상적으로 조회가 완료되었습니다.",
+        t1632OutBlock: {
+          date: "20230602",
+          time: "175811",
+          idx: 19,
+        },
+        t1632OutBlock1: [
+          {
+            time: "180518",
+            k200jisu: "342.67",
+            sign: "2",
+            change: "004.59",
+            k200basis: "000.28",
+            tot1: 102,
+            tot2: 3,
+            tot3: 99,
+            cha1: 20,
+            cha2: 8,
+            cha3: 12,
+            bcha1: 82,
+            bcha2: -5,
+            bcha3: 87,
+          },
+        ],
+      });
+    }
+
     if (init.headers.tr_cd === "CSPAQ12200") {
       return jsonResponse({
         rsp_cd: "00000",
@@ -518,11 +779,46 @@ const kiwoomVolumeRankings = await scanner.getDomesticStockVolumeRankings("kiwoo
 const lsValueRankings = await scanner.getDomesticStockValueRankings("ls", {
   market: "kospi",
 });
+const marketContext = new MarketContextService({ kiwoom, ls });
+const kiwoomMarketSnapshot = await marketContext.getDomesticMarketSnapshot("kiwoom", {
+  indexes: ["kospi", "kosdaq"],
+});
+const lsMarketSnapshot = await marketContext.getDomesticMarketSnapshot("ls", {
+  indexes: ["kospi", "kosdaq"],
+});
+const kiwoomIndexDailyCandles = await marketContext.getDomesticIndexDailyCandles("kiwoom", "kospi", {
+  baseDate: "20260519",
+});
+const lsIndexDailyCandles = await marketContext.getDomesticIndexDailyCandles("ls", "kospi", {
+  count: 1,
+});
+const lsExpectedIndex = await marketContext.getDomesticExpectedIndex("ls", "kospi", {
+  session: "preopen",
+});
+const marketFlow = new MarketFlowService({ kiwoom, ls });
+const kiwoomInvestorFlow = await marketFlow.getDomesticInvestorFlow("kiwoom", "kospi", {
+  baseDate: "20260519",
+});
+const lsInvestorFlow = await marketFlow.getDomesticInvestorFlow("ls", "kospi", {
+  unit: "quantity",
+  count: 1,
+});
+const kiwoomProgramTrading = await marketFlow.getProgramTradingTrend("kiwoom", "kospi", {
+  date: "20260519",
+});
+const lsProgramTrading = await marketFlow.getProgramTradingTrend("ls", "kospi", {
+  unit: "quantity",
+  date: "20260519",
+});
 const signalInputs = await new SignalInputService({ kiwoom, ls }).getDomesticStockSignalInputs("kiwoom", "005930", {
   includeRankings: true,
+  includeMarketContext: true,
+  includeMarketIndexCandles: true,
+  includeMarketFlow: true,
   intervalMinutes: 5,
   minuteCount: 2,
   market: "kospi",
+  baseDate: "20260519",
 });
 const account = new AccountService({ kiwoom, ls });
 const kiwoomCash = await account.getDomesticStockCash("kiwoom");
@@ -640,9 +936,29 @@ assert.equal(kiwoomVolumeRankings.ok, true);
 assert.equal(kiwoomVolumeRankings.data.items[0].volume, 34954641);
 assert.equal(lsValueRankings.ok, true);
 assert.equal(lsValueRankings.data.items[0].value, 874631);
+assert.equal(kiwoomMarketSnapshot.ok, true);
+assert.equal(kiwoomMarketSnapshot.data.indexes[0].price, 2725.12);
+assert.equal(lsMarketSnapshot.ok, true);
+assert.equal(lsMarketSnapshot.data.breadth.rising, 940);
+assert.equal(kiwoomIndexDailyCandles.ok, true);
+assert.equal(kiwoomIndexDailyCandles.data.candles[0].close, 2725.12);
+assert.equal(lsIndexDailyCandles.ok, true);
+assert.equal(lsIndexDailyCandles.data.candles[0].breadth.risingRate, 54.17);
+assert.equal(lsExpectedIndex.ok, true);
+assert.equal(lsExpectedIndex.data.summary.latestExpectedIndex, 2601.36);
+assert.equal(kiwoomInvestorFlow.ok, true);
+assert.equal(kiwoomInvestorFlow.data.summary.foreignInstitutionalNetBuy, -21);
+assert.equal(lsInvestorFlow.ok, true);
+assert.equal(lsInvestorFlow.data.summary.foreignInstitutionalNetBuy, 8398);
+assert.equal(kiwoomProgramTrading.ok, true);
+assert.equal(kiwoomProgramTrading.data.summary.totalNetBuy, 17);
+assert.equal(lsProgramTrading.ok, true);
+assert.equal(lsProgramTrading.data.summary.totalNetBuy, 99);
 assert.equal(signalInputs.ok, true);
 assert.equal(signalInputs.data.metrics.price.current, 70000);
 assert.equal(signalInputs.data.metrics.orderBook.bestAskPrice, 70100);
+assert.equal(signalInputs.data.market.targetMarket, "kospi");
+assert.equal(signalInputs.data.metrics.market.flow.programTotalNetBuy, 17);
 assert.equal(signalInputs.data.rankings.volume.rank, 1);
 assert.equal(realtimeSignalSubscription.ok, true);
 assert.equal(realtimeSignalUpdates.length, 2);
@@ -693,6 +1009,15 @@ console.log("Mock QuoteService results:", {
   lsBasicInfo: lsBasicInfo.data,
   kiwoomVolumeRankings: kiwoomVolumeRankings.data,
   lsValueRankings: lsValueRankings.data,
+  kiwoomMarketSnapshot: kiwoomMarketSnapshot.data,
+  lsMarketSnapshot: lsMarketSnapshot.data,
+  kiwoomIndexDailyCandles: kiwoomIndexDailyCandles.data,
+  lsIndexDailyCandles: lsIndexDailyCandles.data,
+  lsExpectedIndex: lsExpectedIndex.data,
+  kiwoomInvestorFlow: kiwoomInvestorFlow.data,
+  lsInvestorFlow: lsInvestorFlow.data,
+  kiwoomProgramTrading: kiwoomProgramTrading.data,
+  lsProgramTrading: lsProgramTrading.data,
   signalInputs: signalInputs.data,
   realtimeSignalInputs: realtimeSignalUpdates.at(-1),
   kiwoomCash: kiwoomCash.data,

@@ -83,18 +83,25 @@ caps.findApis("quote.domesticStock.currentPrice");
 국내주식 시세 조회 도메인 서비스는 현재가, 호가, 복수 현재가 조회를 제공합니다.
 시장 데이터 서비스는 종목 기본정보, 일봉/분봉 OHLCV 조회를 제공합니다.
 스캐너 서비스는 거래량/거래대금/등락률 랭킹으로 종목 탐색을 돕습니다.
-시그널 입력 서비스는 현재가, 호가, OHLCV, 랭킹을 조합해 전략 앱이 바로 읽을 수 있는 판단 입력값을 만듭니다. 초기 스냅샷에 실시간 체결/호가 메시지를 누적해 갱신형 입력값으로 사용할 수도 있습니다.
+시장 컨텍스트 서비스는 KOSPI/KOSDAQ 같은 주요 지수 현재가, 일봉 추이, 시장 폭 스냅샷을 제공합니다. LS는 장전/장후 예상지수도 제공합니다.
+시장 수급 서비스는 개인/외국인/기관 순매수와 프로그램 매매 흐름을 공통 형태로 제공합니다.
+시그널 입력 서비스는 현재가, 호가, OHLCV, 랭킹을 조합해 전략 앱이 바로 읽을 수 있는 판단 입력값을 만듭니다. 옵션을 켜면 시장 스냅샷, 지수 일봉, 투자자 수급, 프로그램 매매 흐름도 같은 입력값에 포함합니다. 초기 스냅샷에 실시간 체결/호가 메시지를 누적해 갱신형 입력값으로 사용할 수도 있습니다.
 계좌 조회 도메인 서비스는 예수금/주문가능금액, 잔고/평가손익, 주문/체결 내역 조회를 제공합니다.
 주문 서비스는 기본값으로 dry-run 요청만 생성합니다. 실주문은 `dryRun: false`, `confirm: true`가 모두 필요하고, 시장가 실주문은 `confirmMarketOrder: true`도 필요합니다.
 실시간 서비스는 WebSocket 구독 요청, 수신 메시지 정규화, 자동 재연결과 구독 복구를 제공합니다.
 
 ```js
-import { AccountService, KiwoomClient, MarketDataService, OrderService, QuoteService, RealtimeService, ScannerService, SignalInputService } from "security-api-reference";
+import { AccountService, KiwoomClient, LsClient, MarketContextService, MarketFlowService, MarketDataService, OrderService, QuoteService, RealtimeService, ScannerService, SignalInputService } from "security-api-reference";
 
 const clients = {
   kiwoom: new KiwoomClient({
     appKey: process.env.KIWOOM_APP_KEY,
     secretKey: process.env.KIWOOM_SECRET_KEY,
+    env: "mock"
+  }),
+  ls: new LsClient({
+    appKey: process.env.LS_APP_KEY,
+    secretKey: process.env.LS_SECRET_KEY,
     env: "mock"
   })
 };
@@ -102,6 +109,8 @@ const clients = {
 const quote = new QuoteService(clients);
 const marketData = new MarketDataService(clients);
 const scanner = new ScannerService(clients);
+const marketContext = new MarketContextService(clients);
+const marketFlow = new MarketFlowService(clients);
 const signals = new SignalInputService(clients);
 const account = new AccountService(clients);
 const order = new OrderService(clients);
@@ -120,10 +129,31 @@ const volumeRankings = await scanner.getDomesticStockVolumeRankings("kiwoom", {
   market: "kospi"
 });
 const valueRankings = await scanner.getDomesticStockValueRankings("kiwoom");
+const marketSnapshot = await marketContext.getDomesticMarketSnapshot("kiwoom", {
+  indexes: ["kospi", "kosdaq"]
+});
+const indexCandles = await marketContext.getDomesticIndexDailyCandles("kiwoom", "kospi", {
+  baseDate: "20260519"
+});
+const expectedIndex = await marketContext.getDomesticExpectedIndex("ls", "kospi", {
+  session: "preopen"
+});
+const investorFlow = await marketFlow.getDomesticInvestorFlow("kiwoom", "kospi", {
+  unit: "amount",
+  baseDate: "20260519"
+});
+const programTrading = await marketFlow.getProgramTradingTrend("kiwoom", "kospi", {
+  unit: "amount",
+  date: "20260519"
+});
 const signalInputs = await signals.getDomesticStockSignalInputs("kiwoom", "005930", {
   includeRankings: true,
+  includeMarketContext: true,
+  includeMarketIndexCandles: true,
+  includeMarketFlow: true,
   intervalMinutes: 5,
-  market: "kospi"
+  market: "kospi",
+  baseDate: "20260519"
 });
 const realtimeSignalInputs = await signals.subscribeDomesticStockSignalInputs("kiwoom", "005930", {
   onUpdate: (data) => console.log(data.symbol, data.metrics.price.current)

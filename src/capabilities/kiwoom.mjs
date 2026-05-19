@@ -40,6 +40,32 @@ export const KIWOOM_CAPABILITIES = [
     apis: [{ id: "ka10080", role: "minuteChart", transport: "rest" }],
   },
   {
+    id: "marketContext.domesticIndex.current",
+    status: "documented",
+    apis: [{ id: "ka20001", role: "sectorIndexCurrent", transport: "rest" }],
+  },
+  {
+    id: "marketContext.domesticIndex.dailyCandles",
+    status: "documented",
+    apis: [{ id: "ka20006", role: "sectorIndexDailyChart", transport: "rest" }],
+  },
+  {
+    id: "marketContext.domesticMarket.snapshot",
+    status: "composed",
+    apis: [],
+    caution: "시장 컨텍스트 스냅샷은 주요 지수 현재가를 여러 번 호출해 조합한 SDK 계산값이다.",
+  },
+  {
+    id: "marketFlow.domesticInvestor.netBuy",
+    status: "documented",
+    apis: [{ id: "ka10051", role: "sectorInvestorNetBuy", transport: "rest" }],
+  },
+  {
+    id: "marketFlow.programTrading.trend",
+    status: "documented",
+    apis: [{ id: "ka90005", role: "programTradingTimeTrend", transport: "rest" }],
+  },
+  {
     id: "scanner.domesticStock.volumeRanking",
     status: "documented",
     apis: [{ id: "ka10030", role: "todayVolumeRanking", transport: "rest" }],

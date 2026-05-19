@@ -32,6 +32,10 @@ test("finds Kiwoom API references for capabilities", () => {
   assert.deepEqual(caps.findApis("quote.domesticStock.currentPrice").map((api) => api.id), ["ka10001"]);
   assert.deepEqual(caps.findApis("quote.domesticStock.orderBook").map((api) => api.id), ["ka10004"]);
   assert.deepEqual(caps.findApis("quote.domesticStock.multiCurrentPrice").map((api) => api.id), ["ka10095"]);
+  assert.deepEqual(caps.findApis("marketContext.domesticIndex.current").map((api) => api.id), ["ka20001"]);
+  assert.deepEqual(caps.findApis("marketContext.domesticIndex.dailyCandles").map((api) => api.id), ["ka20006"]);
+  assert.deepEqual(caps.findApis("marketFlow.domesticInvestor.netBuy").map((api) => api.id), ["ka10051"]);
+  assert.deepEqual(caps.findApis("marketFlow.programTrading.trend").map((api) => api.id), ["ka90005"]);
   assert.deepEqual(caps.findApis("order.domesticStock").map((api) => api.id), [
     "kt10000",
     "kt10001",
@@ -54,6 +58,11 @@ test("finds LS API references for capabilities", () => {
 
   assert.deepEqual(caps.findApis("auth.oauth.issueToken").map((api) => api.id), ["token"]);
   assert.ok(caps.findApis("quote.domesticStock.currentPrice").some((api) => api.id === "t1101"));
+  assert.deepEqual(caps.findApis("marketContext.domesticIndex.current").map((api) => api.id), ["t1511"]);
+  assert.deepEqual(caps.findApis("marketContext.domesticIndex.dailyCandles").map((api) => api.id), ["t1514"]);
+  assert.deepEqual(caps.findApis("marketContext.domesticIndex.expected").map((api) => api.id), ["t1485"]);
+  assert.deepEqual(caps.findApis("marketFlow.domesticInvestor.netBuy").map((api) => api.id), ["t1602"]);
+  assert.deepEqual(caps.findApis("marketFlow.programTrading.trend").map((api) => api.id), ["t1632"]);
   assert.deepEqual(caps.findApis("order.domesticStock").map((api) => api.id), [
     "CSPAT00601",
     "CSPAT00601",
