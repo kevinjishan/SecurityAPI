@@ -18,7 +18,7 @@
 현재 capability registry는 “문서에 존재하는 API”와 “도메인 서비스로 안전하게 호출 가능한 기능”을 일부 혼동할 수 있다. 해외주식 확장 전에 다음 상태를 구분한다.
 
 ```ts
-type CapabilityStatus = "serviceReady" | "metadataOnly" | "parked";
+type CapabilityStatus = "serviceReady" | "metadataOnly" | "parked" | "composed";
 ```
 
 권장 의미:
@@ -26,11 +26,16 @@ type CapabilityStatus = "serviceReady" | "metadataOnly" | "parked";
 - `serviceReady`: service method, request builder, normalizer, test가 있다.
 - `metadataOnly`: 공식 문서와 manifest에는 있지만 service method가 없다.
 - `parked`: 이번 범위 밖이라 의도적으로 보류한다.
+- `composed`: 여러 service-ready 기능을 조합한 SDK 계산 기능이다.
 
 초기 상태:
 
 - 국내주식 구현 capability: `serviceReady`
-- LS 해외주식 quote/order 일부: 구현 전까지 `metadataOnly`
+- LS 해외주식 quote capability: `serviceReady`
+- LS 해외주식 market data capability: `serviceReady`
+- LS 해외주식 account capability: `serviceReady`
+- LS 해외주식 order capability: `serviceReady`
+- LS 해외주식 realtime capability: `serviceReady`
 - 선물옵션/파생상품: `parked`
 
 ## 3. 공통 입력 타입
@@ -187,6 +192,13 @@ getOverseasStockOrderHistory(broker, query, options?)
 getOverseasStockReservedOrderHistory(broker, query, options?)
 ```
 
+현재 구현 파일:
+
+```text
+src/services/OverseasStockAccountService.mjs
+test/services/OverseasStockAccountService.test.mjs
+```
+
 LS 대상 TR:
 
 | 기능 | TR | Path | 주요 필수 request |
@@ -218,6 +230,7 @@ buyOverseasStock(broker, order, options?)
 sellOverseasStock(broker, order, options?)
 modifyOverseasStockOrder(broker, order, options?)
 cancelOverseasStockOrder(broker, order, options?)
+submitOverseasStockReservedOrder(broker, order, options?)
 ```
 
 LS 대상 TR:
@@ -226,6 +239,7 @@ LS 대상 TR:
 | --- | --- | --- | --- |
 | 신규 | `COSAT00301` | `/overseas-stock/order` | `OrdPtnCode`, `OrdMktCode`, `IsuNo`, `OrdQty`, `OvrsOrdPrc`, `OrdprcPtnCode`, `BrkTpCode` |
 | 정정 | `COSAT00311` | `/overseas-stock/order` | `OrdPtnCode`, `OrgOrdNo`, `OrdMktCode`, `IsuNo`, `OrdQty`, `OvrsOrdPrc`, `OrdprcPtnCode`, `BrkTpCode` |
+| 취소 | `COSAT00301` | `/overseas-stock/order` | `OrdPtnCode=08`, `OrgOrdNo`, `OrdMktCode`, `IsuNo`, `OrdQty`, `OvrsOrdPrc`, `OrdprcPtnCode`, `BrkTpCode` |
 | 예약 등록/취소 | `COSAT00400` | `/overseas-stock/order` | `TrxTpCode`, `CntryCode`, `AcntNo`, `Pwd`, `FcurrMktCode`, `IsuNo`, `OrdQty`, `OvrsOrdPrc` |
 
 보류:
@@ -236,11 +250,11 @@ LS 대상 TR:
 
 - `dryRun` 기본값은 `true`.
 - live 주문은 `confirm: true` 필수.
-- 시장가 또는 가격 미기재 주문은 `confirmMarketOrder: true` 필수.
+- 시장가류 주문은 `confirmMarketOrder: true` 필수.
 - live 주문 request는 `retryable: false`.
 - `expectedRequest`가 있으면 완전 일치해야 한다.
-- `currencyCode`, `marketCode`, `exchangeCode` 누락 시 live 주문을 차단한다.
-- 정규장/프리마켓/애프터마켓 구분은 options에 명시하도록 하고, 문서 검증 전에는 추측하지 않는다.
+- `currencyCode`, `marketCode`, `exchangeCode`, `tradingSession` 누락 시 live 주문을 차단한다.
+- 정규장/프리마켓/애프터마켓 구분은 `tradingSession`으로 명시하도록 하고, 문서 검증 전에는 추측하지 않는다.
 
 ## 8. Realtime Service
 
@@ -256,7 +270,7 @@ Public methods:
 ```ts
 subscribeOverseasStockTrades(broker, identity, handler, options?)
 subscribeOverseasStockOrderBook(broker, identity, handler, options?)
-subscribeOverseasStockOrderEvents(broker, query, handler, options?)
+subscribeOverseasStockOrderEvents(broker, handler, options?)
 ```
 
 LS 대상 TR:
@@ -276,7 +290,8 @@ LS 대상 TR:
 - 기존 `WebSocketBrokerClient`의 subscribe envelope를 재사용한다.
 - 국내주식 realtime과 같은 response wrapper를 사용한다.
 - 주문 이벤트는 원본 이벤트명과 normalized event type을 함께 반환한다.
-- reconnect 후 resubscribe 테스트를 추가한다.
+- `GSC`, `GSH`, `AS0`~`AS4` request body가 manifest 필수 필드를 채우는지 감사 테스트에 포함한다.
+- reconnect 후 resubscribe 동작은 기존 `WebSocketBrokerClient` 테스트 범위에서 유지한다.
 
 ## 9. 감사 테스트 확장
 
@@ -301,8 +316,11 @@ docs/audits/overseas-stock-spec-audit-YYYY-MM-DD.md
 2. `OverseasStockQuoteService` 구현
 3. quote 테스트와 audit 확장
 4. `OverseasStockMarketDataService` 구현
-5. `OverseasStockAccountService` 구현
-6. `OverseasStockOrderService` 구현
-7. `OverseasStockRealtimeService` 구현
-8. 해외주식 감사 문서 작성
-9. `npm run validate:all` 통과
+5. market data 테스트와 audit 확장
+6. `OverseasStockAccountService` 구현 완료
+7. `OverseasStockOrderService` 구현 완료
+8. `OverseasStockRealtimeService` 구현 완료
+9. 해외주식 realtime audit/test/document 갱신
+8. `OverseasStockRealtimeService` 구현
+9. 해외주식 감사 문서 작성
+10. `npm run validate:all` 통과

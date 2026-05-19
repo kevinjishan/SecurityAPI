@@ -8,6 +8,7 @@ import {
   MarketFlowService,
   MarketDataService,
   OrderService,
+  OverseasStockRealtimeService,
   QuoteService,
   RealtimeService,
   ScannerService,
@@ -1001,6 +1002,20 @@ const marketStatusMessages = [];
 const marketStatusSubscription = await realtime.subscribeMarketStatus("kiwoom", {
   onMessage: (message) => marketStatusMessages.push(message),
 });
+const lsRealtime = new MockRealtimeClient("ls");
+const overseasRealtime = new OverseasStockRealtimeService({ ls: lsRealtime });
+const overseasRealtimeMessages = [];
+const overseasTradeSubscription = await overseasRealtime.subscribeOverseasStockTrades("ls", {
+  symbol: "TSLA",
+  exchangeCode: "82",
+}, {
+  onMessage: (message) => overseasRealtimeMessages.push(message),
+});
+const overseasOrderEventSubscription = await overseasRealtime.subscribeOverseasStockOrderEvents("ls", {
+  onMessage: (message) => overseasRealtimeMessages.push(message),
+}, {
+  trCode: "AS1",
+});
 
 kiwoomRealtime.emit("realtime", {
   data: {
@@ -1042,6 +1057,38 @@ kiwoomRealtime.emit("realtime", {
         },
       },
     ],
+  },
+});
+lsRealtime.emit("realtime", {
+  data: {
+    header: { tr_cd: "GSC", tr_key: "82TSLA".padEnd(18, " ") },
+    body: {
+      symbol: "TSLA",
+      trdtm: "093001",
+      kortm: "223001",
+      price: "283.820000",
+      diff: "1.130000",
+      rate: "0.40",
+      trdq: "15",
+      totq: "1000",
+      cgubun: "+",
+    },
+  },
+});
+lsRealtime.emit("realtime", {
+  data: {
+    header: { tr_cd: "AS1", tr_key: "" },
+    body: {
+      sAcntNo: "12345678901",
+      sOrdNo: "77",
+      sExecNO: "1",
+      sShtnIsuNo: "TSLA",
+      sBnsTp: "2",
+      sOrdQty: "10",
+      sExecQty: "8",
+      sExecPrc: "279.900000",
+      sUnercQty: "2",
+    },
   },
 });
 kiwoomRealtime.emit("realtime", {
@@ -1180,6 +1227,18 @@ assert.equal(realtimeMessages[0].price, 70150);
 assert.equal(realtimeMessages[0].body["10"], "70150");
 assert.equal(marketStatusMessages[0].kind, "marketStatus");
 assert.equal(marketStatusMessages[0].eventName, "장시작");
+assert.equal(overseasTradeSubscription.ok, true);
+assert.equal(overseasTradeSubscription.id, "GSC");
+assert.equal(overseasOrderEventSubscription.ok, true);
+assert.equal(overseasOrderEventSubscription.id, "AS1");
+assert.equal(lsRealtime.subscriptions.some((subscription) => subscription.id === "GSC" && subscription.key === "82TSLA".padEnd(18, " ")), true);
+assert.equal(lsRealtime.subscriptions.some((subscription) => subscription.id === "AS1" && subscription.key === ""), true);
+assert.equal(overseasRealtimeMessages[0].kind, "trade");
+assert.equal(overseasRealtimeMessages[0].market, "overseas");
+assert.equal(overseasRealtimeMessages[0].price, 283.82);
+assert.equal(overseasRealtimeMessages[1].kind, "orderEvent");
+assert.equal(overseasRealtimeMessages[1].eventType, "executed");
+assert.equal(overseasRealtimeMessages[1].executedQuantity, 8);
 
 console.log("Mock Kiwoom result:", kiwoomResult.data);
 console.log("Mock LS result:", lsResult.data);
@@ -1220,8 +1279,11 @@ console.log("Mock QuoteService results:", {
   lsSellDryRun: lsSellDryRun.data,
   realtimeSubscription,
   marketStatusSubscription,
+  overseasTradeSubscription,
+  overseasOrderEventSubscription,
   realtimeMessage: realtimeMessages[0],
   marketStatusMessage: marketStatusMessages[0],
+  overseasRealtimeMessages,
 });
 console.log("Mock broker client examples passed.");
 

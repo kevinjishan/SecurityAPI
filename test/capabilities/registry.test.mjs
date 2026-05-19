@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   BrokerCapabilities,
+  CAPABILITY_STATUSES,
   assertCapabilityReferences,
   getCapabilities,
   getCapabilityDefinition,
@@ -56,8 +57,70 @@ test("lists LS capabilities across domestic, overseas, and derivatives", () => {
 
   assert.equal(caps.supports("quote.domesticStock.orderBook"), true);
   assert.equal(caps.supports("overseasStock.quote"), true);
-  assert.equal(caps.supports("futureOption.order"), true);
+  assert.equal(caps.supports("overseasStock.marketData"), true);
+  assert.equal(caps.supports("overseasStock.account"), true);
+  assert.equal(caps.supports("overseasStock.order"), true);
+  assert.equal(caps.supports("overseasStock.realtime"), true);
+  assert.equal(caps.hasMetadata("overseasStock.quote"), true);
+  assert.equal(caps.hasMetadata("overseasStock.order"), true);
+  assert.equal(caps.supports("futureOption.order"), false);
+  assert.equal(caps.hasMetadata("futureOption.order"), true);
   assert.equal(caps.supports("realtime.domesticStock.balance"), false);
+});
+
+test("separates service-ready, metadata-only, and parked capability states", () => {
+  const caps = getCapabilities("ls");
+
+  assert.equal(CAPABILITY_STATUSES.SERVICE_READY, "serviceReady");
+  assert.equal(caps.get("quote.domesticStock.currentPrice").status, "serviceReady");
+  assert.equal(caps.get("quote.domesticStock.currentPrice").serviceReady, true);
+  assert.equal(caps.get("overseasStock.quote.currentPrice").status, "serviceReady");
+  assert.equal(caps.get("overseasStock.quote.currentPrice").serviceReady, true);
+  assert.equal(caps.get("overseasStock.quote.currentPrice").metadataAvailable, true);
+  assert.equal(caps.get("overseasStock.order.new").status, "serviceReady");
+  assert.equal(caps.get("overseasStock.order.new").serviceReady, true);
+  assert.equal(caps.get("overseasStock.order.new").metadataAvailable, true);
+  assert.equal(caps.get("futureOption.order.new").status, "parked");
+  assert.equal(caps.get("futureOption.order.new").serviceReady, false);
+  assert.equal(caps.get("futureOption.order.new").metadataAvailable, true);
+  assert.deepEqual(caps.findApis("overseasStock.quote", { status: "serviceReady" }).map((api) => api.id), [
+    "g3101",
+    "g3106",
+  ]);
+  assert.deepEqual(caps.findApis("overseasStock.marketData", { status: "serviceReady" }).map((api) => api.id), [
+    "g3104",
+    "g3190",
+    "g3204",
+    "g3103",
+    "g3102",
+  ]);
+  assert.deepEqual(caps.findApis("overseasStock.account", { status: "serviceReady" }).map((api) => api.id), [
+    "COSOQ02701",
+    "COSOQ00201",
+    "COSAQ00102",
+    "COSAQ01400",
+  ]);
+  assert.deepEqual(caps.findApis("overseasStock.order", { status: "serviceReady" }).map((api) => api.id), [
+    "COSAT00301",
+    "COSAT00311",
+    "COSAT00301",
+    "COSAT00400",
+  ]);
+  assert.deepEqual(caps.findApis("overseasStock.realtime", { status: "serviceReady" }).map((api) => api.id), [
+    "GSC",
+    "GSH",
+    "AS0",
+    "AS1",
+    "AS2",
+    "AS3",
+    "AS4",
+  ]);
+  assert.deepEqual(caps.findApis("overseasStock.order", { status: "metadataOnly" }), []);
+  assert.deepEqual(caps.findApis("futureOption.order", { status: "parked" }).map((api) => api.id), [
+    "CFOAT00100",
+    "CFOAT00200",
+    "CFOAT00300",
+  ]);
 });
 
 test("finds LS API references for capabilities", () => {
@@ -81,7 +144,23 @@ test("finds LS API references for capabilities", () => {
   assert.deepEqual(caps.findApis("overseasStock.order").map((api) => api.id), [
     "COSAT00301",
     "COSAT00311",
+    "COSAT00301",
     "COSAT00400",
+  ]);
+  assert.deepEqual(caps.findApis("overseasStock.account").map((api) => api.id), [
+    "COSOQ02701",
+    "COSOQ00201",
+    "COSAQ00102",
+    "COSAQ01400",
+  ]);
+  assert.deepEqual(caps.findApis("overseasStock.realtime").map((api) => api.id), [
+    "GSC",
+    "GSH",
+    "AS0",
+    "AS1",
+    "AS2",
+    "AS3",
+    "AS4",
   ]);
 });
 
@@ -93,16 +172,33 @@ test("throws unsupported errors when requiring unknown capabilities", () => {
   });
 });
 
+test("throws unsupported errors when requiring metadata-only capabilities", () => {
+  const caps = new BrokerCapabilities("ls", [
+    {
+      id: "overseasStock.order.new",
+      status: "metadataOnly",
+      apis: [{ id: "COSAT00301", role: "usMarketOrder", transport: "rest" }],
+    },
+  ]);
+
+  assert.throws(() => caps.require("overseasStock.order.new"), {
+    code: "UNSUPPORTED_CAPABILITY",
+  });
+});
+
 test("returns capability definitions", () => {
   const definitions = listCapabilityDefinitions();
 
   assert.equal(getCapabilityDefinition("quote.domesticStock.currentPrice").area, "quote");
   assert.equal(definitions["order.domesticStock.buy"].label, "국내주식 매수");
+  assert.equal(definitions["overseasStock.realtime.trade"].label, "해외주식 실시간 체결");
 });
 
 test("lists capability ids by broker", () => {
   assert.ok(listCapabilityIds("kiwoom").includes("realtime.domesticStock.trade"));
   assert.ok(listCapabilityIds("ls").includes("futureOption.quote.currentPrice"));
+  assert.equal(listCapabilityIds("ls", { status: "serviceReady" }).includes("futureOption.quote.currentPrice"), false);
+  assert.ok(listCapabilityIds("ls", { status: "parked" }).includes("futureOption.quote.currentPrice"));
 });
 
 test("validates all capability API references against generated manifests", async () => {

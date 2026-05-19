@@ -97,14 +97,27 @@ const result = await ls.request("t1101", {
 
 ## Capability Layer
 
-증권사별 문서상 지원 기능은 Capability Layer에서 조회합니다. 이 레이어는 실제 도메인 함수를 실행하지 않고, 기능과 API ID/TR 코드의 연결을 제공합니다.
+증권사별 기능 상태는 Capability Layer에서 조회합니다. 이 레이어는 실제 도메인 함수를 실행하지 않고, 기능과 API ID/TR 코드의 연결을 제공합니다.
+
+Capability 상태는 다음처럼 구분합니다.
+
+- `serviceReady`: 서비스 메서드, 요청 생성, 응답 정규화, 테스트가 준비된 기능
+- `metadataOnly`: 공식 문서/manifest/API 매핑은 있지만 아직 서비스 구현 전인 기능
+- `parked`: 공식 문서/manifest/API 매핑은 있지만 현재 제품 범위 밖으로 보류한 기능
+- `composed`: 여러 service-ready 기능을 조합한 SDK 계산 기능
 
 ```js
 import { getCapabilities } from "security-api-reference";
 
 const caps = getCapabilities("kiwoom");
 
+// 서비스에서 바로 사용할 수 있는 기능인지 확인
 caps.supports("order.domesticStock");
+
+// 공식 문서/manifest 매핑이 있는지 확인
+caps.hasMetadata("account.domesticStock.balance");
+
+// 매핑된 API ID/TR 코드 조회
 caps.findApis("account.domesticStock.balance");
 ```
 
@@ -113,10 +126,10 @@ caps.findApis("account.domesticStock.balance");
 ## Domain Services
 
 도메인 서비스는 Broker Client를 사용하되, 결과를 공통 형태로 얇게 정리합니다.
-현재 국내주식 시세 조회, 시장 데이터 조회, 종목 스캐너/조건검색, 시장 컨텍스트 스냅샷/지수 추이/예상지수, 시장 수급/프로그램 매매 조회, 시그널 입력값 생성, 계좌 기본 조회, dry-run 기본 주문, 실시간 WebSocket 구독/장운영 상태 서비스를 제공합니다.
+현재 국내주식 시세 조회, 시장 데이터 조회, 종목 스캐너/조건검색, 시장 컨텍스트 스냅샷/지수 추이/예상지수, 시장 수급/프로그램 매매 조회, 시그널 입력값 생성, 계좌 기본 조회, dry-run 기본 주문, 실시간 WebSocket 구독/장운영 상태 서비스와 LS 해외주식 현재가/호가/종목정보/마스터/차트/시간대별/계좌/주문/실시간 서비스를 제공합니다.
 
 ```js
-import { AccountService, KiwoomClient, LsClient, MarketContextService, MarketFlowService, MarketDataService, OrderService, QuoteService, RealtimeService, ScannerService, SignalInputService } from "security-api-reference";
+import { AccountService, KiwoomClient, LsClient, MarketContextService, MarketFlowService, MarketDataService, OrderService, OverseasStockAccountService, OverseasStockMarketDataService, OverseasStockOrderService, OverseasStockQuoteService, OverseasStockRealtimeService, QuoteService, RealtimeService, ScannerService, SignalInputService } from "security-api-reference";
 
 const clients = {
   kiwoom: new KiwoomClient({
@@ -140,6 +153,9 @@ const signals = new SignalInputService(clients);
 const account = new AccountService(clients);
 const order = new OrderService(clients);
 const realtime = new RealtimeService(clients);
+const overseasAccount = new OverseasStockAccountService(clients);
+const overseasOrder = new OverseasStockOrderService(clients);
+const overseasRealtime = new OverseasStockRealtimeService(clients);
 
 const currentPrice = await quote.getDomesticStockCurrentPrice("kiwoom", "005930");
 const orderBook = await quote.getDomesticStockOrderBook("kiwoom", "005930");
@@ -194,6 +210,22 @@ const orderHistory = await account.getDomesticStockOrderHistory("kiwoom", {
   orderDate: "20260518",
   symbol: "005930"
 });
+const overseasCash = await overseasAccount.getOverseasStockCash("ls", {
+  currencyCode: "ALL"
+});
+const overseasBalance = await overseasAccount.getOverseasStockBalance("ls", {
+  baseDate: "20260519",
+  currencyCode: "ALL",
+  balanceType: "00"
+});
+const overseasBuyDryRun = await overseasOrder.buyOverseasStock("ls", {
+  symbol: "PLTR",
+  marketCode: "82",
+  currencyCode: "USD",
+  tradingSession: "regular",
+  quantity: 5,
+  price: 70
+});
 const buyDryRun = await order.buyDomesticStock("kiwoom", {
   symbol: "005930",
   quantity: 1,
@@ -208,6 +240,12 @@ const tradeStream = await realtime.subscribeDomesticStockTrades("kiwoom", "00593
 const marketStatusStream = await realtime.subscribeMarketStatus("kiwoom", {
   onMessage: (message) => console.log(message.session, message.phase, message.eventName)
 });
+const overseasTradeStream = await overseasRealtime.subscribeOverseasStockTrades("ls", {
+  symbol: "TSLA",
+  exchangeCode: "82"
+}, {
+  onMessage: (message) => console.log(message.symbol, message.price, message.tradeQuantity)
+});
 ```
 
-현재 구현 범위는 `quote.domesticStock.currentPrice`, `quote.domesticStock.orderBook`, `quote.domesticStock.multiCurrentPrice`, `marketData.domesticStock.basicInfo`, `marketData.domesticStock.dailyCandles`, `marketData.domesticStock.minuteCandles`, `scanner.domesticStock.volumeRanking`, `scanner.domesticStock.valueRanking`, `scanner.domesticStock.changeRateRanking`, `scanner.conditionSearch.list`, `scanner.conditionSearch.search`, `scanner.conditionSearch.realtime`, `marketContext.domesticIndex.current`, `marketContext.domesticIndex.dailyCandles`, `marketContext.domesticIndex.expected`, `marketContext.domesticMarket.snapshot`, `marketFlow.domesticInvestor.netBuy`, `marketFlow.programTrading.trend`, `signal.domesticStock.inputs`, `signal.domesticStock.realtimeInputs`, `account.domesticStock.cash`, `account.domesticStock.balance`, `account.domesticStock.orderHistory`, `order.domesticStock.buy`, `order.domesticStock.sell`, `order.domesticStock.modify`, `order.domesticStock.cancel`, `realtime.domesticStock.trade`, `realtime.domesticStock.orderBook`, `realtime.domesticStock.orderEvent`, `realtime.domesticStock.balance`, `realtime.market.status`입니다. 조건검색 서비스는 키움 `ka10171`/`ka10172`/`ka10173`/`ka10174`, LS `t1866`/`t1859`/`t1860`/`AFR` 차이를 감추고 조건식 목록, 검색 결과, 실시간 조건 이벤트를 공통 필드로 정리합니다. 시장 컨텍스트 서비스는 주요 지수 현재가와 상승/보합/하락 종목 수, 지수 일봉 추이, LS 예상지수를 조합해 시장 폭과 방향성을 제공하지만, 매매 판단은 포함하지 않습니다. 시장 수급 서비스는 개인/외국인/기관/세부 기관 투자자 순매수와 전체/차익/비차익 프로그램 매매 흐름을 공통 형태로 제공합니다. 시그널 입력 서비스는 매수/매도 판단을 내리지 않고 가격 모멘텀, 거래량 급증, 조건검색 매칭 여부, 호가 불균형, 당일 위치 같은 계산 입력값만 제공합니다. 옵션으로 조건검색, 시장 스냅샷/지수 일봉/예상지수/수급/프로그램 매매를 같은 입력값에 포함할 수 있습니다. `signal.domesticStock.realtimeInputs`는 초기 스냅샷에 실시간 체결/호가/장운영 상태/조건검색 이벤트를 누적해 같은 계산 입력값을 갱신합니다. 주문 서비스는 기본 dry-run이며 실주문은 `dryRun: false`, `confirm: true`가 모두 필요하고 retry를 비활성화합니다. 안전장치 옵션으로 `maxOrderAmount`, `allowedSymbols`, `blockedSymbols`, `confirmMarketOrder`, `expectedRequest`를 지원합니다. 실시간 서비스는 Capability Layer에 등록된 WebSocket API만 구독하며, 체결/호가/주문 이벤트/장운영 상태는 `kind`, `symbol`, `price`, `asks`, `bids`, `orderId`, `executedQuantity`, `session`, `phase`, `eventName` 같은 공통 필드로 정규화합니다. WebSocket Client는 중복 구독 방지, 연결 종료 시 backoff 재연결, 기존 구독 복구, heartbeat stale 감지, `connected`/`disconnected`/`reconnecting`/`resubscribed` 상태 이벤트를 지원합니다. 실행 환경에서 헤더 지정이 필요한 경우 `webSocketFactory` 또는 호환 WebSocket 구현을 주입합니다.
+현재 구현 범위는 `quote.domesticStock.currentPrice`, `quote.domesticStock.orderBook`, `quote.domesticStock.multiCurrentPrice`, `marketData.domesticStock.basicInfo`, `marketData.domesticStock.dailyCandles`, `marketData.domesticStock.minuteCandles`, `scanner.domesticStock.volumeRanking`, `scanner.domesticStock.valueRanking`, `scanner.domesticStock.changeRateRanking`, `scanner.conditionSearch.list`, `scanner.conditionSearch.search`, `scanner.conditionSearch.realtime`, `marketContext.domesticIndex.current`, `marketContext.domesticIndex.dailyCandles`, `marketContext.domesticIndex.expected`, `marketContext.domesticMarket.snapshot`, `marketFlow.domesticInvestor.netBuy`, `marketFlow.programTrading.trend`, `signal.domesticStock.inputs`, `signal.domesticStock.realtimeInputs`, `account.domesticStock.cash`, `account.domesticStock.balance`, `account.domesticStock.orderHistory`, `order.domesticStock.buy`, `order.domesticStock.sell`, `order.domesticStock.modify`, `order.domesticStock.cancel`, `realtime.domesticStock.trade`, `realtime.domesticStock.orderBook`, `realtime.domesticStock.orderEvent`, `realtime.domesticStock.balance`, `realtime.market.status`, `overseasStock.quote.currentPrice`, `overseasStock.quote.orderBook`, `overseasStock.marketData.basicInfo`, `overseasStock.marketData.master`, `overseasStock.marketData.candles`, `overseasStock.marketData.timeSeries`, `overseasStock.account.cash`, `overseasStock.account.balance`, `overseasStock.account.orderHistory`, `overseasStock.account.reservedOrderHistory`, `overseasStock.order.new`, `overseasStock.order.modify`, `overseasStock.order.cancel`, `overseasStock.order.reserve`, `overseasStock.realtime.trade`, `overseasStock.realtime.orderBook`, `overseasStock.realtime.orderEvent`입니다. 조건검색 서비스는 키움 `ka10171`/`ka10172`/`ka10173`/`ka10174`, LS `t1866`/`t1859`/`t1860`/`AFR` 차이를 감추고 조건식 목록, 검색 결과, 실시간 조건 이벤트를 공통 필드로 정리합니다. 시장 컨텍스트 서비스는 주요 지수 현재가와 상승/보합/하락 종목 수, 지수 일봉 추이, LS 예상지수를 조합해 시장 폭과 방향성을 제공하지만, 매매 판단은 포함하지 않습니다. 시장 수급 서비스는 개인/외국인/기관/세부 기관 투자자 순매수와 전체/차익/비차익 프로그램 매매 흐름을 공통 형태로 제공합니다. 시그널 입력 서비스는 매수/매도 판단을 내리지 않고 가격 모멘텀, 거래량 급증, 조건검색 매칭 여부, 호가 불균형, 당일 위치 같은 계산 입력값만 제공합니다. 옵션으로 조건검색, 시장 스냅샷/지수 일봉/예상지수/수급/프로그램 매매를 같은 입력값에 포함할 수 있습니다. `signal.domesticStock.realtimeInputs`는 초기 스냅샷에 실시간 체결/호가/장운영 상태/조건검색 이벤트를 누적해 같은 계산 입력값을 갱신합니다. 주문 서비스는 기본 dry-run이며 실주문은 `dryRun: false`, `confirm: true`가 모두 필요하고 retry를 비활성화합니다. 안전장치 옵션으로 `maxOrderAmount`, `allowedSymbols`, `blockedSymbols`, `confirmMarketOrder`, `expectedRequest`를 지원합니다. 실시간 서비스는 Capability Layer에 등록된 WebSocket API만 구독하며, 체결/호가/주문 이벤트/장운영 상태는 `kind`, `symbol`, `price`, `asks`, `bids`, `orderId`, `executedQuantity`, `session`, `phase`, `eventName` 같은 공통 필드로 정규화합니다. 해외주식 실시간 서비스는 LS `GSC`, `GSH`, `AS0`~`AS4`를 같은 모델로 구독하고 `market: "overseas"`와 `eventType`을 포함해 정규화합니다. WebSocket Client는 중복 구독 방지, 연결 종료 시 backoff 재연결, 기존 구독 복구, heartbeat stale 감지, `connected`/`disconnected`/`reconnecting`/`resubscribed` 상태 이벤트를 지원합니다. 실행 환경에서 헤더 지정이 필요한 경우 `webSocketFactory` 또는 호환 WebSocket 구현을 주입합니다.

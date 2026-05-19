@@ -89,9 +89,10 @@ caps.findApis("quote.domesticStock.currentPrice");
 계좌 조회 도메인 서비스는 예수금/주문가능금액, 잔고/평가손익, 주문/체결 내역 조회를 제공합니다.
 주문 서비스는 기본값으로 dry-run 요청만 생성합니다. 실주문은 `dryRun: false`, `confirm: true`가 모두 필요하고, 시장가 실주문은 `confirmMarketOrder: true`도 필요합니다.
 실시간 서비스는 WebSocket 구독 요청, 수신 메시지 정규화, 자동 재연결과 구독 복구를 제공합니다. 체결/호가/주문 이벤트뿐 아니라 장시작, 장마감, 시간외, 서킷브레이크 같은 장운영 상태도 공통 형태로 제공합니다.
+LS 해외주식 서비스는 현재가/호가, 종목정보/마스터/차트/시간대별, 계좌, 주문, 실시간 체결/호가/주문 이벤트를 제공합니다.
 
 ```js
-import { AccountService, KiwoomClient, LsClient, MarketContextService, MarketFlowService, MarketDataService, OrderService, QuoteService, RealtimeService, ScannerService, SignalInputService } from "security-api-reference";
+import { AccountService, KiwoomClient, LsClient, MarketContextService, MarketFlowService, MarketDataService, OrderService, OverseasStockRealtimeService, QuoteService, RealtimeService, ScannerService, SignalInputService } from "security-api-reference";
 
 const clients = {
   kiwoom: new KiwoomClient({
@@ -115,6 +116,7 @@ const signals = new SignalInputService(clients);
 const account = new AccountService(clients);
 const order = new OrderService(clients);
 const realtime = new RealtimeService(clients);
+const overseasRealtime = new OverseasStockRealtimeService(clients);
 
 const price = await quote.getDomesticStockCurrentPrice("kiwoom", "005930");
 const orderBook = await quote.getDomesticStockOrderBook("kiwoom", "005930");
@@ -190,6 +192,12 @@ const tradeStream = await realtime.subscribeDomesticStockTrades("kiwoom", "00593
 });
 const marketStatusStream = await realtime.subscribeMarketStatus("kiwoom", {
   onMessage: (message) => console.log(message.session, message.phase, message.eventName)
+});
+const overseasTradeStream = await overseasRealtime.subscribeOverseasStockTrades("ls", {
+  symbol: "TSLA",
+  exchangeCode: "82"
+}, {
+  onMessage: (message) => console.log(message.symbol, message.price, message.tradeQuantity)
 });
 ```
 

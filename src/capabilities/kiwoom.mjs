@@ -1,52 +1,52 @@
 export const KIWOOM_CAPABILITIES = [
   {
     id: "auth.oauth.issueToken",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "au10001", role: "issueToken", transport: "rest" }],
   },
   {
     id: "auth.oauth.revokeToken",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "au10002", role: "revokeToken", transport: "rest" }],
   },
   {
     id: "quote.domesticStock.currentPrice",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka10001", role: "basicInfoWithCurrentPrice", transport: "rest" }],
   },
   {
     id: "quote.domesticStock.orderBook",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka10004", role: "orderBook", transport: "rest" }],
   },
   {
     id: "quote.domesticStock.multiCurrentPrice",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka10095", role: "watchListInfo", transport: "rest" }],
   },
   {
     id: "marketData.domesticStock.basicInfo",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka10001", role: "stockBasicInfo", transport: "rest" }],
   },
   {
     id: "marketData.domesticStock.dailyCandles",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka10081", role: "dailyChart", transport: "rest" }],
   },
   {
     id: "marketData.domesticStock.minuteCandles",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka10080", role: "minuteChart", transport: "rest" }],
   },
   {
     id: "marketContext.domesticIndex.current",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka20001", role: "sectorIndexCurrent", transport: "rest" }],
   },
   {
     id: "marketContext.domesticIndex.dailyCandles",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka20006", role: "sectorIndexDailyChart", transport: "rest" }],
   },
   {
@@ -57,44 +57,44 @@ export const KIWOOM_CAPABILITIES = [
   },
   {
     id: "marketFlow.domesticInvestor.netBuy",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka10051", role: "sectorInvestorNetBuy", transport: "rest" }],
   },
   {
     id: "marketFlow.programTrading.trend",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka90005", role: "programTradingTimeTrend", transport: "rest" }],
   },
   {
     id: "scanner.domesticStock.volumeRanking",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka10030", role: "todayVolumeRanking", transport: "rest" }],
   },
   {
     id: "scanner.domesticStock.valueRanking",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka10032", role: "tradingValueRanking", transport: "rest" }],
   },
   {
     id: "scanner.domesticStock.changeRateRanking",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka10027", role: "changeRateRanking", transport: "rest" }],
   },
   {
     id: "scanner.conditionSearch.list",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka10171", role: "conditionList", transport: "websocket" }],
     caution: "조건검색은 키움 WebSocket 조건검색 요청 흐름을 사용한다.",
   },
   {
     id: "scanner.conditionSearch.search",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "ka10172", role: "conditionSearch", transport: "websocket" }],
     caution: "조건검색은 키움 WebSocket 조건검색 요청 흐름을 사용한다.",
   },
   {
     id: "scanner.conditionSearch.realtime",
-    status: "documented",
+    status: "serviceReady",
     apis: [
       { id: "ka10173", role: "realtimeStart", transport: "websocket" },
       { id: "ka10174", role: "realtimeStop", transport: "websocket" },
@@ -115,51 +115,51 @@ export const KIWOOM_CAPABILITIES = [
   },
   {
     id: "account.domesticStock.cash",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "kt00001", role: "cashDetail", transport: "rest" }],
   },
   {
     id: "account.domesticStock.balance",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "kt00018", role: "evaluationBalanceDetail", transport: "rest" }],
   },
   {
     id: "account.domesticStock.orderHistory",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "kt00007", role: "orderExecutionDetail", transport: "rest" }],
   },
   {
     id: "order.domesticStock.buy",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "kt10000", role: "buy", transport: "rest" }],
     caution: "주문 API는 기본 retry 대상이 아니다.",
   },
   {
     id: "order.domesticStock.sell",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "kt10001", role: "sell", transport: "rest" }],
     caution: "주문 API는 기본 retry 대상이 아니다.",
   },
   {
     id: "order.domesticStock.modify",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "kt10002", role: "modify", transport: "rest" }],
     caution: "주문 API는 기본 retry 대상이 아니다.",
   },
   {
     id: "order.domesticStock.cancel",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "kt10003", role: "cancel", transport: "rest" }],
     caution: "주문 API는 기본 retry 대상이 아니다.",
   },
   {
     id: "realtime.domesticStock.trade",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "0B", role: "stockTrade", transport: "websocket" }],
   },
   {
     id: "realtime.domesticStock.orderBook",
-    status: "documented",
+    status: "serviceReady",
     apis: [
       { id: "0D", role: "orderBookDepth", transport: "websocket" },
       { id: "0C", role: "bestOrderBook", transport: "websocket" },
@@ -167,17 +167,17 @@ export const KIWOOM_CAPABILITIES = [
   },
   {
     id: "realtime.domesticStock.orderEvent",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "00", role: "orderExecution", transport: "websocket" }],
   },
   {
     id: "realtime.domesticStock.balance",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "04", role: "balance", transport: "websocket" }],
   },
   {
     id: "realtime.market.status",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "0s", role: "marketSessionStatus", transport: "websocket" }],
   },
 ];

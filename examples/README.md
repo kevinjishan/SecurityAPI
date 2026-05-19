@@ -29,6 +29,7 @@ npm run examples:mock
 - `AccountService.getDomesticStockOrderHistory()` 주문/체결 내역 공통 응답 형태 확인
 - `OrderService.buyDomesticStock()` / `sellDomesticStock()` dry-run 주문 요청과 안전장치 확인
 - `RealtimeService.subscribeDomesticStockTrades()` / `subscribeMarketStatus()` mock WebSocket 구독/체결/장운영 상태 메시지 공통 필드 정규화 확인
+- `OverseasStockRealtimeService.subscribeOverseasStockTrades()` / `subscribeOverseasStockOrderEvents()` LS 해외주식 실시간 체결/주문 이벤트 정규화 확인
 - `WebSocketBrokerClient` 중복 구독 방지, 재연결, 구독 복구 테스트는 `npm test`에서 확인
 
 ## Real Credentials

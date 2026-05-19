@@ -8,6 +8,11 @@ import {
   MarketDataService,
   MarketFlowService,
   OrderService,
+  OverseasStockAccountService,
+  OverseasStockMarketDataService,
+  OverseasStockOrderService,
+  OverseasStockQuoteService,
+  OverseasStockRealtimeService,
   QuoteService,
   ScannerService,
 } from "../../src/index.mjs";
@@ -26,6 +31,99 @@ test("implemented core service requests include documented required body fields"
     quoteScenario("ls", "t1102", (service) => service.getDomesticStockCurrentPrice("ls", "005930", { trCode: "t1102" })),
     quoteScenario("ls", "t8450", (service) => service.getDomesticStockOrderBook("ls", "005930", { trCode: "t8450" })),
     quoteScenario("ls", "t8407", (service) => service.getDomesticStockMultiCurrentPrice("ls", ["005930", "000660"])),
+    overseasQuoteScenario("ls", "g3101", (service) => service.getOverseasStockCurrentPrice("ls", {
+      symbol: "TSLA",
+      keySymbol: "82TSLA",
+      exchangeCode: "82",
+    })),
+    overseasQuoteScenario("ls", "g3106", (service) => service.getOverseasStockOrderBook("ls", {
+      symbol: "TSLA",
+      keySymbol: "82TSLA",
+      exchangeCode: "82",
+    })),
+    overseasMarketDataScenario("ls", "g3104", (service) => service.getOverseasStockBasicInfo("ls", {
+      symbol: "TSLA",
+      keySymbol: "82TSLA",
+      exchangeCode: "82",
+    })),
+    overseasMarketDataScenario("ls", "g3190", (service) => service.getOverseasStockMaster("ls", {
+      countryCode: "US",
+      exchangeGroup: "2",
+      readCount: 10,
+    })),
+    overseasMarketDataScenario("ls", "g3204", (service) => service.getOverseasStockCandles("ls", {
+      symbol: "TSLA",
+      keySymbol: "82TSLA",
+      exchangeCode: "82",
+    }, {
+      startDate: "20250203",
+      count: 5,
+    })),
+    overseasMarketDataScenario("ls", "g3103", (service) => service.getOverseasStockCandles("ls", {
+      symbol: "TSLA",
+      keySymbol: "82TSLA",
+      exchangeCode: "82",
+    }, {
+      trCode: "g3103",
+      period: "monthly",
+      date: "20250120",
+    })),
+    overseasMarketDataScenario("ls", "g3102", (service) => service.getOverseasStockTimeSeries("ls", {
+      symbol: "TSLA",
+      keySymbol: "82TSLA",
+      exchangeCode: "82",
+    })),
+    overseasAccountScenario("ls", "COSOQ02701", (service) => service.getOverseasStockCash("ls", {
+      currencyCode: "ALL",
+    })),
+    overseasAccountScenario("ls", "COSOQ00201", (service) => service.getOverseasStockBalance("ls", {
+      baseDate: "20260519",
+      currencyCode: "ALL",
+      balanceType: "00",
+    })),
+    overseasAccountScenario("ls", "COSAQ00102", (service) => service.getOverseasStockOrderHistory("ls", {
+      marketCode: "82",
+      symbol: "TSLA",
+      orderDate: "20260519",
+      currencyCode: "000",
+    })),
+    overseasAccountScenario("ls", "COSAQ01400", (service) => service.getOverseasStockReservedOrderHistory("ls", {
+      countryCode: "001",
+      accountNumber: "TEST_ACCOUNT",
+      password: "TESTPWD",
+      startDate: "20260501",
+      endDate: "20260519",
+    })),
+    overseasOrderScenario("ls", "COSAT00301", (service) => service.buyOverseasStock("ls", {
+      symbol: "PLTR",
+      marketCode: "82",
+      currencyCode: "USD",
+      quantity: 5,
+      price: 70,
+    })),
+    overseasOrderScenario("ls", "COSAT00311", (service) => service.modifyOverseasStockOrder("ls", {
+      originalOrderNumber: "87",
+      symbol: "TSLA",
+      marketCode: "82",
+      currencyCode: "USD",
+      price: 200,
+    })),
+    overseasOrderScenario("ls", "COSAT00400", (service) => service.submitOverseasStockReservedOrder("ls", {
+      transactionType: "1",
+      countryCode: "001",
+      accountNumber: "TEST_ACCOUNT",
+      password: "TESTPWD",
+      reservedOrderInputDate: "20260519",
+      reservedOrderNumber: 0,
+      side: "buy",
+      marketCode: "82",
+      currencyCode: "USD",
+      symbol: "PLTR",
+      quantity: 5,
+      price: 70,
+      reservedOrderStartDate: "20260520",
+      reservedOrderEndDate: "20260520",
+    })),
 
     marketDataScenario("kiwoom", "ka10001", (service) => service.getDomesticStockBasicInfo("kiwoom", "005930")),
     marketDataScenario("kiwoom", "ka10081", (service) => service.getDomesticStockDailyCandles("kiwoom", "005930", { baseDate: "20260519" })),
@@ -81,8 +179,73 @@ test("implemented core service requests include documented required body fields"
   }
 });
 
+test("implemented overseas realtime subscriptions include documented request fields", async () => {
+  const scenarios = [
+    overseasRealtimeScenario("ls", "GSC", (service) => service.subscribeOverseasStockTrades("ls", {
+      symbol: "TSLA",
+      exchangeCode: "82",
+    })),
+    overseasRealtimeScenario("ls", "GSH", (service) => service.subscribeOverseasStockOrderBook("ls", {
+      symbol: "TSLA",
+      exchangeCode: "82",
+    })),
+    overseasRealtimeScenario("ls", "AS0", (service) => service.subscribeOverseasStockOrderEvents("ls", {}, { trCode: "AS0" })),
+    overseasRealtimeScenario("ls", "AS1", (service) => service.subscribeOverseasStockOrderEvents("ls", {}, { trCode: "AS1" })),
+    overseasRealtimeScenario("ls", "AS2", (service) => service.subscribeOverseasStockOrderEvents("ls", {}, { trCode: "AS2" })),
+    overseasRealtimeScenario("ls", "AS3", (service) => service.subscribeOverseasStockOrderEvents("ls", {}, { trCode: "AS3" })),
+    overseasRealtimeScenario("ls", "AS4", (service) => service.subscribeOverseasStockOrderEvents("ls", {}, { trCode: "AS4" })),
+  ];
+
+  for (const scenario of scenarios) {
+    const actual = await scenario.getParams();
+    const missing = missingRequiredFields(scenario.broker, scenario.id, actual);
+    assert.deepEqual(missing, [], `${scenario.broker} ${scenario.id} missing required websocket request fields`);
+  }
+});
+
 function quoteScenario(broker, id, run) {
   return serviceScenario({ broker, id, Service: QuoteService, run });
+}
+
+function overseasQuoteScenario(broker, id, run) {
+  return serviceScenario({ broker, id, Service: OverseasStockQuoteService, run });
+}
+
+function overseasMarketDataScenario(broker, id, run) {
+  return serviceScenario({ broker, id, Service: OverseasStockMarketDataService, run });
+}
+
+function overseasAccountScenario(broker, id, run) {
+  return serviceScenario({ broker, id, Service: OverseasStockAccountService, run });
+}
+
+function overseasOrderScenario(broker, id, run) {
+  return {
+    broker,
+    id,
+    async getParams() {
+      const result = await run(new OverseasStockOrderService({}));
+      assert.equal(result.ok, true, `${broker} ${id} overseas order dry-run should succeed`);
+      assert.equal(normalizeId(result.id), normalizeId(id));
+      return result.data.request;
+    },
+  };
+}
+
+function overseasRealtimeScenario(broker, id, run) {
+  return {
+    broker,
+    id,
+    async getParams() {
+      const client = new RecordingRealtimeClient(broker);
+      const service = new OverseasStockRealtimeService({ [broker]: client });
+      const result = await run(service);
+      assert.equal(result.ok, true, `${broker} ${id} realtime scenario should succeed`);
+      const call = client.calls.find((item) => normalizeId(item.id) === normalizeId(id));
+      assert.ok(call, `${broker} ${id} should be subscribed`);
+      return call.request.body;
+    },
+  };
 }
 
 function marketDataScenario(broker, id, run) {
@@ -150,6 +313,42 @@ class RecordingClient {
       raw: {},
       headers: {},
       status: 200,
+    };
+  }
+}
+
+class RecordingRealtimeClient {
+  constructor(broker) {
+    this.broker = broker;
+    this.calls = [];
+    this.handlers = new Map();
+  }
+
+  on(event, handler) {
+    const handlers = this.handlers.get(event) ?? new Set();
+    handlers.add(handler);
+    this.handlers.set(event, handlers);
+    return () => handlers.delete(handler);
+  }
+
+  async subscribe(id, key, options = {}) {
+    const request = {
+      header: { tr_type: options.streamKind === "account" ? "3" : "1" },
+      body: { tr_cd: id, tr_key: key },
+    };
+    this.calls.push({ id, key, options, request });
+    return { id, key, action: "subscribe", request };
+  }
+
+  async unsubscribe(id, key, options = {}) {
+    return {
+      id,
+      key,
+      action: "unsubscribe",
+      request: {
+        header: { tr_type: options.streamKind === "account" ? "4" : "2" },
+        body: { tr_cd: id, tr_key: key },
+      },
     };
   }
 }

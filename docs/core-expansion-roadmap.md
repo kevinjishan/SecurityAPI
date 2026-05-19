@@ -38,10 +38,11 @@
 - 주문: 신규, 정정, 취소, dry-run/live guard
 - 실시간: 체결, 호가, 시장상태, 조건검색 이벤트
 - 판단 입력: 가격/호가/시장상태/조건검색 이벤트를 strategy 입력으로 조립
+- LS 해외주식: 현재가, 호가, 종목정보, 마스터, 차트, 시간대별 체결, 계좌, 주문, 실시간 체결/호가/주문 이벤트
 
 ### Metadata 또는 capability 수준
 
-- LS 해외주식 일부 TR은 capability에 매핑되어 있지만 아직 domain service와 normalizer가 없다.
+- LS 해외주식 현재가/호가/종목정보/마스터/차트/시간대별/계좌/주문/실시간 TR은 service-ready로 승격되었다.
 - Kiwoom 해외주식은 현재 저장소의 공식 문서 metadata에 서비스화할 근거가 없다.
 - 선물옵션 capability는 코드에 일부 존재하지만, 이번 로드맵에서는 service-ready 대상으로 승격하지 않는다.
 
@@ -157,6 +158,7 @@ src/services/OverseasStockRealtimeService.mjs
 목표:
 
 - 시장 판단에 필요한 해외주식 기초 데이터와 차트를 조회할 수 있게 한다.
+- 현재 `g3104`, `g3190`, `g3103`, `g3204`, `g3102`는 service-ready 상태다.
 
 우선 TR:
 
@@ -177,6 +179,7 @@ src/services/OverseasStockRealtimeService.mjs
 목표:
 
 - 해외주식 잔고, 예수금, 주문/체결 내역을 앱에서 조회할 수 있게 한다.
+- 현재 `COSOQ00201`, `COSOQ02701`, `COSAQ00102`, `COSAQ01400`은 service-ready 상태다.
 
 우선 TR:
 
@@ -196,12 +199,13 @@ src/services/OverseasStockRealtimeService.mjs
 목표:
 
 - 해외주식 신규, 정정, 취소 주문을 국내주식 주문과 같은 안전장치 아래에서 제공한다.
+- 현재 `COSAT00301`, `COSAT00311`, `COSAT00400`은 service-ready 상태다.
 
 우선 TR:
 
 - `COSAT00301`: 미국시장주문
 - `COSAT00311`: 미국시장주문정정
-- `COSAT00400`: 미국시장주문취소
+- `COSAT00400`: 해외주식 예약주문 등록 및 취소
 
 보류 TR:
 
@@ -236,7 +240,7 @@ src/services/OverseasStockRealtimeService.mjs
 
 - subscribe/unsubscribe envelope 테스트 추가
 - 체결/호가/주문 이벤트 normalizer 추가
-- reconnect 후 resubscribe 동작 유지
+- 기존 `WebSocketBrokerClient`의 reconnect 후 resubscribe 동작을 유지한다.
 
 ### M6. 감사와 예제
 
@@ -274,8 +278,6 @@ src/services/OverseasStockRealtimeService.mjs
 
 ## 8. 다음 작업
 
-1. capability registry에서 service-ready와 metadata-only 상태를 분리한다.
-2. 해외주식 상세 설계 문서 `docs/overseas-stock-layer-plan.md`를 작성한다.
-3. `OverseasStockQuoteService`부터 구현한다.
-4. quote 구현이 통과하면 market data, account, order, realtime 순서로 확장한다.
-5. 각 단계마다 감사 테스트와 문서를 갱신한다.
+1. 해외주식 확장 감사 문서를 최신 구현 범위로 갱신한다.
+2. `npm run validate:all`로 전체 문서/manifest/test/example을 다시 확인한다.
+3. 이후 범위는 해외주식 live integration 체크리스트와 예제 보강으로 분리한다.

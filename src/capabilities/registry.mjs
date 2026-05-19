@@ -9,6 +9,24 @@ const BROKER_CAPABILITIES = Object.freeze({
   ls: LS_CAPABILITIES,
 });
 
+export const CAPABILITY_STATUSES = Object.freeze({
+  SERVICE_READY: "serviceReady",
+  METADATA_ONLY: "metadataOnly",
+  PARKED: "parked",
+  COMPOSED: "composed",
+});
+
+const SERVICE_READY_STATUSES = new Set([
+  CAPABILITY_STATUSES.SERVICE_READY,
+  CAPABILITY_STATUSES.COMPOSED,
+]);
+
+const METADATA_STATUSES = new Set([
+  CAPABILITY_STATUSES.SERVICE_READY,
+  CAPABILITY_STATUSES.METADATA_ONLY,
+  CAPABILITY_STATUSES.PARKED,
+]);
+
 export class BrokerCapabilities {
   constructor(broker, capabilities) {
     this.broker = assertBroker(broker);
@@ -16,25 +34,33 @@ export class BrokerCapabilities {
     this.byId = new Map(this.capabilities.map((capability) => [capability.id, capability]));
   }
 
-  list() {
-    return clone(this.capabilities);
+  list(options = {}) {
+    return clone(this.capabilities.filter((capability) => matchesStatusFilter(capability, options)));
   }
 
-  listIds() {
-    return this.capabilities.map((capability) => capability.id);
+  listIds(options = {}) {
+    return this.list(options).map((capability) => capability.id);
   }
 
-  get(capabilityId) {
-    return clone(this.byId.get(capabilityId) ?? null);
+  get(capabilityId, options = {}) {
+    const capability = this.byId.get(capabilityId) ?? null;
+    if (!capability || !matchesStatusFilter(capability, options)) {
+      return null;
+    }
+
+    return clone(capability);
   }
 
   require(capabilityId) {
     const capability = this.get(capabilityId);
 
-    if (!capability) {
-      throw BrokerError.unsupported(`${this.broker} does not support capability: ${capabilityId}`, {
+    if (!capability || !isServiceReadyCapability(capability)) {
+      throw BrokerError.unsupported(`${this.broker} does not have service-ready capability: ${capabilityId}`, {
         broker: this.broker,
-        details: { capabilityId },
+        details: {
+          capabilityId,
+          status: capability?.status ?? null,
+        },
       });
     }
 
@@ -42,18 +68,19 @@ export class BrokerCapabilities {
   }
 
   supports(capabilityId) {
-    return matchingCapabilities(this.capabilities, capabilityId).length > 0;
+    return matchingCapabilities(this.capabilities, capabilityId).some(isServiceReadyCapability);
+  }
+
+  hasMetadata(capabilityId) {
+    return matchingCapabilities(this.capabilities, capabilityId).some(hasMetadataCapability);
   }
 
   findApis(capabilityId, options = {}) {
-    const capabilities = matchingCapabilities(this.capabilities, capabilityId);
+    const capabilities = matchingCapabilities(this.capabilities, capabilityId)
+      .filter((capability) => matchesStatusFilter(capability, options));
     const refs = [];
 
     for (const capability of capabilities) {
-      if (options.status && capability.status !== options.status) {
-        continue;
-      }
-
       for (const api of capability.apis) {
         refs.push({
           ...api,
@@ -84,8 +111,8 @@ export function listCapabilityDefinitions() {
   return clone(CAPABILITY_DEFINITIONS);
 }
 
-export function listCapabilityIds(broker) {
-  return getCapabilities(broker).listIds();
+export function listCapabilityIds(broker, options = {}) {
+  return getCapabilities(broker).listIds(options);
 }
 
 export async function validateCapabilityReferences(options = {}) {
@@ -130,16 +157,44 @@ export async function assertCapabilityReferences(options = {}) {
 
 function enrichCapability(broker, capability) {
   const definition = getCapabilityDefinition(capability.id);
+  const status = capability.status ?? CAPABILITY_STATUSES.METADATA_ONLY;
 
   return {
     broker,
     id: capability.id,
     area: definition?.area ?? capability.id.split(".")[0],
     label: definition?.label ?? capability.id,
-    status: capability.status ?? "documented",
+    status,
+    serviceReady: SERVICE_READY_STATUSES.has(status),
+    metadataAvailable: METADATA_STATUSES.has(status) && (capability.apis?.length ?? 0) > 0,
     apis: capability.apis ?? [],
     caution: capability.caution,
   };
+}
+
+function isServiceReadyCapability(capability) {
+  return SERVICE_READY_STATUSES.has(capability.status);
+}
+
+function hasMetadataCapability(capability) {
+  return METADATA_STATUSES.has(capability.status) && capability.apis.length > 0;
+}
+
+function matchesStatusFilter(capability, options = {}) {
+  const statuses = normalizeStatusFilter(options);
+  return !statuses || statuses.has(capability.status);
+}
+
+function normalizeStatusFilter(options = {}) {
+  if (options.statuses) {
+    return new Set(Array.isArray(options.statuses) ? options.statuses : [options.statuses]);
+  }
+
+  if (options.status) {
+    return new Set([options.status]);
+  }
+
+  return null;
 }
 
 function matchingCapabilities(capabilities, capabilityId) {

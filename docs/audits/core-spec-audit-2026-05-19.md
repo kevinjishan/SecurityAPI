@@ -8,13 +8,13 @@ Covered areas:
 
 - Broker clients: Kiwoom, LS OAuth/request/continuation/error handling.
 - Capability mappings for implemented core services.
-- Domain services: quote, market data, market context, market flow, scanner/condition search, account, order, realtime, signal input.
+- Domain services: quote, market data, market context, market flow, scanner/condition search, account, order, realtime, signal input, LS overseas quote/market-data/account/order/realtime.
 - Order safety guardrails: dry-run default, explicit live-order confirmation, market-order confirmation, retry disabled for live order requests, symbol/amount guards, expected request matching.
 
 Out of scope:
 
 - Live broker connectivity with real keys/accounts.
-- Domain services not yet implemented for overseas stock, futures/options, ELW, credit, short selling, and every raw documented API.
+- Domain services not yet implemented for futures/options, ELW, credit, short selling, and every raw documented API.
 - Strategy decisions such as buy/sell signal generation.
 
 ## Automated Checks Added
@@ -34,9 +34,12 @@ The check covers all service-backed core request paths that the SDK currently ex
 - MarketFlow: investor net buy, program trading trend.
 - Scanner: volume/value/change rankings, condition list/search/realtime session.
 - Account: cash, balance, order history.
+- LS overseas account: cash, balance, order history, reserved order history.
+- LS overseas order: buy, sell, modify, cancel, reserved order request.
+- LS overseas realtime: trade, order book, order accepted/executed/modified/canceled/rejected subscriptions.
 - Order: buy, sell, modify, cancel.
 
-Realtime WebSocket envelope construction is covered by existing `WebSocketBrokerClient` and `RealtimeService` tests. The audit treats realtime domain message normalization separately because the service API exposes `subscribe(id, key)` rather than the raw broker WebSocket payload.
+Realtime WebSocket envelope construction is covered by `WebSocketBrokerClient`, `RealtimeService`, `OverseasStockRealtimeService`, and audit tests. The audit now checks that LS overseas realtime subscriptions include the documented `tr_cd`/`tr_key` body shape for `GSC`, `GSH`, and `AS0`~`AS4`.
 
 ## Findings And Fixes
 
@@ -102,7 +105,7 @@ Status: fixed.
 
 - This is a static/mock audit. It does not prove broker production acceptance without real app keys, account permissions, and market-session connectivity.
 - Response normalization is tested against representative official-like payloads, not every field variant in every API response.
-- Some documented capabilities for overseas stock and futures/options are metadata/capability mappings only. They are not domain services yet.
+- Some documented capabilities for futures/options and other non-stock areas are metadata/capability mappings only. They are not domain services yet.
 - WebSocket subscription payloads vary by broker runtime. Existing tests verify SDK envelope construction and normalized messages, but production WebSocket validation remains a live integration task.
 
 ## Current Judgment

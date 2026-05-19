@@ -248,9 +248,9 @@ const res = await ls.request("t1101", {
 
 ### 3.5 Broker Adapter / Capability Layer
 
-이 레이어는 1차 SDK에서 문서상 지원 기능과 API ID/TR 코드의 연결표로 구현한다.
+이 레이어는 1차 SDK에서 기능 상태와 API ID/TR 코드의 연결표로 구현한다.
 
-목표는 증권사별 지원 범위를 명시적으로 드러내는 것이다.
+목표는 증권사별로 “서비스에서 바로 사용 가능한 기능”과 “문서/manifest에만 존재하는 기능”을 명시적으로 구분하는 것이다.
 
 구현 파일:
 
@@ -269,8 +269,23 @@ import { getCapabilities } from "security-api-reference";
 
 const caps = getCapabilities("ls");
 
+// service-ready 기능만 true
 caps.supports("quote.domesticStock.currentPrice");
+
+// 문서/manifest 매핑이 있으면 true
+caps.hasMetadata("overseasStock.quote.currentPrice");
+
+// 기본값은 상태와 무관하게 매핑된 API/TR 코드를 조회한다.
 caps.findApis("quote.domesticStock.currentPrice");
+```
+
+Capability status:
+
+```text
+serviceReady  - 서비스 메서드, 요청 생성, 응답 정규화, 테스트가 준비된 기능
+metadataOnly  - 공식 문서/manifest/API 매핑은 있지만 서비스 구현 전인 기능
+parked        - 공식 문서/manifest/API 매핑은 있지만 현재 범위 밖으로 보류한 기능
+composed      - 여러 service-ready 기능을 조합한 SDK 계산 기능
 ```
 
 초기 capability 예시:
@@ -290,7 +305,8 @@ futureOption.order.new
 주의사항:
 
 - capability는 기능을 흉내내기 위한 것이 아니라, 지원 여부를 명확히 드러내기 위한 장치다.
-- `status = "documented"`는 공식 문서상 API가 존재한다는 뜻이다.
+- `supports()`는 `serviceReady` 또는 `composed` 상태만 true로 본다.
+- 공식 문서상 API 존재 여부는 `hasMetadata()`나 `findApis()`로 확인한다.
 - 불가능한 기능은 조용히 fallback하지 않고 `UNSUPPORTED_CAPABILITY`로 실패한다.
 - 주문/계좌/실시간처럼 위험하거나 복잡한 영역은 도메인 계층에서 별도로 설계한다.
 - 주문 API는 capability에 포함하되 기본 retry 대상이 아니다.
@@ -298,7 +314,7 @@ futureOption.order.new
 
 ### 3.6 Domain Service Layer
 
-이 레이어는 2차 작업이며, 현재 국내주식 시세, 시장 데이터, 랭킹/조건검색 스캐너, 시장 컨텍스트, 계좌, 주문, 실시간 구독의 기본 구현을 제공한다.
+이 레이어는 2차 작업이며, 현재 국내주식 시세, 시장 데이터, 랭킹/조건검색 스캐너, 시장 컨텍스트, 계좌, 주문, 실시간 구독과 LS 해외주식 현재가/호가/종목정보/마스터/차트/시간대별/계좌/주문/실시간의 기본 구현을 제공한다.
 
 목표는 사용자가 증권사별 API ID/TR 코드를 몰라도 도메인 함수로 호출하게 하는 것이다.
 
@@ -335,6 +351,11 @@ src/services/SignalInputService.mjs
 src/services/AccountService.mjs
 src/services/OrderService.mjs
 src/services/RealtimeService.mjs
+src/services/OverseasStockQuoteService.mjs
+src/services/OverseasStockMarketDataService.mjs
+src/services/OverseasStockAccountService.mjs
+src/services/OverseasStockOrderService.mjs
+src/services/OverseasStockRealtimeService.mjs
 src/services/index.mjs
 test/services/QuoteService.test.mjs
 test/services/MarketDataService.test.mjs
@@ -342,6 +363,11 @@ test/services/ScannerService.test.mjs
 test/services/MarketContextService.test.mjs
 test/services/MarketFlowService.test.mjs
 test/services/SignalInputService.test.mjs
+test/services/OverseasStockQuoteService.test.mjs
+test/services/OverseasStockMarketDataService.test.mjs
+test/services/OverseasStockAccountService.test.mjs
+test/services/OverseasStockOrderService.test.mjs
+test/services/OverseasStockRealtimeService.test.mjs
 ```
 
 현재 범위:
@@ -400,6 +426,10 @@ test/services/SignalInputService.test.mjs
 - LS `t1602` 시간대별투자자매매추이 호출
 - LS `t1632` 시간대별프로그램매매추이 호출
 - LS `JIF` 장운영정보 WebSocket 구독
+- LS 해외주식 `g3101`, `g3106`, `g3104`, `g3190`, `g3204`, `g3103`, `g3102` 조회 호출
+- LS 해외주식 `COSOQ02701`, `COSOQ00201`, `COSAQ00102`, `COSAQ01400` 계좌 조회 호출
+- LS 해외주식 `COSAT00301`, `COSAT00311`, `COSAT00400` 주문 dry-run 요청 생성
+- LS 해외주식 `GSC`, `GSH`, `AS0`~`AS4` WebSocket 구독
 - `symbol`, `name`, `price`, `change`, `changeRate`, `volume`, `currency`, `source` 공통 형태 제공
 - 호가는 `asks`, `bids`, `totals`, `timestamp`, `source` 공통 형태 제공
 - OHLCV는 `date`, `time`, `timestamp`, `open`, `high`, `low`, `close`, `volume`, `value`, `raw` 공통 형태 제공
@@ -415,6 +445,7 @@ test/services/SignalInputService.test.mjs
 - `DomesticStockRealtimeSignalState`는 초기 시그널 스냅샷에 실시간 체결/호가/조건검색 이벤트를 적용해 `signal.domesticStock.realtimeInputs`를 갱신
 - `RealtimeService.subscribeMarketStatus()`는 키움 `0s`, LS `JIF`를 `marketStatus` 메시지로 정규화하며 `session`, `phase`, `eventCode`, `eventName`, `time`, `remainingTime`을 제공
 - `subscribeDomesticStockSignalInputs()`는 `RealtimeService`와 선택적 `ScannerService` 실시간 조건검색 구독을 사용해 체결/호가/장운영 상태/조건검색 업데이트마다 최신 입력값을 `onUpdate`로 전달
+- `OverseasStockRealtimeService`는 LS 해외주식 체결/호가/주문 이벤트를 `market: "overseas"`, `kind`, `eventType`, `symbol`, `price`, `asks`, `bids`, `orderId`, `executedQuantity` 중심으로 정규화
 
 추후 다룰 것:
 

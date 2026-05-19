@@ -1,17 +1,17 @@
 export const LS_CAPABILITIES = [
   {
     id: "auth.oauth.issueToken",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "token", role: "issueToken", transport: "rest" }],
   },
   {
     id: "auth.oauth.revokeToken",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "revoke", role: "revokeToken", transport: "rest" }],
   },
   {
     id: "quote.domesticStock.currentPrice",
-    status: "documented",
+    status: "serviceReady",
     apis: [
       { id: "t1102", role: "currentPrice", transport: "rest" },
       { id: "t1101", role: "currentPriceOrderBook", transport: "rest" },
@@ -20,7 +20,7 @@ export const LS_CAPABILITIES = [
   },
   {
     id: "quote.domesticStock.orderBook",
-    status: "documented",
+    status: "serviceReady",
     apis: [
       { id: "t1101", role: "orderBook", transport: "rest" },
       { id: "t8450", role: "integratedOrderBook", transport: "rest" },
@@ -28,37 +28,37 @@ export const LS_CAPABILITIES = [
   },
   {
     id: "quote.domesticStock.multiCurrentPrice",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t8407", role: "multiCurrentPrice", transport: "rest" }],
   },
   {
     id: "marketData.domesticStock.basicInfo",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t1102", role: "stockBasicInfo", transport: "rest" }],
   },
   {
     id: "marketData.domesticStock.dailyCandles",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t8410", role: "dailyChart", transport: "rest" }],
   },
   {
     id: "marketData.domesticStock.minuteCandles",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t8412", role: "minuteChart", transport: "rest" }],
   },
   {
     id: "marketContext.domesticIndex.current",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t1511", role: "sectorIndexCurrent", transport: "rest" }],
   },
   {
     id: "marketContext.domesticIndex.dailyCandles",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t1514", role: "sectorIndexPeriodTrend", transport: "rest" }],
   },
   {
     id: "marketContext.domesticIndex.expected",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t1485", role: "expectedIndex", transport: "rest" }],
   },
   {
@@ -69,42 +69,42 @@ export const LS_CAPABILITIES = [
   },
   {
     id: "marketFlow.domesticInvestor.netBuy",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t1602", role: "investorTimeSeriesByMarket", transport: "rest" }],
   },
   {
     id: "marketFlow.programTrading.trend",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t1632", role: "programTradingTimeTrend", transport: "rest" }],
   },
   {
     id: "scanner.domesticStock.volumeRanking",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t1452", role: "volumeRanking", transport: "rest" }],
   },
   {
     id: "scanner.domesticStock.valueRanking",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t1463", role: "tradingValueRanking", transport: "rest" }],
   },
   {
     id: "scanner.domesticStock.changeRateRanking",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t1441", role: "changeRateRanking", transport: "rest" }],
   },
   {
     id: "scanner.conditionSearch.list",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t1866", role: "conditionList", transport: "rest" }],
   },
   {
     id: "scanner.conditionSearch.search",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t1859", role: "conditionSearch", transport: "rest" }],
   },
   {
     id: "scanner.conditionSearch.realtime",
-    status: "documented",
+    status: "serviceReady",
     apis: [
       { id: "t1860", role: "realtimeSession", transport: "rest" },
       { id: "AFR", role: "realtimeEvent", transport: "websocket" },
@@ -125,46 +125,46 @@ export const LS_CAPABILITIES = [
   },
   {
     id: "account.domesticStock.cash",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "CSPAQ12200", role: "cashAndOrderableAmount", transport: "rest" }],
   },
   {
     id: "account.domesticStock.balance",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "t0424", role: "stockBalance", transport: "rest" }],
   },
   {
     id: "account.domesticStock.orderHistory",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "CSPAQ13700", role: "orderExecutionHistory", transport: "rest" }],
   },
   {
     id: "order.domesticStock.buy",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "CSPAT00601", role: "newOrder", transport: "rest" }],
     caution: "현물주문 TR은 매수/매도를 요청 필드로 구분한다. 주문 API는 기본 retry 대상이 아니다.",
   },
   {
     id: "order.domesticStock.sell",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "CSPAT00601", role: "newOrder", transport: "rest" }],
     caution: "현물주문 TR은 매수/매도를 요청 필드로 구분한다. 주문 API는 기본 retry 대상이 아니다.",
   },
   {
     id: "order.domesticStock.modify",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "CSPAT00701", role: "modifyOrder", transport: "rest" }],
     caution: "주문 API는 기본 retry 대상이 아니다.",
   },
   {
     id: "order.domesticStock.cancel",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "CSPAT00801", role: "cancelOrder", transport: "rest" }],
     caution: "주문 API는 기본 retry 대상이 아니다.",
   },
   {
     id: "realtime.domesticStock.trade",
-    status: "documented",
+    status: "serviceReady",
     apis: [
       { id: "S3_", role: "kospiTrade", transport: "websocket" },
       { id: "K3_", role: "kosdaqTrade", transport: "websocket" },
@@ -173,7 +173,7 @@ export const LS_CAPABILITIES = [
   },
   {
     id: "realtime.domesticStock.orderBook",
-    status: "documented",
+    status: "serviceReady",
     apis: [
       { id: "H1_", role: "kospiOrderBook", transport: "websocket" },
       { id: "HA_", role: "kosdaqOrderBook", transport: "websocket" },
@@ -182,7 +182,7 @@ export const LS_CAPABILITIES = [
   },
   {
     id: "realtime.domesticStock.orderEvent",
-    status: "documented",
+    status: "serviceReady",
     apis: [
       { id: "SC0", role: "orderAccepted", transport: "websocket" },
       { id: "SC1", role: "orderExecuted", transport: "websocket" },
@@ -193,40 +193,110 @@ export const LS_CAPABILITIES = [
   },
   {
     id: "realtime.market.status",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "JIF", role: "marketSessionStatus", transport: "websocket" }],
   },
   {
     id: "overseasStock.quote.currentPrice",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "g3101", role: "currentPrice", transport: "rest" }],
   },
   {
     id: "overseasStock.quote.orderBook",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "g3106", role: "orderBook", transport: "rest" }],
   },
   {
+    id: "overseasStock.marketData.basicInfo",
+    status: "serviceReady",
+    apis: [{ id: "g3104", role: "basicInfo", transport: "rest" }],
+  },
+  {
+    id: "overseasStock.marketData.master",
+    status: "serviceReady",
+    apis: [{ id: "g3190", role: "master", transport: "rest" }],
+  },
+  {
+    id: "overseasStock.marketData.candles",
+    status: "serviceReady",
+    apis: [
+      { id: "g3204", role: "periodCandles", transport: "rest" },
+      { id: "g3103", role: "simplePeriodCandles", transport: "rest" },
+    ],
+  },
+  {
+    id: "overseasStock.marketData.timeSeries",
+    status: "serviceReady",
+    apis: [{ id: "g3102", role: "timeSeries", transport: "rest" }],
+  },
+  {
+    id: "overseasStock.account.cash",
+    status: "serviceReady",
+    apis: [{ id: "COSOQ02701", role: "cash", transport: "rest" }],
+  },
+  {
+    id: "overseasStock.account.balance",
+    status: "serviceReady",
+    apis: [{ id: "COSOQ00201", role: "balance", transport: "rest" }],
+  },
+  {
+    id: "overseasStock.account.orderHistory",
+    status: "serviceReady",
+    apis: [{ id: "COSAQ00102", role: "orderExecutionHistory", transport: "rest" }],
+  },
+  {
+    id: "overseasStock.account.reservedOrderHistory",
+    status: "serviceReady",
+    apis: [{ id: "COSAQ01400", role: "reservedOrderHistory", transport: "rest" }],
+  },
+  {
     id: "overseasStock.order.new",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "COSAT00301", role: "usMarketOrder", transport: "rest" }],
     caution: "주문 API는 기본 retry 대상이 아니다.",
   },
   {
     id: "overseasStock.order.modify",
-    status: "documented",
+    status: "serviceReady",
     apis: [{ id: "COSAT00311", role: "usMarketModifyOrder", transport: "rest" }],
     caution: "주문 API는 기본 retry 대상이 아니다.",
   },
   {
     id: "overseasStock.order.cancel",
-    status: "documented",
+    status: "serviceReady",
+    apis: [{ id: "COSAT00301", role: "usMarketCancelOrder", transport: "rest" }],
+    caution: "미국시장주문 TR은 OrdPtnCode=08로 취소 주문을 구분한다. 주문 API는 기본 retry 대상이 아니다.",
+  },
+  {
+    id: "overseasStock.order.reserve",
+    status: "serviceReady",
     apis: [{ id: "COSAT00400", role: "reservedOrderRegisterOrCancel", transport: "rest" }],
     caution: "주문 API는 기본 retry 대상이 아니다.",
   },
   {
+    id: "overseasStock.realtime.trade",
+    status: "serviceReady",
+    apis: [{ id: "GSC", role: "overseasTrade", transport: "websocket" }],
+  },
+  {
+    id: "overseasStock.realtime.orderBook",
+    status: "serviceReady",
+    apis: [{ id: "GSH", role: "overseasOrderBook", transport: "websocket" }],
+  },
+  {
+    id: "overseasStock.realtime.orderEvent",
+    status: "serviceReady",
+    apis: [
+      { id: "AS0", role: "overseasOrderAccepted", transport: "websocket" },
+      { id: "AS1", role: "overseasOrderExecuted", transport: "websocket" },
+      { id: "AS2", role: "overseasOrderModified", transport: "websocket" },
+      { id: "AS3", role: "overseasOrderCanceled", transport: "websocket" },
+      { id: "AS4", role: "overseasOrderRejected", transport: "websocket" },
+    ],
+  },
+  {
     id: "futureOption.quote.currentPrice",
-    status: "documented",
+    status: "parked",
     apis: [
       { id: "t2111", role: "currentPrice", transport: "rest" },
       { id: "t8402", role: "stockFutureCurrentPrice", transport: "rest" },
@@ -234,24 +304,24 @@ export const LS_CAPABILITIES = [
   },
   {
     id: "futureOption.quote.orderBook",
-    status: "documented",
+    status: "parked",
     apis: [{ id: "t2112", role: "orderBook", transport: "rest" }],
   },
   {
     id: "futureOption.order.new",
-    status: "documented",
+    status: "parked",
     apis: [{ id: "CFOAT00100", role: "newOrder", transport: "rest" }],
     caution: "주문 API는 기본 retry 대상이 아니다.",
   },
   {
     id: "futureOption.order.modify",
-    status: "documented",
+    status: "parked",
     apis: [{ id: "CFOAT00200", role: "modifyOrder", transport: "rest" }],
     caution: "주문 API는 기본 retry 대상이 아니다.",
   },
   {
     id: "futureOption.order.cancel",
-    status: "documented",
+    status: "parked",
     apis: [{ id: "CFOAT00300", role: "cancelOrder", transport: "rest" }],
     caution: "주문 API는 기본 retry 대상이 아니다.",
   },

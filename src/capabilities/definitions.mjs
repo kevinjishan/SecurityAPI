@@ -143,6 +143,38 @@ export const CAPABILITY_DEFINITIONS = Object.freeze({
     area: "overseasStock",
     label: "해외주식 호가",
   },
+  "overseasStock.marketData.basicInfo": {
+    area: "overseasStock",
+    label: "해외주식 종목정보",
+  },
+  "overseasStock.marketData.master": {
+    area: "overseasStock",
+    label: "해외주식 마스터",
+  },
+  "overseasStock.marketData.candles": {
+    area: "overseasStock",
+    label: "해외주식 일주월년 차트",
+  },
+  "overseasStock.marketData.timeSeries": {
+    area: "overseasStock",
+    label: "해외주식 시간대별 체결",
+  },
+  "overseasStock.account.cash": {
+    area: "overseasStock",
+    label: "해외주식 예수금",
+  },
+  "overseasStock.account.balance": {
+    area: "overseasStock",
+    label: "해외주식 잔고/종합잔고평가",
+  },
+  "overseasStock.account.orderHistory": {
+    area: "overseasStock",
+    label: "해외주식 주문/체결 내역",
+  },
+  "overseasStock.account.reservedOrderHistory": {
+    area: "overseasStock",
+    label: "해외주식 예약주문 처리결과",
+  },
   "overseasStock.order.new": {
     area: "overseasStock",
     label: "해외주식 신규 주문",
@@ -153,7 +185,23 @@ export const CAPABILITY_DEFINITIONS = Object.freeze({
   },
   "overseasStock.order.cancel": {
     area: "overseasStock",
-    label: "해외주식 취소/예약 주문",
+    label: "해외주식 취소 주문",
+  },
+  "overseasStock.order.reserve": {
+    area: "overseasStock",
+    label: "해외주식 예약 주문 등록/취소",
+  },
+  "overseasStock.realtime.trade": {
+    area: "overseasStock",
+    label: "해외주식 실시간 체결",
+  },
+  "overseasStock.realtime.orderBook": {
+    area: "overseasStock",
+    label: "해외주식 실시간 호가",
+  },
+  "overseasStock.realtime.orderEvent": {
+    area: "overseasStock",
+    label: "해외주식 실시간 주문 이벤트",
   },
   "futureOption.quote.currentPrice": {
     area: "futureOption",
