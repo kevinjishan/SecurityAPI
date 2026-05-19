@@ -197,7 +197,12 @@ async function requestBasicInfo(client, broker, sourceId, symbol, options) {
   }
 
   if (broker === "ls") {
-    return client.request(sourceId, { [`${sourceId}InBlock`]: { shcode: symbol } }, requestOptions);
+    return client.request(sourceId, {
+      [`${sourceId}InBlock`]: {
+        shcode: symbol,
+        exchgubun: options.exchangeCode ?? options.exchange ?? "K",
+      },
+    }, requestOptions);
   }
 
   throw BrokerError.unsupported(`Unsupported basic info request broker: ${broker}`, {

@@ -116,28 +116,17 @@ export const KIWOOM_CAPABILITIES = [
   {
     id: "account.domesticStock.cash",
     status: "documented",
-    apis: [
-      { id: "kt00001", role: "cashDetail", transport: "rest" },
-      { id: "kt00010", role: "withdrawableOrderCash", transport: "rest" },
-      { id: "kt00011", role: "orderableQuantityByMarginRate", transport: "rest" },
-    ],
+    apis: [{ id: "kt00001", role: "cashDetail", transport: "rest" }],
   },
   {
     id: "account.domesticStock.balance",
     status: "documented",
-    apis: [
-      { id: "kt00004", role: "accountEvaluation", transport: "rest" },
-      { id: "kt00005", role: "executionBalance", transport: "rest" },
-      { id: "kt00018", role: "evaluationBalanceDetail", transport: "rest" },
-    ],
+    apis: [{ id: "kt00018", role: "evaluationBalanceDetail", transport: "rest" }],
   },
   {
     id: "account.domesticStock.orderHistory",
     status: "documented",
-    apis: [
-      { id: "kt00007", role: "orderExecutionDetail", transport: "rest" },
-      { id: "kt00009", role: "orderExecutionStatus", transport: "rest" },
-    ],
+    apis: [{ id: "kt00007", role: "orderExecutionDetail", transport: "rest" }],
   },
   {
     id: "order.domesticStock.buy",

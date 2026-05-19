@@ -126,27 +126,17 @@ export const LS_CAPABILITIES = [
   {
     id: "account.domesticStock.cash",
     status: "documented",
-    apis: [
-      { id: "CSPAQ12200", role: "cashAndOrderableAmount", transport: "rest" },
-      { id: "CSPAQ22200", role: "cashAndOrderableAmount2", transport: "rest" },
-      { id: "CSPBQ00200", role: "orderableQuantityByMarginRate", transport: "rest" },
-    ],
+    apis: [{ id: "CSPAQ12200", role: "cashAndOrderableAmount", transport: "rest" }],
   },
   {
     id: "account.domesticStock.balance",
     status: "documented",
-    apis: [
-      { id: "t0424", role: "stockBalance", transport: "rest" },
-      { id: "FOCCQ33600", role: "profitRateDetail", transport: "rest" },
-    ],
+    apis: [{ id: "t0424", role: "stockBalance", transport: "rest" }],
   },
   {
     id: "account.domesticStock.orderHistory",
     status: "documented",
-    apis: [
-      { id: "CSPAQ13700", role: "orderExecutionHistory", transport: "rest" },
-      { id: "CDPCQ04700", role: "accountTransactionHistory", transport: "rest" },
-    ],
+    apis: [{ id: "CSPAQ13700", role: "orderExecutionHistory", transport: "rest" }],
   },
   {
     id: "order.domesticStock.buy",

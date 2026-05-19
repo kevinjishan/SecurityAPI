@@ -83,7 +83,7 @@ test("gets and normalizes domestic stock basic info", async () => {
   assert.equal(result.ok, true);
   assert.equal(client.calls[0].id, "t1102");
   assert.deepEqual(client.calls[0].params, {
-    t1102InBlock: { shcode: "005930" },
+    t1102InBlock: { shcode: "005930", exchgubun: "K" },
   });
   assert.equal(result.data.symbol, "005930");
   assert.equal(result.data.name, "삼성전자");

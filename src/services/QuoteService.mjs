@@ -311,7 +311,12 @@ async function requestCurrentPrice(client, broker, sourceId, symbol, options) {
   }
 
   if (broker === "ls") {
-    return client.request(sourceId, { [`${sourceId}InBlock`]: { shcode: symbol } }, requestOptions);
+    return client.request(sourceId, {
+      [`${sourceId}InBlock`]: {
+        shcode: symbol,
+        ...lsExchangeParam(sourceId, options),
+      },
+    }, requestOptions);
   }
 
   throw BrokerError.unsupported(`Unsupported quote request broker: ${broker}`, {
@@ -328,7 +333,12 @@ async function requestOrderBook(client, broker, sourceId, symbol, options) {
   }
 
   if (broker === "ls") {
-    return client.request(sourceId, { [`${sourceId}InBlock`]: { shcode: symbol } }, requestOptions);
+    return client.request(sourceId, {
+      [`${sourceId}InBlock`]: {
+        shcode: symbol,
+        ...lsExchangeParam(sourceId, options),
+      },
+    }, requestOptions);
   }
 
   throw BrokerError.unsupported(`Unsupported order book request broker: ${broker}`, {
@@ -471,6 +481,16 @@ function lsOrderBookLevel(payload, side, level) {
   const quantityKey = side === "ask" ? `offerrem${level}` : `bidrem${level}`;
 
   return orderBookLevel(level, payload?.[priceKey], payload?.[quantityKey]);
+}
+
+function lsExchangeParam(sourceId, options = {}) {
+  if (!["t1102", "t8450"].includes(sourceId)) {
+    return {};
+  }
+
+  return {
+    exchgubun: options.exchangeCode ?? options.exchange ?? "K",
+  };
 }
 
 function orderBookLevel(level, priceRaw, quantityRaw) {

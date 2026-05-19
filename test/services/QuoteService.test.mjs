@@ -136,7 +136,7 @@ test("supports explicit LS current price source selection", async () => {
   assert.equal(result.id, "t1102");
   assert.deepEqual(calls[0], {
     id: "t1102",
-    params: { t1102InBlock: { shcode: "005930" } },
+    params: { t1102InBlock: { shcode: "005930", exchgubun: "K" } },
   });
   assert.equal(result.data.price, 71000);
 });
