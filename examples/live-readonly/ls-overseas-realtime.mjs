@@ -66,6 +66,7 @@ async function subscribeAndCollect({ subscribe, waitMs }) {
 
   await new Promise((resolve) => setTimeout(resolve, waitMs));
   const unsubscribeResult = await subscription.unsubscribe?.();
+  subscription.close?.();
 
   return {
     ...subscription,
@@ -92,7 +93,7 @@ function summarizeRealtimeResult(successNotes) {
       broker: response?.broker,
       id: response?.id,
       ids: response?.ids,
-      key: response?.key,
+      keyPresent: Boolean(response?.key),
       messageCount: response?.data?.messageCount ?? 0,
       firstMessage: response?.data?.firstMessage ?? null,
     },

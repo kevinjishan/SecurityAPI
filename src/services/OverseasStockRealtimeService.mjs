@@ -121,6 +121,7 @@ export class OverseasStockRealtimeService {
             streamKind,
           });
         },
+        close: () => client.close?.(),
       };
     } catch (error) {
       return failureResponse({
@@ -184,6 +185,7 @@ export class OverseasStockRealtimeService {
           }
           return results;
         },
+        close: () => client.close?.(),
       };
     } catch (error) {
       return failureResponse({

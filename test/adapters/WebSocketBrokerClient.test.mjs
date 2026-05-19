@@ -67,13 +67,35 @@ test("connects and subscribes to LS realtime streams", async () => {
   const orderEventSubscription = await client.subscribe("SC1", "", { streamKind: "account" });
   const unsubscribe = await client.unsubscribe("S3_", "005930");
 
-  assert.equal(sockets[0].url, "wss://mock.ls.test/websocket/stock");
+  assert.equal(sockets[0].url, "wss://mock.ls.test/websocket");
   assert.deepEqual(subscription.request, {
     header: { token: "token-ls", tr_type: "3" },
     body: { tr_cd: "S3_", tr_key: "005930" },
   });
   assert.deepEqual(orderEventSubscription.request.header, { token: "token-ls", tr_type: "1" });
   assert.deepEqual(unsubscribe.request.header, { token: "token-ls", tr_type: "4" });
+});
+
+test("waits for WebSocket open before sending realtime subscription", async () => {
+  const sockets = [];
+  const client = new WebSocketBrokerClient({
+    brokerClient: fakeBrokerClient("ls"),
+    webSocketFactory: (url, options) => {
+      const socket = new FakeWebSocket(url, options, { readyState: 0 });
+      sockets.push(socket);
+      return socket;
+    },
+  });
+
+  const subscriptionPromise = client.subscribe("GSC", "82TSLA            ");
+  await waitForTimers();
+
+  assert.equal(sockets[0].sent.length, 0);
+
+  sockets[0].emitOpen();
+  const subscription = await subscriptionPromise;
+
+  assert.deepEqual(sockets[0].sent.map(JSON.parse), [subscription.request]);
 });
 
 test("deduplicates realtime subscriptions and exposes subscription state", async () => {
@@ -230,10 +252,10 @@ function fakeBrokerClient(broker) {
 }
 
 class FakeWebSocket {
-  constructor(url, options) {
+  constructor(url, options, config = {}) {
     this.url = url;
     this.options = options;
-    this.readyState = 1;
+    this.readyState = config.readyState ?? 1;
     this.sent = [];
     this.handlers = new Map();
   }
@@ -244,12 +266,24 @@ class FakeWebSocket {
     this.handlers.set(event, handlers);
   }
 
+  removeEventListener(event, handler) {
+    const handlers = this.handlers.get(event) ?? [];
+    this.handlers.set(event, handlers.filter((candidate) => candidate !== handler));
+  }
+
   send(message) {
     this.sent.push(message);
   }
 
   close() {
     this.emitClose();
+  }
+
+  emitOpen(event = {}) {
+    this.readyState = 1;
+    for (const handler of this.handlers.get("open") ?? []) {
+      handler(event);
+    }
   }
 
   emitClose(event = {}) {

@@ -211,3 +211,47 @@ LS `COSOQ00201` returned `02679 / 조회내역이 없습니다.` for overseas st
 ### Decision
 
 Live account read-only verification is complete for the current implemented account capabilities. The SDK can execute Kiwoom domestic cash/balance, LS domestic cash/balance, and LS overseas cash/balance without order submission. Keep `KIWOOM_ENV=prod` for live account checks.
+
+## Live Realtime WebSocket Read-only Run - 2026-05-19T09:59:24Z
+
+### Environment
+
+- `SECURITY_API_LIVE_READONLY`: enabled.
+- `SECURITY_API_ALLOW_LIVE_ORDER`: disabled.
+- Required LS secrets: present.
+- Network calls: executed for LS overseas realtime quote subscriptions only.
+- Order API calls: not executed.
+- Order event subscriptions: not executed. The live example only called `OverseasStockRealtimeService.subscribeOverseasStockTrades` and `OverseasStockRealtimeService.subscribeOverseasStockOrderBook`.
+- Tokens/secrets/accounts: not printed.
+- WebSocket subscription key: not printed in the final result; only `keyPresent: true` is recorded.
+
+### Commands
+
+```bash
+set -a; source .env; set +a; npm run examples:live-readonly:preflight
+set -a; source .env; set +a; SECURITY_API_REALTIME_WAIT_MS=${SECURITY_API_REALTIME_WAIT_MS:-10000} node examples/live-readonly/ls-overseas-realtime.mjs --json
+```
+
+### Guard Result
+
+- Preflight result: `pass`.
+- `SECURITY_API_ALLOW_LIVE_ORDER=false`.
+- Runnable realtime example: yes.
+- No order event TRs (`AS0`~`AS4`) were subscribed.
+
+### WebSocket Endpoint Compatibility
+
+Initial live runs against the generated LS endpoint path `/websocket/overseas-stock` timed out before the WebSocket `open` event. A direct runtime diagnostic confirmed that the same host and port are reachable, while the common LS WebSocket path `/websocket` opens and accepts the `GSC` subscription message.
+
+SDK behavior was updated so LS WebSocket connections normalize generated category paths such as `/websocket/overseas-stock` to the common `/websocket` endpoint while preserving the TR code and key in the subscription payload. The client also now waits for `open` before sending the subscription message and closes the socket after live example unsubscribe.
+
+### Realtime Results
+
+| Broker | Environment | Scenario | API/TR | Result | Status | Message Count | First Message |
+| --- | --- | --- | --- | --- | ---: | ---: | --- |
+| LS | `prod` | overseas realtime trade subscription | `GSC` | pass | 0 | 1 | `kind=trade`, `symbol=TSLA`, public price received |
+| LS | `prod` | overseas realtime order book subscription | `GSH` | pass | 0 | 2 | `kind=orderBook`, `symbol=TSLA` |
+
+### Decision
+
+Live WebSocket read-only verification is complete for the implemented LS overseas quote realtime capabilities. The SDK can subscribe and unsubscribe from `GSC` and `GSH` without order submission or order event subscription. Keep order event realtime (`AS0`~`AS4`) out of live read-only checks unless a separate account-event verification goal is explicitly approved.

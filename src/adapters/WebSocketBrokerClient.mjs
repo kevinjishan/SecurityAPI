@@ -7,6 +7,7 @@ const DEFAULT_REALTIME_IDS = Object.freeze({
 
 const DEFAULT_RECONNECT_MAX_ATTEMPTS = 5;
 const DEFAULT_RECONNECT_DELAY_MS = 1_000;
+const DEFAULT_CONNECT_TIMEOUT_MS = 10_000;
 
 export class WebSocketBrokerClient {
   constructor(config = {}) {
@@ -34,6 +35,7 @@ export class WebSocketBrokerClient {
     this.heartbeatIntervalMs = config.heartbeatIntervalMs ?? 0;
     this.heartbeatTimeoutMs = config.heartbeatTimeoutMs ?? this.heartbeatIntervalMs * 2;
     this.pingMessage = config.pingMessage;
+    this.connectTimeoutMs = config.connectTimeoutMs ?? DEFAULT_CONNECT_TIMEOUT_MS;
   }
 
   async connect(options = {}) {
@@ -51,10 +53,18 @@ export class WebSocketBrokerClient {
       ? { authorization: `${this.token.tokenType} ${this.token.accessToken}`, "api-id": id }
       : undefined;
 
-    this.socket = this.createSocket(endpoint.url, { headers });
-    this.attachSocketHandlers(this.socket);
-    this.startHeartbeat();
-    return this;
+    this.socket = this.createSocket(normalizeWebSocketUrl(this.broker, endpoint.url), { headers });
+    try {
+      this.attachSocketHandlers(this.socket);
+      await waitForSocketOpen(this.socket, this.connectTimeoutMs);
+      this.startHeartbeat();
+      return this;
+    } catch (error) {
+      this.closedByUser = true;
+      this.socket?.close?.();
+      this.socket = null;
+      throw error;
+    }
   }
 
   async subscribe(id, key = "", options = {}) {
@@ -138,7 +148,7 @@ export class WebSocketBrokerClient {
       });
     }
 
-    return new WebSocketCtor(url, options);
+    return hasHeaders(options) ? new WebSocketCtor(url, options) : new WebSocketCtor(url);
   }
 
   attachSocketHandlers(socket) {
@@ -353,6 +363,79 @@ function setSocketHandler(socket, event, handler) {
   }
 
   socket[`on${event}`] = handler;
+}
+
+function addSocketListener(socket, event, handler) {
+  if (socket.addEventListener) {
+    socket.addEventListener(event, handler);
+    return () => socket.removeEventListener?.(event, handler);
+  }
+
+  const previous = socket[`on${event}`];
+  socket[`on${event}`] = (payload) => {
+    previous?.(payload);
+    handler(payload);
+  };
+  return () => {
+    socket[`on${event}`] = previous;
+  };
+}
+
+function hasHeaders(options = {}) {
+  return Boolean(options.headers && Object.keys(options.headers).length > 0);
+}
+
+function normalizeWebSocketUrl(broker, url) {
+  if (broker !== "ls") {
+    return url;
+  }
+
+  const parsed = new URL(url);
+  if (parsed.pathname.startsWith("/websocket/")) {
+    parsed.pathname = "/websocket";
+  }
+  return parsed.toString();
+}
+
+function waitForSocketOpen(socket, timeoutMs) {
+  if (socket.readyState === 1) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let cleanupOpen = () => {};
+    let cleanupError = () => {};
+    let cleanupClose = () => {};
+    const timer = setTimeout(() => {
+      settle(reject, new Error("WebSocket connection timed out before open."));
+    }, timeoutMs);
+
+    const settle = (callback, value) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timer);
+      cleanupOpen();
+      cleanupError();
+      cleanupClose();
+      callback(value);
+    };
+
+    cleanupOpen = addSocketListener(socket, "open", () => settle(resolve));
+    cleanupError = addSocketListener(socket, "error", (event) => settle(reject, toSocketError(event, "WebSocket error before open.")));
+    cleanupClose = addSocketListener(socket, "close", (event) => settle(reject, toSocketError(event, "WebSocket closed before open.")));
+  });
+}
+
+function toSocketError(event, fallbackMessage) {
+  if (event instanceof Error) {
+    return event;
+  }
+
+  const reason = event?.reason || event?.message;
+  return new Error(reason ? `${fallbackMessage} ${reason}` : fallbackMessage);
 }
 
 function parseSocketMessage(raw) {
