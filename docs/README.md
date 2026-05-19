@@ -20,6 +20,7 @@ SDK 구현에서 직접 참조하기 쉬운 정규화 manifest는 `data/generate
 - 증권사별 보기: [키움증권](kiwoom/README.md), [LS증권](ls/README.md)
 - SDK 확장 계획: [SecurityAPI SDK Architecture Plan](sdk-architecture-plan.md)
 - Live read-only 검증 계획: [Live Read-only Verification Plan](live-readonly-verification-plan.md)
+- Live read-only 검증 매트릭스: [Live Read-only Verification Matrix](live-readonly-verification-matrix.md)
 - Live read-only 감사 기록: [2026-05-19](audits/live-readonly-2026-05-19.md)
 - SDK manifest 찾기: `jq '.apis.ka10001' data/generated/kiwoom-manifest.json`, `jq '.apis.t1101' data/generated/ls-manifest.json`
 
