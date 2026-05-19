@@ -4,6 +4,8 @@ Last updated: 2026-05-19
 
 이 문서는 외부 서버나 앱이 SecurityAPI를 SDK처럼 참조해 인증, 조회, 실시간 구독, dry-run 주문을 사용하는 기본 흐름을 정리한다. 안정적으로 의존해도 되는 public API의 범위는 [Public SDK Contract](public-sdk-contract.md)를 기준으로 한다.
 
+설치, 패키지 포함 파일, Git dependency 검증 절차는 [SDK Distribution Guide](sdk-distribution-guide.md)를 기준으로 한다.
+
 ## Package Status
 
 현재 패키지는 `package.json`에서 `private: true`로 관리한다. 따라서 public npm package가 아니라 Git dependency, 같은 저장소 workspace, 또는 사설 registry 배포 형태로 사용하는 것을 전제로 한다.

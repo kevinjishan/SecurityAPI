@@ -1,6 +1,7 @@
 {
   "name": "security-api-reference",
   "version": "1.0.0",
+  "description": "Kiwoom and LS Securities Open API reference SDK for broker metadata, read-only services, realtime subscriptions, and guarded order request builders.",
   "private": true,
   "type": "module",
   "main": "./src/index.mjs",
@@ -25,5 +26,35 @@
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "files": [
+    "src/",
+    "data/generated/",
+    "docs/README.md",
+    "docs/sdk-usage-guide.md",
+    "docs/public-sdk-contract.md",
+    "docs/live-readonly-verification-matrix.md",
+    "docs/live-readonly-verification-plan.md",
+    "docs/live-integration-readiness.md",
+    "docs/order-guard-verification-plan.md",
+    "docs/broker-error-reject-policy.md",
+    "docs/production-readiness-checklist.md",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kevinjishan/SecurityAPI.git"
+  },
+  "keywords": [
+    "kiwoom",
+    "ls-securities",
+    "broker-api",
+    "openapi",
+    "sdk"
+  ],
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/kevinjishan/SecurityAPI/issues"
+  },
+  "homepage": "https://github.com/kevinjishan/SecurityAPI#readme"
 }
