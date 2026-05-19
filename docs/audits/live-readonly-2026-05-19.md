@@ -68,3 +68,31 @@ The validate-only run produced skipped result records with `sensitiveDataMasked:
 The examples are executable from a code and validation perspective, but this machine is not ready for real live read-only calls until the required secrets and `SECURITY_API_LIVE_READONLY=true` are provided in the local shell or process environment.
 
 Do not run live examples with account read scenarios until the operator confirms the account is allowed for read-only verification and the output destination is private.
+
+## Follow-up Attempt - 2026-05-19T08:37:41Z
+
+### Goal
+
+Verify whether this server can safely run the live read-only examples with real secrets, then run only `auth-only` and public quote examples if preflight passes.
+
+### Preflight Command
+
+```bash
+SECURITY_API_LIVE_READONLY=true SECURITY_API_ALLOW_LIVE_ORDER=false npm run examples:live-readonly:preflight
+```
+
+### Preflight Result
+
+- Result: `blocked`.
+- Exit code: `2`.
+- SDK commit: `c20761a`.
+- `SECURITY_API_LIVE_READONLY`: enabled.
+- `SECURITY_API_ALLOW_LIVE_ORDER`: disabled.
+- Missing required env: `KIWOOM_APP_KEY`, `KIWOOM_SECRET_KEY`, `LS_APP_KEY`, `LS_APP_SECRET_KEY`, `LS_MAC_ADDRESS`.
+- Real API calls: not executed.
+- Order API calls: not executed.
+- Account read API calls: not executed.
+
+### Execution Decision
+
+`auth-only`, `kiwoom-domestic-quote`, `ls-domestic-quote`, and `ls-overseas-quote` were not run because preflight did not pass. This is the intended safe behavior.
