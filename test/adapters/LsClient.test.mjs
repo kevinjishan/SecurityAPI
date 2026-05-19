@@ -183,14 +183,24 @@ test("sends LS continuation headers and extracts next key", async () => {
   });
 });
 
-test("returns config errors before network calls when macAddress is required", async () => {
-  let fetchCalled = false;
+test("omits optional mac_address when macAddress is not configured", async () => {
+  const calls = [];
+  const tokenStore = new MemoryTokenStore();
+  tokenStore.set("ls:prod", {
+    accessToken: "cached-token",
+    expiresAt: Date.now() + 60_000,
+  });
   const client = new LsClient({
     appKey: "app-key",
     appSecretKey: "secret-key",
-    fetch: async () => {
-      fetchCalled = true;
-      return jsonResponse({});
+    tokenStore,
+    fetch: async (url, init) => {
+      calls.push(readCall(url, init));
+      return jsonResponse({
+        rsp_cd: "00000",
+        rsp_msg: "정상",
+        t1101OutBlock: { shcode: "005930" },
+      });
     },
   });
 
@@ -198,10 +208,9 @@ test("returns config errors before network calls when macAddress is required", a
     t1101InBlock: { shcode: "005930" },
   });
 
-  assert.equal(result.ok, false);
-  assert.equal(result.error.code, "CONFIG_ERROR");
-  assert.deepEqual(result.error.details, { header: "mac_address" });
-  assert.equal(fetchCalled, false);
+  assert.equal(result.ok, true);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].headers.mac_address, undefined);
 });
 
 test("normalizes LS business API errors", async () => {

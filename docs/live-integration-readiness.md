@@ -31,7 +31,7 @@
 | `KIWOOM_ENV` | Kiwoom endpoint selection | `mock`, `dev`, `prod` 중 하나 |
 | `LS_APP_KEY` | LS REST/WebSocket auth | LS 앱키 |
 | `LS_APP_SECRET_KEY` | LS REST/WebSocket auth | LS secret key |
-| `LS_MAC_ADDRESS` | LS REST request header | LS API가 요구하는 MAC address. 운영 환경에서 요구될 수 있다. |
+| `LS_MAC_ADDRESS` | LS REST request header | 선택값. 법인/특정 운영 환경에서 `mac_address` 헤더가 요구될 때만 설정한다. |
 | `LS_ENV` | LS endpoint selection | 현재 manifest 기준 일부 LS mock endpoint는 없을 수 있으므로 `prod` 사용 여부를 명시해야 한다. |
 | `SECURITY_API_LIVE_READONLY` | live read-only examples | 실제 read-only 호출 허용 플래그. 설계상 기본값은 disabled. |
 | `SECURITY_API_ALLOW_LIVE_ORDER` | live order examples | 실제 주문 전송 허용 플래그. 이 문서 범위에서는 사용하지 않는다. |

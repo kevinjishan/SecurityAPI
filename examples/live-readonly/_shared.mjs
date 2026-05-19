@@ -182,7 +182,7 @@ export function requiredEnvForBroker(broker) {
     return ["KIWOOM_APP_KEY", "KIWOOM_SECRET_KEY"];
   }
 
-  return ["LS_APP_KEY", "LS_APP_SECRET_KEY", "LS_MAC_ADDRESS"];
+  return ["LS_APP_KEY", "LS_APP_SECRET_KEY"];
 }
 
 export function getSdkCommit() {

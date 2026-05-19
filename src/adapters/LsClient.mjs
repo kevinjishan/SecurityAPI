@@ -31,7 +31,6 @@ export class LsClient extends BaseBrokerClient {
         }));
       }
 
-      validateLsRequiredConfig(entry, this.macAddress);
       const token = entry.authRequired ? await this.getAccessToken() : null;
       const headers = buildLsHeaders(entry, id, token, {
         ...options,
@@ -244,8 +243,6 @@ function buildLsHeaders(entry, id, token, options = {}) {
 }
 
 function applyLsRequiredConfig(entry, headers, options = {}) {
-  validateLsRequiredConfig(entry, options.macAddress);
-
   for (const config of entry.requiredConfig ?? []) {
     if (config.key !== "macAddress") {
       continue;
@@ -253,22 +250,6 @@ function applyLsRequiredConfig(entry, headers, options = {}) {
 
     if (options.macAddress) {
       headers[config.header] = options.macAddress;
-    }
-  }
-}
-
-function validateLsRequiredConfig(entry, macAddress) {
-  for (const config of entry.requiredConfig ?? []) {
-    if (config.key !== "macAddress") {
-      continue;
-    }
-
-    if (!macAddress && config.required) {
-      throw BrokerError.config(`LS ${entry.id} requires macAddress config`, {
-        broker: "ls",
-        id: entry.id,
-        details: { header: config.header },
-      });
     }
   }
 }

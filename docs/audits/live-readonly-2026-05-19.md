@@ -25,9 +25,9 @@
 | Kiwoom | `KIWOOM_SECRET_KEY` | missing |
 | LS | `LS_APP_KEY` | missing |
 | LS | `LS_APP_SECRET_KEY` | missing |
-| LS | `LS_MAC_ADDRESS` | missing |
+| LS | `LS_MAC_ADDRESS` | missing, optional for individual read-only verification |
 
-Optional environment values were also absent in the current shell: `KIWOOM_ENV`, `LS_ENV`, `SECURITY_API_REALTIME_WAIT_MS`.
+Optional environment values were also absent in the current shell: `KIWOOM_ENV`, `LS_ENV`, `LS_MAC_ADDRESS`, `SECURITY_API_REALTIME_WAIT_MS`.
 
 ## Execution Order
 
@@ -96,3 +96,75 @@ SECURITY_API_LIVE_READONLY=true SECURITY_API_ALLOW_LIVE_ORDER=false npm run exam
 ### Execution Decision
 
 `auth-only`, `kiwoom-domestic-quote`, `ls-domestic-quote`, and `ls-overseas-quote` were not run because preflight did not pass. This is the intended safe behavior.
+
+## MAC Address Requirement Correction - 2026-05-19
+
+LS API 신청 항목에 MAC address 입력이 없고, 공식 문서의 `mac_address` 설명이 "법인인 경우 필수 세팅"으로 되어 있어 `LS_MAC_ADDRESS`를 live read-only 전역 필수값에서 제외했다.
+
+Updated behavior:
+
+- `LS_MAC_ADDRESS` is optional for individual read-only verification.
+- If provided, SDK still sends it as `mac_address`.
+- If absent, SDK omits the header instead of blocking before network calls.
+- Order/account-sensitive live verification remains gated separately by scenario guard and operator approval.
+
+## Live Public Read-only Run - 2026-05-19T09:00:34Z
+
+### Environment
+
+- `SECURITY_API_LIVE_READONLY`: enabled.
+- `SECURITY_API_ALLOW_LIVE_ORDER`: disabled.
+- `KIWOOM_APP_KEY`, `KIWOOM_SECRET_KEY`, `LS_APP_KEY`, `LS_APP_SECRET_KEY`: present.
+- `LS_MAC_ADDRESS`: absent, treated as optional.
+- `.env` had `KIWOOM_ENV=mock`; Kiwoom live checks were executed with command-level `KIWOOM_ENV=prod` override.
+- Network calls: executed for auth and public quote/read-only market data only.
+- Order calls: not executed.
+- Account read calls: not executed.
+
+### Commands
+
+```bash
+set -a; source .env; set +a; npm run examples:live-readonly:preflight
+set -a; source .env; set +a; node examples/live-readonly/auth-only.mjs --json
+set -a; source .env; set +a; node examples/live-readonly/ls-domestic-quote.mjs --json
+set -a; source .env; set +a; node examples/live-readonly/ls-overseas-quote.mjs --json
+set -a; source .env; set +a; KIWOOM_ENV=prod node examples/live-readonly/auth-only.mjs --json
+set -a; source .env; set +a; KIWOOM_ENV=prod node examples/live-readonly/kiwoom-domestic-quote.mjs --json
+```
+
+### Preflight
+
+- Result: `pass`.
+- SDK commit reported by script: `9e1e800`.
+- Required env present: `KIWOOM_APP_KEY`, `KIWOOM_SECRET_KEY`, `LS_APP_KEY`, `LS_APP_SECRET_KEY`.
+- Missing env: none.
+
+### Auth Results
+
+| Broker | Environment | Result | Notes |
+| --- | --- | --- | --- |
+| Kiwoom | `mock` | fail | `.env` default `KIWOOM_ENV=mock` returned no token field. |
+| Kiwoom | `prod` | pass | token issued; token value redacted. |
+| LS | `prod` | pass | token issued; token value redacted. |
+
+### Public Quote Results
+
+| Broker | Scenario | API/TR | Result | Status | Broker Code | Summary |
+| --- | --- | --- | --- | ---: | --- | --- |
+| Kiwoom | domestic current price | `ka10001` | pass | 200 | `0` | `005930`, KRW price received |
+| Kiwoom | domestic daily candles | `ka10081` | pass | 200 | `0` | 600 daily candles received |
+| Kiwoom | domestic index current | `ka20001` | pass | 200 | `0` | KOSPI index received |
+| Kiwoom | domestic investor flow | `ka10051` | pass | 200 | `0` | KOSPI investor flow received |
+| LS | domestic current price | `t1101` | pass | 200 | `00000` | `005930`, KRW price received |
+| LS | domestic minute candles | `t8412` | pass | 200 | `00000` | 500 minute candles received |
+| LS | domestic index current | `t1511` | pass | 200 | `00000` | KOSPI index received |
+| LS | domestic investor flow | `t1602` | pass | 200 | `00000` | KOSPI investor flow received |
+| LS | overseas current price | `g3101` | pass | 200 | `00000` | `TSLA`, USD price received |
+| LS | overseas order book | `g3106` | pass | 200 | `00000` | 10 ask levels and 10 bid levels received |
+| LS | overseas basic info | `g3104` | pass | 200 | `00000` | `TSLA`, USD info received |
+| LS | overseas period candles | `g3204` | pass | 200 | `00000` | 5 daily candles received |
+| LS | overseas time series | `g3102` | pass | 200 | `00000` | 30 trades received |
+
+### Decision
+
+The SDK can execute live read-only auth and public quote/market data examples for Kiwoom and LS with current secrets. Keep `KIWOOM_ENV=prod` for Kiwoom live checks. Continue to keep order and account-sensitive checks out of the public quote verification path.
