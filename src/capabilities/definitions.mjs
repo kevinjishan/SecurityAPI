@@ -67,6 +67,18 @@ export const CAPABILITY_DEFINITIONS = Object.freeze({
     area: "scanner",
     label: "국내주식 등락률 상위",
   },
+  "scanner.conditionSearch.list": {
+    area: "scanner",
+    label: "조건검색 목록",
+  },
+  "scanner.conditionSearch.search": {
+    area: "scanner",
+    label: "조건검색 일반 조회",
+  },
+  "scanner.conditionSearch.realtime": {
+    area: "scanner",
+    label: "조건검색 실시간",
+  },
   "signal.domesticStock.inputs": {
     area: "signal",
     label: "국내주식 판단 입력값",
@@ -118,6 +130,10 @@ export const CAPABILITY_DEFINITIONS = Object.freeze({
   "realtime.domesticStock.balance": {
     area: "realtime",
     label: "국내주식 실시간 잔고",
+  },
+  "realtime.market.status": {
+    area: "realtime",
+    label: "시장 장운영 상태",
   },
   "overseasStock.quote.currentPrice": {
     area: "overseasStock",

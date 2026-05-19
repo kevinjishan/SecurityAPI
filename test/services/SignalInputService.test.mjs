@@ -146,6 +146,35 @@ test("can include market context and flow in signal inputs", async () => {
   assert.equal(result.data.warnings.length, 0);
 });
 
+test("can include condition search matches in signal inputs", async () => {
+  const client = new FakeClient("kiwoom");
+  const service = new SignalInputService({ kiwoom: client });
+
+  const result = await service.getDomesticStockSignalInputs("kiwoom", "005930", {
+    includeOrderBook: false,
+    includeBasicInfo: false,
+    includeDailyCandles: false,
+    includeMinuteCandles: false,
+    includeConditionSearch: true,
+    conditionSearches: [
+      { seq: "4", name: "거래량 급증" },
+      { seq: "5", name: "기관외국인상위100" },
+    ],
+    generatedAt: "2026-05-19T00:00:00.000Z",
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(client.calls.map((call) => call.id), ["ka10001", "ka10172", "ka10172"]);
+  assert.equal(result.data.conditions.metrics.searchedCount, 2);
+  assert.equal(result.data.conditions.metrics.matchedCount, 1);
+  assert.equal(result.data.conditions.matches[0].condition.seq, "4");
+  assert.equal(result.data.conditions.matches[0].item.symbol, "005930");
+  assert.equal(result.data.metrics.conditions.matchedRatio, 0.5);
+  assert.equal(result.data.signals.conditions.anyMatch, true);
+  assert.deepEqual(result.data.signals.conditions.matchedNames, ["거래량 급증"]);
+  assert.equal(result.data.source.conditionSearches[0].id, "ka10172");
+});
+
 test("can include expected index in signal inputs", async () => {
   const result = await new SignalInputService({
     quote: {
@@ -376,6 +405,114 @@ test("subscribes to realtime signal input updates", async () => {
   assert.deepEqual(unsubscribe, ["trade-unsubscribed", "order-book-unsubscribed"]);
 });
 
+test("can include market status in realtime signal input updates", async () => {
+  const realtime = new FakeRealtimeService();
+  const updates = [];
+  const service = new SignalInputService({
+    quote: {},
+    marketData: {},
+    scanner: {},
+    realtime,
+  });
+
+  const result = await service.subscribeDomesticStockSignalInputs("kiwoom", "005930", {
+    onUpdate: (data, message) => updates.push({ data, message }),
+  }, {
+    initialInputs: sampleSignalInputs(),
+    includeRealtimeOrderBook: false,
+    includeMarketStatus: true,
+    startedAt: "2026-05-19T00:00:00.000Z",
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(realtime.subscriptions.map((subscription) => subscription.kind), ["trade", "marketStatus"]);
+
+  realtime.emitMarketStatus({
+    kind: "marketStatus",
+    broker: "kiwoom",
+    session: "regular",
+    phase: "open",
+    eventCode: "3",
+    eventName: "장시작",
+    time: "090000",
+    remainingTime: "000000",
+  });
+
+  assert.equal(updates.length, 1);
+  assert.equal(updates[0].message.kind, "marketStatus");
+  assert.equal(updates[0].data.market.status.phase, "open");
+  assert.equal(updates[0].data.realtime.marketStatusUpdateCount, 1);
+});
+
+test("can include realtime condition search events in signal input updates", async () => {
+  const realtime = new FakeRealtimeService();
+  const scanner = new FakeScannerService();
+  const updates = [];
+  const service = new SignalInputService({
+    quote: {},
+    marketData: {},
+    scanner,
+    realtime,
+  });
+
+  const result = await service.subscribeDomesticStockSignalInputs("kiwoom", "005930", {
+    onUpdate: (data, message) => updates.push({ data, message }),
+  }, {
+    initialInputs: sampleSignalInputsWithConditionSearch(),
+    includeRealtimeOrderBook: false,
+    includeRealtimeConditionSearch: true,
+    conditionSearches: [{ seq: "4", name: "거래량 급증" }],
+    startedAt: "2026-05-19T00:00:00.000Z",
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(realtime.subscriptions.map((subscription) => subscription.kind), ["trade"]);
+  assert.deepEqual(scanner.subscriptions.map((subscription) => subscription.kind), ["conditionSearch"]);
+  assert.equal(result.data.conditions.searches[0].condition.realtimeKey, "4");
+
+  scanner.emitCondition({
+    kind: "conditionSearchEvent",
+    broker: "kiwoom",
+    conditionId: "4",
+    realtimeKey: "4",
+    symbol: "005930",
+    name: "삼성전자",
+    eventType: "entered",
+    eventCode: "I",
+    time: "094500",
+    price: 105,
+    change: 5,
+    changeRate: 5,
+    volume: 1500,
+  });
+
+  assert.equal(updates.length, 1);
+  assert.equal(updates[0].message.kind, "conditionSearchEvent");
+  assert.equal(updates[0].data.conditions.metrics.matchedCount, 1);
+  assert.equal(updates[0].data.conditions.matches[0].item.symbol, "005930");
+  assert.equal(updates[0].data.signals.conditions.anyMatch, true);
+  assert.equal(updates[0].data.realtime.conditionSearchEventCount, 1);
+
+  scanner.emitCondition({
+    kind: "conditionSearchEvent",
+    broker: "kiwoom",
+    conditionId: "4",
+    realtimeKey: "4",
+    symbol: "005930",
+    eventType: "exited",
+    eventCode: "D",
+    time: "095000",
+  });
+
+  assert.equal(updates.length, 2);
+  assert.equal(updates[1].data.conditions.metrics.matchedCount, 0);
+  assert.equal(updates[1].data.signals.conditions.anyMatch, false);
+  assert.equal(updates[1].data.realtime.conditionSearchEventCount, 2);
+
+  const unsubscribe = await result.unsubscribe();
+  assert.deepEqual(unsubscribe, ["trade-unsubscribed", "condition-realtime-unsubscribed"]);
+});
+
 class FakeClient {
   constructor(broker) {
     this.broker = broker;
@@ -384,12 +521,13 @@ class FakeClient {
 
   async request(id, params, options = {}) {
     this.calls.push({ id, params, options });
+    const data = fakePayload(id, params);
     return {
       ok: true,
       broker: this.broker,
       id,
-      data: fakePayload(id),
-      raw: fakePayload(id),
+      data,
+      raw: data,
       headers: {},
       status: 200,
     };
@@ -429,6 +567,18 @@ class FakeRealtimeService {
     };
   }
 
+  async subscribeMarketStatus(broker, handlers, options) {
+    this.marketStatusHandlers = handlers;
+    this.subscriptions.push({ kind: "marketStatus", broker, options });
+
+    return {
+      ok: true,
+      broker,
+      id: "0s",
+      unsubscribe: async () => "market-status-unsubscribed",
+    };
+  }
+
   emitTrade(message) {
     this.tradeHandlers?.onMessage(message);
   }
@@ -436,9 +586,45 @@ class FakeRealtimeService {
   emitOrderBook(message) {
     this.orderBookHandlers?.onMessage(message);
   }
+
+  emitMarketStatus(message) {
+    this.marketStatusHandlers?.onMessage(message);
+  }
 }
 
-function fakePayload(id) {
+class FakeScannerService {
+  constructor() {
+    this.subscriptions = [];
+    this.conditionHandlers = [];
+  }
+
+  async startConditionSearchRealtime(broker, condition, handlers, options) {
+    this.conditionHandlers.push(handlers);
+    this.subscriptions.push({ kind: "conditionSearch", broker, condition, options });
+
+    return {
+      ok: true,
+      broker,
+      capability: "scanner.conditionSearch.realtime",
+      id: "ka10173",
+      data: {
+        broker,
+        condition,
+        realtimeKey: condition.seq ?? condition.id,
+        status: "started",
+      },
+      unsubscribe: async () => "condition-realtime-unsubscribed",
+    };
+  }
+
+  emitCondition(message) {
+    for (const handlers of this.conditionHandlers) {
+      handlers.onMessage(message);
+    }
+  }
+}
+
+function fakePayload(id, params = {}) {
   if (id === "ka10001") {
     return {
       stk_cd: "005930",
@@ -506,6 +692,30 @@ function fakePayload(id) {
     return {
       pred_pre_flu_rt_upper: [
         { rank: "3", stk_cd: "005930", stk_nm: "삼성전자", cur_prc: "70100", flu_rt: "+0.86", now_trde_qty: "1000000" },
+      ],
+    };
+  }
+
+  if (id === "ka10172") {
+    const matchedSymbol = params.seq === "4" ? "A005930" : "A000660";
+
+    return {
+      trnm: "CNSRREQ",
+      seq: params.seq ?? "4",
+      cont_yn: "N",
+      next_key: "",
+      return_code: 0,
+      return_msg: "",
+      data: [
+        {
+          9001: matchedSymbol,
+          302: matchedSymbol === "A005930" ? "삼성전자" : "SK하이닉스",
+          10: "000070100",
+          25: "2",
+          11: "000000600",
+          12: "000000086",
+          13: "001000000",
+        },
       ],
     };
   }
@@ -634,6 +844,63 @@ function sampleSignalInputs() {
       }),
     },
   });
+}
+
+function sampleSignalInputsWithConditionSearch() {
+  const data = sampleSignalInputs();
+
+  data.conditions = {
+    searches: [
+      {
+        condition: {
+          id: "4",
+          seq: "4",
+          queryIndex: null,
+          realtimeKey: null,
+          alertKey: null,
+          name: "거래량 급증",
+          groupName: null,
+        },
+        matched: false,
+        item: null,
+        itemCount: 0,
+        summary: null,
+        source: {
+          ok: true,
+          broker: "kiwoom",
+          id: "ka10172",
+          capability: "scanner.conditionSearch.search",
+          status: 200,
+        },
+      },
+    ],
+    matches: [],
+    metrics: {
+      searchedCount: 1,
+      matchedCount: 0,
+      unmatchedCount: 1,
+      matchedRatio: 0,
+    },
+    indicators: {
+      anyMatch: false,
+      matchedCount: 0,
+      matchedConditionIds: [],
+      matchedNames: [],
+    },
+  };
+  data.metrics.conditions = data.conditions.metrics;
+  data.signals.conditions = data.conditions.indicators;
+  data.source.conditionSearches = [
+    {
+      ok: true,
+      broker: "kiwoom",
+      id: "ka10172",
+      capability: "scanner.conditionSearch.search",
+      status: 200,
+    },
+  ];
+
+  return data;
 }
 
 function okResult(capability, id, data) {

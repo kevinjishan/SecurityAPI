@@ -36,6 +36,13 @@ test("finds Kiwoom API references for capabilities", () => {
   assert.deepEqual(caps.findApis("marketContext.domesticIndex.dailyCandles").map((api) => api.id), ["ka20006"]);
   assert.deepEqual(caps.findApis("marketFlow.domesticInvestor.netBuy").map((api) => api.id), ["ka10051"]);
   assert.deepEqual(caps.findApis("marketFlow.programTrading.trend").map((api) => api.id), ["ka90005"]);
+  assert.deepEqual(caps.findApis("scanner.conditionSearch").map((api) => api.id), [
+    "ka10171",
+    "ka10172",
+    "ka10173",
+    "ka10174",
+  ]);
+  assert.deepEqual(caps.findApis("realtime.market.status").map((api) => api.id), ["0s"]);
   assert.deepEqual(caps.findApis("order.domesticStock").map((api) => api.id), [
     "kt10000",
     "kt10001",
@@ -63,6 +70,8 @@ test("finds LS API references for capabilities", () => {
   assert.deepEqual(caps.findApis("marketContext.domesticIndex.expected").map((api) => api.id), ["t1485"]);
   assert.deepEqual(caps.findApis("marketFlow.domesticInvestor.netBuy").map((api) => api.id), ["t1602"]);
   assert.deepEqual(caps.findApis("marketFlow.programTrading.trend").map((api) => api.id), ["t1632"]);
+  assert.deepEqual(caps.findApis("scanner.conditionSearch").map((api) => api.id), ["t1866", "t1859", "t1860", "AFR"]);
+  assert.deepEqual(caps.findApis("realtime.market.status").map((api) => api.id), ["JIF"]);
   assert.deepEqual(caps.findApis("order.domesticStock").map((api) => api.id), [
     "CSPAT00601",
     "CSPAT00601",

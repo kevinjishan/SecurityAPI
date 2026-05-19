@@ -93,6 +93,25 @@ export const LS_CAPABILITIES = [
     apis: [{ id: "t1441", role: "changeRateRanking", transport: "rest" }],
   },
   {
+    id: "scanner.conditionSearch.list",
+    status: "documented",
+    apis: [{ id: "t1866", role: "conditionList", transport: "rest" }],
+  },
+  {
+    id: "scanner.conditionSearch.search",
+    status: "documented",
+    apis: [{ id: "t1859", role: "conditionSearch", transport: "rest" }],
+  },
+  {
+    id: "scanner.conditionSearch.realtime",
+    status: "documented",
+    apis: [
+      { id: "t1860", role: "realtimeSession", transport: "rest" },
+      { id: "AFR", role: "realtimeEvent", transport: "websocket" },
+    ],
+    caution: "LS 실시간 조건검색은 t1860에서 받은 실시간키로 AFR WebSocket을 구독한다.",
+  },
+  {
     id: "signal.domesticStock.inputs",
     status: "composed",
     apis: [],
@@ -181,6 +200,11 @@ export const LS_CAPABILITIES = [
       { id: "SC3", role: "orderCanceled", transport: "websocket" },
       { id: "SC4", role: "orderRejected", transport: "websocket" },
     ],
+  },
+  {
+    id: "realtime.market.status",
+    status: "documented",
+    apis: [{ id: "JIF", role: "marketSessionStatus", transport: "websocket" }],
   },
   {
     id: "overseasStock.quote.currentPrice",

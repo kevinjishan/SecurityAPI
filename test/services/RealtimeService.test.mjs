@@ -7,6 +7,7 @@ import {
   normalizeDomesticStockRealtimeOrderEvent,
   normalizeDomesticStockRealtimeTrade,
   normalizeDomesticStockRealtimeMessage,
+  normalizeMarketStatusRealtimeMessage,
 } from "../../src/index.mjs";
 import { RealtimeService as RealtimeServiceFromPackage } from "security-api-reference/services";
 
@@ -57,6 +58,35 @@ test("subscribes to LS order event stream as account registration", async () => 
   assert.deepEqual(unsubscribe, { id: "SC1", key: "", action: "unsubscribe" });
 });
 
+test("subscribes to market status stream by capability", async () => {
+  const client = new FakeRealtimeClient("kiwoom");
+  const messages = [];
+  const service = new RealtimeService({ kiwoom: client });
+
+  const result = await service.subscribeMarketStatus("kiwoom", {
+    onMessage: (message) => messages.push(message),
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.id, "0s");
+  assert.deepEqual(client.subscriptions[0], { id: "0s", key: "", options: { streamKind: "quote" } });
+
+  client.emit("realtime", {
+    data: {
+      trnm: "REAL",
+      data: [{ type: "0s", name: "장시작시간", item: "", values: { 215: "3", 20: "090000", 214: "000000" } }],
+    },
+  });
+
+  assert.equal(messages.length, 1);
+  assert.equal(messages[0].kind, "marketStatus");
+  assert.equal(messages[0].eventCode, "3");
+  assert.equal(messages[0].eventName, "장시작");
+  assert.equal(messages[0].session, "regular");
+  assert.equal(messages[0].phase, "open");
+  assert.equal(messages[0].time, "090000");
+});
+
 test("returns unsupported response for unavailable realtime balance", async () => {
   const service = new RealtimeService({ ls: new FakeRealtimeClient("ls") });
 
@@ -64,6 +94,21 @@ test("returns unsupported response for unavailable realtime balance", async () =
 
   assert.equal(result.ok, false);
   assert.equal(result.error.code, "UNSUPPORTED_CAPABILITY");
+});
+
+test("normalizes LS market status messages", () => {
+  const [message] = normalizeMarketStatusRealtimeMessage("ls", {
+    header: { tr_cd: "JIF", tr_key: "0" },
+    body: { jangubun: "1", jstatus: "64" },
+  });
+
+  assert.equal(message.kind, "marketStatus");
+  assert.equal(message.market, "kospi");
+  assert.equal(message.marketName, "KOSPI");
+  assert.equal(message.eventCode, "64");
+  assert.equal(message.eventName, "사이드카 매도발동");
+  assert.equal(message.session, "regular");
+  assert.equal(message.phase, "sidecar");
 });
 
 test("normalizes domestic stock realtime messages through service export", () => {

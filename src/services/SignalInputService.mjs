@@ -163,6 +163,86 @@ export class SignalInputService {
         subscriptions.push(orderBookSubscription);
       }
 
+      if (options.includeMarketStatus) {
+        const marketStatusSubscription = await this.realtime.subscribeMarketStatus(
+          normalizedBroker,
+          {
+            onMessage: handleMessage,
+            onAck: handlers.onAck,
+            onError: handlers.onError,
+          },
+          options.marketStatusOptions ?? {},
+        );
+
+        if (!marketStatusSubscription.ok) {
+          await unsubscribeAll(subscriptions);
+          return failureResponse({
+            broker: normalizedBroker,
+            symbol: normalizedSymbol,
+            error: marketStatusSubscription.error,
+            capabilityId: REALTIME_SIGNAL_INPUT_CAPABILITY_ID,
+          });
+        }
+
+        subscriptions.push(marketStatusSubscription);
+      }
+
+      if (options.includeRealtimeConditionSearch) {
+        const conditionSearches = normalizeRealtimeConditionSearchOptions(options, initialData);
+
+        if (conditionSearches.length === 0) {
+          await unsubscribeAll(subscriptions);
+          return failureResponse({
+            broker: normalizedBroker,
+            symbol: normalizedSymbol,
+            error: BrokerError.validation("conditionSearches are required for realtime condition search", {
+              broker: normalizedBroker,
+              details: { capabilityId: REALTIME_SIGNAL_INPUT_CAPABILITY_ID },
+            }),
+            capabilityId: REALTIME_SIGNAL_INPUT_CAPABILITY_ID,
+          });
+        }
+
+        if (typeof this.scanner.startConditionSearchRealtime !== "function") {
+          await unsubscribeAll(subscriptions);
+          return failureResponse({
+            broker: normalizedBroker,
+            symbol: normalizedSymbol,
+            error: BrokerError.config("ScannerService.startConditionSearchRealtime is required", {
+              broker: normalizedBroker,
+              details: { capabilityId: REALTIME_SIGNAL_INPUT_CAPABILITY_ID },
+            }),
+            capabilityId: REALTIME_SIGNAL_INPUT_CAPABILITY_ID,
+          });
+        }
+
+        for (const search of conditionSearches) {
+          const conditionSubscription = await this.scanner.startConditionSearchRealtime(
+            normalizedBroker,
+            search.condition,
+            {
+              onMessage: handleMessage,
+              onAck: handlers.onAck,
+              onError: handlers.onError,
+            },
+            search.options,
+          );
+
+          if (!conditionSubscription.ok) {
+            await unsubscribeAll(subscriptions);
+            return failureResponse({
+              broker: normalizedBroker,
+              symbol: normalizedSymbol,
+              error: conditionSubscription.error,
+              capabilityId: REALTIME_SIGNAL_INPUT_CAPABILITY_ID,
+            });
+          }
+
+          state.registerConditionSearchRealtimeSession(conditionSubscription);
+          subscriptions.push(conditionSubscription);
+        }
+      }
+
       return {
         ok: true,
         broker: normalizedBroker,
@@ -192,6 +272,9 @@ export function buildDomesticStockSignalInputs({ broker, symbol, results = {}, o
   const dailyCandles = normalizeCandles(results.dailyCandles?.data?.candles);
   const minuteCandles = normalizeCandles(results.minuteCandles?.data?.candles);
   const rankingContext = buildRankingContext(symbol, results.rankings);
+  const conditionContext = options.conditionSearchBackground === undefined
+    ? buildConditionSearchContext(symbol, results.conditionSearches)
+    : clone(options.conditionSearchBackground);
   const thresholds = normalizeThresholds(options.thresholds);
   const market = options.marketBackground === undefined
     ? buildMarketBackground({ results, options })
@@ -219,12 +302,15 @@ export function buildDomesticStockSignalInputs({ broker, symbol, results = {}, o
       minute: minuteCandles,
     },
     rankings: rankingContext,
+    conditions: conditionContext,
     metrics: {
       ...metrics,
+      conditions: conditionContext?.metrics ?? null,
       market: market?.metrics ?? null,
     },
     signals: {
       ...buildSignals(metrics, thresholds),
+      conditions: conditionContext?.indicators ?? null,
       market: market?.indicators ?? null,
     },
     thresholds,
@@ -245,6 +331,8 @@ export class DomesticStockRealtimeSignalState {
       lastTradeTime: null,
       tradeCount: 0,
       orderBookUpdateCount: 0,
+      marketStatusUpdateCount: 0,
+      conditionSearchEventCount: 0,
       ignoredCount: 0,
     };
     this.data.realtime = {
@@ -258,7 +346,7 @@ export class DomesticStockRealtimeSignalState {
       ...options,
     };
 
-    if (!isSameSymbol(this.data.symbol, message?.symbol ?? message?.key)) {
+    if (message?.kind !== "marketStatus" && !isSameSymbol(this.data.symbol, message?.symbol ?? message?.key)) {
       this.stats.ignoredCount += 1;
       this.data.realtime = {
         ...this.stats,
@@ -282,6 +370,14 @@ export class DomesticStockRealtimeSignalState {
     } else if (message?.kind === "orderBook") {
       applyRealtimeOrderBook(next, message);
       this.stats.orderBookUpdateCount += 1;
+      updated = true;
+    } else if (message?.kind === "marketStatus") {
+      applyRealtimeMarketStatus(next, message);
+      this.stats.marketStatusUpdateCount += 1;
+      updated = true;
+    } else if (message?.kind === "conditionSearchEvent") {
+      applyRealtimeConditionSearch(next, message);
+      this.stats.conditionSearchEventCount += 1;
       updated = true;
     }
 
@@ -312,6 +408,14 @@ export class DomesticStockRealtimeSignalState {
       message,
       data: this.getSnapshot(),
     };
+  }
+
+  registerConditionSearchRealtimeSession(sessionResult) {
+    const next = clone(this.data);
+    applyConditionSearchRealtimeSession(next, sessionResult);
+    this.data = next;
+
+    return this.getSnapshot();
   }
 
   getSnapshot() {
@@ -353,6 +457,15 @@ async function collectSignalSources({ quote, marketData, marketContext, marketFl
     tasks.push(["volumeRanking", scanner.getDomesticStockVolumeRankings(broker, options.rankingOptions)]);
     tasks.push(["valueRanking", scanner.getDomesticStockValueRankings(broker, options.rankingOptions)]);
     tasks.push(["changeRateRanking", scanner.getDomesticStockChangeRateRankings(broker, options.rankingOptions)]);
+  }
+
+  if (options.includeConditionSearch) {
+    options.conditionSearches.forEach((search, index) => {
+      tasks.push([
+        `conditionSearch:${index}`,
+        scanner.searchCondition(broker, search.condition, search.options),
+      ]);
+    });
   }
 
   if (options.includeMarketContext) {
@@ -401,6 +514,14 @@ async function collectSignalSources({ quote, marketData, marketContext, marketFl
     delete results.changeRateRanking;
   }
 
+  if (options.includeConditionSearch) {
+    results.conditionSearches = options.conditionSearches.map((search, index) => {
+      const result = results[`conditionSearch:${index}`];
+      delete results[`conditionSearch:${index}`];
+      return result;
+    });
+  }
+
   return results;
 }
 
@@ -410,6 +531,8 @@ function normalizeOptions(options) {
   const marketFlowMarket = normalizeMarketTarget(options.marketFlowMarket ?? market);
   const programTradingMarket = normalizeMarketTarget(options.programTradingMarket ?? marketFlowMarket);
   const includeMarketFlow = Boolean(options.includeMarketFlow);
+  const conditionSearches = normalizeConditionSearchOptions(options);
+  const includeConditionSearch = Boolean(options.includeConditionSearch) || conditionSearches.length > 0;
 
   return {
     includeOrderBook: options.includeOrderBook !== false,
@@ -417,6 +540,7 @@ function normalizeOptions(options) {
     includeDailyCandles: options.includeDailyCandles !== false,
     includeMinuteCandles: options.includeMinuteCandles !== false,
     includeRankings: Boolean(options.includeRankings),
+    includeConditionSearch,
     includeMarketContext: Boolean(options.includeMarketContext),
     includeMarketIndexCandles: Boolean(options.includeMarketIndexCandles),
     includeExpectedIndex: Boolean(options.includeExpectedIndex),
@@ -443,6 +567,7 @@ function normalizeOptions(options) {
       exchange: options.exchange,
       ...(options.rankingOptions ?? {}),
     },
+    conditionSearches,
     marketContextOptions: {
       indexes: normalizeMarketIndexes(options.marketIndexes ?? options.indexes ?? ["kospi", "kosdaq"]),
       generatedAt: options.generatedAt,
@@ -472,6 +597,68 @@ function normalizeOptions(options) {
       ...(options.programTradingOptions ?? {}),
     },
   };
+}
+
+function normalizeConditionSearchOptions(options = {}) {
+  const rawSearches = options.conditionSearches ?? options.conditionSearch ?? options.conditions;
+  const searches = rawSearches === undefined || rawSearches === null
+    ? []
+    : Array.isArray(rawSearches) ? rawSearches : [rawSearches];
+  const baseOptions = options.conditionSearchOptions ?? {};
+
+  return searches
+    .map((search) => {
+      if (search && typeof search === "object" && (Object.hasOwn(search, "condition") || Object.hasOwn(search, "options"))) {
+        return {
+          condition: search.condition ?? null,
+          options: {
+            ...baseOptions,
+            ...(search.options ?? {}),
+          },
+        };
+      }
+
+      return {
+        condition: search,
+        options: { ...baseOptions },
+      };
+    })
+    .filter((search) => search.condition !== undefined && search.condition !== null && search.condition !== "");
+}
+
+function normalizeRealtimeConditionSearchOptions(options = {}, initialData = {}) {
+  const rawSearches = options.realtimeConditionSearches
+    ?? options.conditionRealtimeSearches
+    ?? options.conditionSearches
+    ?? options.conditionSearch
+    ?? options.conditions
+    ?? initialData.conditions?.searches?.map((search) => search.condition);
+  const searches = rawSearches === undefined || rawSearches === null
+    ? []
+    : Array.isArray(rawSearches) ? rawSearches : [rawSearches];
+  const baseOptions = options.conditionRealtimeOptions
+    ?? options.conditionSearchRealtimeOptions
+    ?? options.conditionSearchOptions
+    ?? {};
+
+  return searches
+    .map((search) => {
+      if (search && typeof search === "object" && (Object.hasOwn(search, "condition") || Object.hasOwn(search, "options"))) {
+        return {
+          condition: search.condition ?? null,
+          options: {
+            ...baseOptions,
+            ...(search.options ?? {}),
+          },
+        };
+      }
+
+      return {
+        condition: search,
+        options: { ...baseOptions },
+      };
+    })
+    .filter((search) => search.condition !== undefined && search.condition !== null && search.condition !== "");
 }
 
 function buildMarketBackground({ results, options }) {
@@ -746,20 +933,101 @@ function findRankingItem(symbol, rankingResult) {
   };
 }
 
+function buildConditionSearchContext(symbol, conditionSearches) {
+  if (!Array.isArray(conditionSearches) || conditionSearches.length === 0) {
+    return null;
+  }
+
+  const normalizedSymbol = normalizeSymbolCode(symbol);
+  const searches = conditionSearches.map((result, index) => {
+    const data = resultData(result);
+    const item = data?.items?.find((candidate) => normalizeSymbolCode(candidate?.symbol) === normalizedSymbol) ?? null;
+    const condition = summarizeCondition(data?.condition, index);
+
+    return {
+      condition,
+      matched: Boolean(item),
+      item: item ? summarizeConditionSearchItem(item) : null,
+      itemCount: Array.isArray(data?.items) ? data.items.length : 0,
+      summary: data?.summary ?? null,
+      source: {
+        ok: Boolean(result?.ok),
+        broker: result?.broker ?? null,
+        id: result?.id ?? null,
+        capability: result?.capability ?? null,
+        status: result?.status ?? 0,
+      },
+    };
+  });
+  const matches = searches.filter((search) => search.matched);
+  const matchedConditionIds = matches.map((search) => search.condition.id).filter(Boolean);
+  const matchedNames = matches.map((search) => search.condition.name).filter(Boolean);
+
+  return {
+    searches,
+    matches,
+    metrics: {
+      searchedCount: searches.length,
+      matchedCount: matches.length,
+      unmatchedCount: searches.length - matches.length,
+      matchedRatio: ratio(matches.length, searches.length),
+    },
+    indicators: {
+      anyMatch: matches.length > 0,
+      matchedCount: matches.length,
+      matchedConditionIds,
+      matchedNames,
+    },
+  };
+}
+
+function summarizeCondition(condition, index) {
+  const id = nullableString(condition?.id ?? condition?.seq ?? condition?.queryIndex);
+
+  return {
+    id,
+    seq: nullableString(condition?.seq),
+    queryIndex: nullableString(condition?.queryIndex),
+    realtimeKey: nullableString(condition?.realtimeKey),
+    alertKey: nullableString(condition?.alertKey),
+    name: nullableString(condition?.name) ?? `condition-${index + 1}`,
+    groupName: nullableString(condition?.groupName),
+  };
+}
+
+function summarizeConditionSearchItem(item) {
+  return {
+    symbol: normalizeSymbolCode(item?.symbol),
+    name: nullableString(item?.name),
+    price: firstNumber([item?.price]),
+    change: firstNumber([item?.change]),
+    changeRate: firstNumber([item?.changeRate]),
+    volume: firstNumber([item?.volume]),
+  };
+}
+
 function buildSourceSummary(results) {
   return Object.fromEntries(Object.entries(results).map(([key, result]) => {
     if (key === "rankings") {
       return [key, buildSourceSummary(result)];
     }
 
-    return [key, {
-      ok: Boolean(result?.ok),
-      broker: result?.broker ?? null,
-      id: result?.id ?? null,
-      capability: result?.capability ?? null,
-      status: result?.status ?? 0,
-    }];
+    if (Array.isArray(result)) {
+      return [key, result.map((item) => sourceSummary(item))];
+    }
+
+    return [key, sourceSummary(result)];
   }));
+}
+
+function sourceSummary(result) {
+  return {
+    ok: Boolean(result?.ok),
+    broker: result?.broker ?? null,
+    id: result?.id ?? null,
+    capability: result?.capability ?? null,
+    status: result?.status ?? 0,
+  };
 }
 
 function buildWarnings(results) {
@@ -772,6 +1040,15 @@ function buildWarnings(results) {
           warnings.push(sourceWarning(`rankings.${rankingKey}`, rankingResult));
         }
       }
+      continue;
+    }
+
+    if (Array.isArray(result)) {
+      result.forEach((item, index) => {
+        if (item && !item.ok) {
+          warnings.push(sourceWarning(`${key}.${index}`, item));
+        }
+      });
       continue;
     }
 
@@ -876,6 +1153,205 @@ function applyRealtimeOrderBook(data, message) {
     timestamp: message.timestamp ?? data.orderBook?.timestamp ?? null,
     source: data.orderBook?.source,
   };
+}
+
+function applyRealtimeMarketStatus(data, message) {
+  data.market = {
+    ...(data.market ?? {}),
+    status: {
+      broker: message.broker ?? data.broker,
+      market: message.market ?? data.market?.targetMarket ?? null,
+      marketCode: message.marketCode ?? null,
+      marketName: message.marketName ?? null,
+      session: message.session ?? null,
+      phase: message.phase ?? null,
+      eventCode: message.eventCode ?? null,
+      eventName: message.eventName ?? null,
+      time: message.time ?? null,
+      remainingTime: message.remainingTime ?? null,
+      raw: message.raw ?? message,
+    },
+  };
+}
+
+function applyConditionSearchRealtimeSession(data, sessionResult) {
+  const session = sessionResult?.data ?? sessionResult;
+  if (!session?.condition && !session?.realtimeKey) {
+    return;
+  }
+
+  const conditions = normalizeConditionContext(data.conditions);
+  const index = findConditionSearchIndex(conditions.searches, {
+    ...(session.condition ?? {}),
+    realtimeKey: session.realtimeKey,
+  });
+  const targetIndex = index >= 0 ? index : conditions.searches.length;
+  const current = conditions.searches[targetIndex] ?? emptyConditionSearch(targetIndex);
+  const condition = summarizeCondition({
+    ...(current.condition ?? {}),
+    ...(session.condition ?? {}),
+    realtimeKey: session.realtimeKey ?? current.condition?.realtimeKey,
+    alertKey: session.alertKey ?? current.condition?.alertKey,
+  }, targetIndex);
+
+  conditions.searches[targetIndex] = {
+    ...current,
+    condition,
+    summary: {
+      ...(current.summary ?? {}),
+      realtime: {
+        ok: sessionResult?.ok ?? true,
+        status: session.status ?? null,
+        realtimeKey: session.realtimeKey ?? null,
+        resultFlag: session.resultFlag ?? null,
+        time: session.time ?? null,
+        message: session.message ?? null,
+      },
+    },
+  };
+
+  data.conditions = rebuildConditionContext(conditions.searches);
+}
+
+function applyRealtimeConditionSearch(data, message) {
+  const conditions = normalizeConditionContext(data.conditions);
+  const index = findConditionSearchIndex(conditions.searches, message);
+  const targetIndex = index >= 0 ? index : conditions.searches.length === 1 ? 0 : conditions.searches.length;
+  const current = conditions.searches[targetIndex] ?? emptyConditionSearch(targetIndex);
+  const eventType = message.eventType ?? null;
+  const wasMatched = Boolean(current.matched);
+  const matched = eventType === "exited" ? false : true;
+  const item = matched ? summarizeConditionSearchItem(message) : null;
+  const itemCount = nextConditionItemCount(current.itemCount, wasMatched, matched);
+  const condition = summarizeCondition({
+    ...(current.condition ?? {}),
+    id: current.condition?.id ?? message.conditionId,
+    seq: current.condition?.seq ?? message.conditionId,
+    realtimeKey: current.condition?.realtimeKey ?? message.realtimeKey,
+    alertKey: current.condition?.alertKey ?? message.realtimeKey,
+  }, targetIndex);
+
+  conditions.searches[targetIndex] = {
+    ...current,
+    condition,
+    matched,
+    item,
+    itemCount,
+    summary: {
+      ...(current.summary ?? {}),
+      realtime: {
+        ...(current.summary?.realtime ?? {}),
+        lastEvent: {
+          eventType,
+          eventCode: message.eventCode ?? null,
+          symbol: normalizeSymbolCode(message.symbol),
+          name: nullableString(message.name),
+          time: nullableString(message.time ?? message.tradeTime ?? message.timestamp),
+          price: firstNumber([message.price]),
+          change: firstNumber([message.change]),
+          changeRate: firstNumber([message.changeRate]),
+          volume: firstNumber([message.volume]),
+        },
+      },
+    },
+  };
+
+  data.conditions = rebuildConditionContext(conditions.searches);
+}
+
+function normalizeConditionContext(conditions) {
+  return {
+    ...(conditions ?? {}),
+    searches: Array.isArray(conditions?.searches) ? clone(conditions.searches) : [],
+  };
+}
+
+function emptyConditionSearch(index) {
+  return {
+    condition: summarizeCondition(null, index),
+    matched: false,
+    item: null,
+    itemCount: 0,
+    summary: null,
+    source: {
+      ok: true,
+      broker: null,
+      id: null,
+      capability: null,
+      status: 0,
+    },
+  };
+}
+
+function rebuildConditionContext(searches) {
+  const normalizedSearches = searches.map((search, index) => ({
+    ...search,
+    condition: summarizeCondition(search.condition, index),
+    matched: Boolean(search.matched),
+    item: search.item ? summarizeConditionSearchItem(search.item) : null,
+    itemCount: Number.isFinite(search.itemCount) ? search.itemCount : 0,
+  }));
+  const matches = normalizedSearches.filter((search) => search.matched);
+  const matchedConditionIds = matches.map((search) => search.condition.id).filter(Boolean);
+  const matchedNames = matches.map((search) => search.condition.name).filter(Boolean);
+
+  return {
+    searches: normalizedSearches,
+    matches,
+    metrics: {
+      searchedCount: normalizedSearches.length,
+      matchedCount: matches.length,
+      unmatchedCount: normalizedSearches.length - matches.length,
+      matchedRatio: ratio(matches.length, normalizedSearches.length),
+    },
+    indicators: {
+      anyMatch: matches.length > 0,
+      matchedCount: matches.length,
+      matchedConditionIds,
+      matchedNames,
+    },
+  };
+}
+
+function findConditionSearchIndex(searches, candidate) {
+  const ids = conditionCandidateIds(candidate);
+
+  if (ids.length === 0) {
+    return -1;
+  }
+
+  return searches.findIndex((search) => {
+    const searchIds = conditionCandidateIds(search.condition);
+    return searchIds.some((id) => ids.includes(id));
+  });
+}
+
+function conditionCandidateIds(candidate) {
+  const values = [
+    candidate?.conditionId,
+    candidate?.realtimeKey,
+    candidate?.alertKey,
+    candidate?.id,
+    candidate?.seq,
+    candidate?.queryIndex,
+    candidate?.key,
+  ];
+
+  return values.map(nullableString).filter(Boolean);
+}
+
+function nextConditionItemCount(currentCount, wasMatched, matched) {
+  const count = Number.isFinite(currentCount) ? currentCount : 0;
+
+  if (matched && !wasMatched) {
+    return count + 1;
+  }
+
+  if (!matched && wasMatched) {
+    return Math.max(0, count - 1);
+  }
+
+  return count;
 }
 
 function updateMinuteCandles(candles, message, options) {
@@ -990,6 +1466,7 @@ function rebuildSignalDataFromSnapshot(data, options) {
     marketSnapshot: signalResult("marketSnapshot", data.market.snapshot, data),
     marketIndexDailyCandles: signalResult("marketIndexDailyCandles", data.market.indexDailyCandles, data),
     expectedIndex: signalResult("expectedIndex", data.market.expectedIndex, data),
+    marketStatus: signalResult("marketStatus", data.market.status, data),
     domesticInvestorFlow: signalResult("domesticInvestorFlow", data.market.flow?.investor, data),
     programTrading: signalResult("programTrading", data.market.flow?.programTrading, data),
   } : {};
@@ -1003,6 +1480,7 @@ function rebuildSignalDataFromSnapshot(data, options) {
       realtime: options.realtime,
       market: data.market?.targetMarket,
       marketBackground: data.market,
+      conditionSearchBackground: data.conditions,
     },
     results: {
       currentPrice: signalResult("currentPrice", data.quote, data),
@@ -1015,6 +1493,7 @@ function rebuildSignalDataFromSnapshot(data, options) {
         value: rankingResult("value", data.rankings?.value, data),
         changeRate: rankingResult("changeRate", data.rankings?.changeRate, data),
       },
+      conditionSearches: conditionSearchResults(data),
       ...marketResults,
     },
   });
@@ -1050,6 +1529,29 @@ function rankingResult(key, item, signalData) {
     headers: {},
     status: source.status ?? 0,
   };
+}
+
+function conditionSearchResults(signalData) {
+  const sources = signalData.source?.conditionSearches;
+
+  return (signalData.conditions?.searches ?? []).map((search, index) => {
+    const source = Array.isArray(sources) ? sources[index] ?? {} : {};
+
+    return {
+      ok: source.ok ?? search.source?.ok ?? true,
+      broker: signalData.broker,
+      capability: source.capability ?? search.source?.capability ?? null,
+      id: source.id ?? search.source?.id ?? null,
+      data: {
+        condition: search.condition,
+        items: search.item ? [search.item] : [],
+        summary: search.summary,
+      },
+      raw: search,
+      headers: {},
+      status: source.status ?? search.source?.status ?? 0,
+    };
+  });
 }
 
 function isSameSymbol(left, right) {
@@ -1106,6 +1608,10 @@ function buildRawSummary(results) {
   return Object.fromEntries(Object.entries(results ?? {}).map(([key, result]) => {
     if (key === "rankings") {
       return [key, buildRawSummary(result)];
+    }
+
+    if (Array.isArray(result)) {
+      return [key, result.map((item) => item?.raw ?? null)];
     }
 
     return [key, result?.raw ?? null];

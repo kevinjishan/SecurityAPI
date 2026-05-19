@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   ScannerService,
+  normalizeConditionSearchRealtimeMessage,
   normalizeDomesticStockChangeRateRankings,
 } from "../../src/index.mjs";
 import { ScannerService as ScannerServiceFromPackage } from "security-api-reference/services";
@@ -93,6 +94,105 @@ test("gets and normalizes domestic stock change rate rankings", async () => {
   assert.equal(result.data.items[0].bidPrice, 70000);
 });
 
+test("lists Kiwoom condition searches", async () => {
+  const client = new FakeClient("kiwoom");
+  const service = new ScannerService({ kiwoom: client });
+
+  const result = await service.listConditionSearches("kiwoom");
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(client.calls[0], {
+    id: "ka10171",
+    params: { trnm: "CNSRLST" },
+    options: {},
+  });
+  assert.deepEqual(result.data.conditions[0], {
+    id: "4",
+    seq: "4",
+    queryIndex: null,
+    name: "거래량 급증",
+    groupName: null,
+    raw: ["4", "거래량 급증"],
+  });
+});
+
+test("searches LS saved condition results", async () => {
+  const client = new FakeClient("ls");
+  const service = new ScannerService({ ls: client });
+
+  const result = await service.searchCondition("ls", { queryIndex: "testID0000", name: "거래량 급증" });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(client.calls[0], {
+    id: "t1859",
+    params: {
+      t1859InBlock: {
+        query_index: "testID0000",
+      },
+    },
+    options: {},
+  });
+  assert.equal(result.data.condition.queryIndex, "testID0000");
+  assert.equal(result.data.items[0].symbol, "000250");
+  assert.equal(result.data.items[0].name, "삼천당제약");
+  assert.equal(result.data.items[0].price, 68300);
+  assert.equal(result.data.items[0].changeRate, 1.79);
+});
+
+test("starts LS realtime condition search and normalizes AFR events", async () => {
+  const client = new FakeClient("ls");
+  const realtimeClient = new FakeRealtimeClient();
+  const messages = [];
+  const service = new ScannerService({ ls: client, lsRealtime: realtimeClient });
+
+  const result = await service.startConditionSearchRealtime("ls", "testID0000", {
+    onMessage: (message) => messages.push(message),
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(client.calls[0].id, "t1860");
+  assert.equal(result.data.realtimeKey, "1722490200A");
+  assert.deepEqual(realtimeClient.subscriptions[0], {
+    id: "AFR",
+    key: "1722490200A",
+    options: { streamKind: "quote" },
+  });
+
+  realtimeClient.emit("realtime", {
+    data: {
+      header: { tr_cd: "AFR", tr_key: "1722490200A" },
+      body: {
+        gsJobFlag: "N",
+        gsCode: "078150",
+        gshname: "HB테크놀러지",
+        gsPrice: "2435",
+        gsSign: "2",
+        gsChange: "45",
+        gsChgRate: "1.88",
+        gsVolume: "3432360",
+      },
+    },
+  });
+
+  assert.equal(messages.length, 1);
+  assert.equal(messages[0].kind, "conditionSearchEvent");
+  assert.equal(messages[0].symbol, "078150");
+  assert.equal(messages[0].eventType, "entered");
+  assert.equal(messages[0].price, 2435);
+
+  const stop = await result.unsubscribe();
+
+  assert.equal(stop.ok, true);
+  assert.equal(client.calls[1].id, "t1860");
+  assert.equal(client.calls[1].params.t1860InBlock.sFlag, "D");
+  assert.equal(client.calls[1].params.t1860InBlock.sAlertNum, "1722490200A");
+  assert.deepEqual(realtimeClient.unsubscriptions[0], {
+    id: "AFR",
+    key: "1722490200A",
+    options: { streamKind: "quote" },
+  });
+});
+
 test("returns config errors for scanner requests", async () => {
   const service = new ScannerService({});
 
@@ -122,6 +222,32 @@ test("normalizes change rate rankings directly", () => {
   assert.equal(data.items[0].volume, 446203);
 });
 
+test("normalizes Kiwoom condition realtime messages directly", () => {
+  const messages = normalizeConditionSearchRealtimeMessage("kiwoom", {
+    trnm: "REAL",
+    data: [
+      {
+        values: {
+          841: "4",
+          9001: "A005930",
+          843: "I",
+          20: "152028",
+          907: "2",
+        },
+        type: "02",
+        name: "조건검색",
+        item: "005930",
+      },
+    ],
+  });
+
+  assert.equal(messages[0].kind, "conditionSearchEvent");
+  assert.equal(messages[0].conditionId, "4");
+  assert.equal(messages[0].symbol, "005930");
+  assert.equal(messages[0].eventType, "entered");
+  assert.equal(messages[0].side, "buy");
+});
+
 class FakeClient {
   constructor(broker) {
     this.broker = broker;
@@ -139,6 +265,37 @@ class FakeClient {
       headers: {},
       status: 200,
     };
+  }
+}
+
+class FakeRealtimeClient {
+  constructor() {
+    this.handlers = new Map();
+    this.subscriptions = [];
+    this.unsubscriptions = [];
+  }
+
+  on(event, handler) {
+    const handlers = this.handlers.get(event) ?? new Set();
+    handlers.add(handler);
+    this.handlers.set(event, handlers);
+    return () => handlers.delete(handler);
+  }
+
+  async subscribe(id, key, options = {}) {
+    this.subscriptions.push({ id, key, options });
+    return { id, key, options, action: "subscribe" };
+  }
+
+  async unsubscribe(id, key, options = {}) {
+    this.unsubscriptions.push({ id, key, options });
+    return { id, key, options, action: "unsubscribe" };
+  }
+
+  emit(event, payload) {
+    for (const handler of this.handlers.get(event) ?? []) {
+      handler(payload);
+    }
   }
 }
 
@@ -196,6 +353,56 @@ function fakePayload(id) {
           bidho1: 70000,
         },
       ],
+    };
+  }
+
+  if (id === "ka10171") {
+    return {
+      trnm: "CNSRLST",
+      return_code: 0,
+      return_msg: "",
+      data: [
+        ["4", "거래량 급증"],
+        ["5", "기관외국인상위100"],
+      ],
+    };
+  }
+
+  if (id === "t1859") {
+    return {
+      t1859OutBlock: {
+        result_count: 1,
+        result_time: "171729",
+        text: "",
+      },
+      t1859OutBlock1: [
+        {
+          shcode: "000250",
+          hname: "삼천당제약",
+          price: 68300,
+          sign: "2",
+          change: 1200,
+          diff: "1.79",
+          volume: 241418,
+        },
+      ],
+      rsp_cd: "00000",
+      rsp_msg: "",
+    };
+  }
+
+  if (id === "t1860") {
+    return {
+      t1860OutBlock: {
+        sSysUserFlag: "U",
+        sFlag: "E",
+        sResultFlag: "S",
+        sTime: "172249",
+        sAlertNum: "1722490200A",
+        Msg: "정상처리 되었습니다.",
+      },
+      rsp_cd: "00000",
+      rsp_msg: "조회 완료",
     };
   }
 

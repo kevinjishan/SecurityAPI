@@ -198,6 +198,62 @@ const kiwoom = new KiwoomClient({
       });
     }
 
+    if (init.headers["api-id"] === "ka10171") {
+      return jsonResponse({
+        trnm: "CNSRLST",
+        return_code: 0,
+        return_msg: "",
+        data: [
+          ["4", "거래량 급증"],
+          ["5", "기관외국인상위100"],
+        ],
+      });
+    }
+
+    if (init.headers["api-id"] === "ka10172") {
+      return jsonResponse({
+        trnm: "CNSRREQ",
+        seq: "4",
+        cont_yn: "N",
+        next_key: "",
+        return_code: 0,
+        return_msg: "",
+        data: [
+          {
+            9001: "A005930",
+            302: "삼성전자",
+            10: "000070000",
+            25: "2",
+            11: "000000400",
+            12: "000000056",
+            13: "001000000",
+            16: "000069900",
+            17: "000070100",
+            18: "000069500",
+          },
+        ],
+      });
+    }
+
+    if (init.headers["api-id"] === "ka10173") {
+      return jsonResponse({
+        trnm: "CNSRREQ",
+        seq: "4",
+        return_code: 0,
+        return_msg: "정상적으로 처리되었습니다",
+        data: [],
+      });
+    }
+
+    if (init.headers["api-id"] === "ka10174") {
+      return jsonResponse({
+        trnm: "CNSRCLR",
+        seq: "4",
+        return_code: 0,
+        return_msg: "정상적으로 처리되었습니다",
+      });
+    }
+
     if (init.headers["api-id"] === "ka20001") {
       return jsonResponse({
         cur_prc: "2725.12",
@@ -482,6 +538,63 @@ const ls = new LsClient({
             total: 417000000,
           },
         ],
+      });
+    }
+
+    if (init.headers.tr_cd === "t1866") {
+      return jsonResponse({
+        rsp_cd: "00000",
+        rsp_msg: "조회성공",
+        t1866OutBlock: {
+          result_count: 1,
+          cont: "",
+          cont_key: "",
+        },
+        t1866OutBlock1: [
+          {
+            query_index: "testID0000",
+            group_name: "나의전략",
+            query_name: "거래량 급증",
+          },
+        ],
+      });
+    }
+
+    if (init.headers.tr_cd === "t1859") {
+      return jsonResponse({
+        rsp_cd: "00000",
+        rsp_msg: "",
+        t1859OutBlock: {
+          result_count: 1,
+          result_time: "171729",
+          text: "",
+        },
+        t1859OutBlock1: [
+          {
+            shcode: "000250",
+            hname: "삼천당제약",
+            price: 68300,
+            sign: "2",
+            change: 1200,
+            diff: "1.79",
+            volume: 241418,
+          },
+        ],
+      });
+    }
+
+    if (init.headers.tr_cd === "t1860") {
+      return jsonResponse({
+        rsp_cd: "00000",
+        rsp_msg: "조회 완료",
+        t1860OutBlock: {
+          sSysUserFlag: "U",
+          sFlag: "E",
+          sResultFlag: "S",
+          sTime: "172249",
+          sAlertNum: "1722490200A",
+          Msg: "정상처리 되었습니다.",
+        },
       });
     }
 
@@ -779,6 +892,15 @@ const kiwoomVolumeRankings = await scanner.getDomesticStockVolumeRankings("kiwoo
 const lsValueRankings = await scanner.getDomesticStockValueRankings("ls", {
   market: "kospi",
 });
+const kiwoomConditionList = await scanner.listConditionSearches("kiwoom");
+const kiwoomConditionSearch = await scanner.searchCondition("kiwoom", { seq: "4", name: "거래량 급증" });
+const lsConditionList = await scanner.listConditionSearches("ls", {
+  userId: "testID",
+});
+const lsConditionSearch = await scanner.searchCondition("ls", {
+  queryIndex: "testID0000",
+  name: "거래량 급증",
+});
 const marketContext = new MarketContextService({ kiwoom, ls });
 const kiwoomMarketSnapshot = await marketContext.getDomesticMarketSnapshot("kiwoom", {
   indexes: ["kospi", "kosdaq"],
@@ -812,9 +934,11 @@ const lsProgramTrading = await marketFlow.getProgramTradingTrend("ls", "kospi", 
 });
 const signalInputs = await new SignalInputService({ kiwoom, ls }).getDomesticStockSignalInputs("kiwoom", "005930", {
   includeRankings: true,
+  includeConditionSearch: true,
   includeMarketContext: true,
   includeMarketIndexCandles: true,
   includeMarketFlow: true,
+  conditionSearches: [{ seq: "4", name: "거래량 급증" }],
   intervalMinutes: 5,
   minuteCount: 2,
   market: "kospi",
@@ -857,7 +981,7 @@ const realtimeSignalUpdates = [];
 const realtimeSignalSubscription = await new SignalInputService({
   quote: {},
   marketData: {},
-  scanner: {},
+  scanner: new ScannerService({ kiwoom, kiwoomRealtime }),
   realtime,
 }).subscribeDomesticStockSignalInputs("kiwoom", "005930", {
   onUpdate: (data) => realtimeSignalUpdates.push(data),
@@ -865,10 +989,17 @@ const realtimeSignalSubscription = await new SignalInputService({
   initialInputs: signalInputs.data,
   intervalMinutes: 5,
   tradeDate: "20260519",
+  includeMarketStatus: true,
+  includeRealtimeConditionSearch: true,
+  conditionSearches: [{ seq: "4", name: "거래량 급증" }],
 });
 const realtimeMessages = [];
 const realtimeSubscription = await realtime.subscribeDomesticStockTrades("kiwoom", "005930", {
   onMessage: (message) => realtimeMessages.push(message),
+});
+const marketStatusMessages = [];
+const marketStatusSubscription = await realtime.subscribeMarketStatus("kiwoom", {
+  onMessage: (message) => marketStatusMessages.push(message),
 });
 
 kiwoomRealtime.emit("realtime", {
@@ -913,6 +1044,42 @@ kiwoomRealtime.emit("realtime", {
     ],
   },
 });
+kiwoomRealtime.emit("realtime", {
+  data: {
+    trnm: "REAL",
+    data: [
+      {
+        type: "0s",
+        name: "장시작시간",
+        item: "",
+        values: {
+          215: "3",
+          20: "090000",
+          214: "000000",
+        },
+      },
+    ],
+  },
+});
+kiwoomRealtime.emit("realtime", {
+  data: {
+    trnm: "REAL",
+    data: [
+      {
+        type: "02",
+        name: "조건검색",
+        item: "005930",
+        values: {
+          841: "4",
+          9001: "A005930",
+          843: "I",
+          20: "093503",
+          907: "2",
+        },
+      },
+    ],
+  },
+});
 
 assert.equal(kiwoomQuote.ok, true);
 assert.equal(kiwoomQuote.data.price, 70000);
@@ -936,6 +1103,14 @@ assert.equal(kiwoomVolumeRankings.ok, true);
 assert.equal(kiwoomVolumeRankings.data.items[0].volume, 34954641);
 assert.equal(lsValueRankings.ok, true);
 assert.equal(lsValueRankings.data.items[0].value, 874631);
+assert.equal(kiwoomConditionList.ok, true);
+assert.equal(kiwoomConditionList.data.conditions[0].seq, "4");
+assert.equal(kiwoomConditionSearch.ok, true);
+assert.equal(kiwoomConditionSearch.data.items[0].symbol, "005930");
+assert.equal(lsConditionList.ok, true);
+assert.equal(lsConditionList.data.conditions[0].queryIndex, "testID0000");
+assert.equal(lsConditionSearch.ok, true);
+assert.equal(lsConditionSearch.data.items[0].symbol, "000250");
 assert.equal(kiwoomMarketSnapshot.ok, true);
 assert.equal(kiwoomMarketSnapshot.data.indexes[0].price, 2725.12);
 assert.equal(lsMarketSnapshot.ok, true);
@@ -960,12 +1135,18 @@ assert.equal(signalInputs.data.metrics.orderBook.bestAskPrice, 70100);
 assert.equal(signalInputs.data.market.targetMarket, "kospi");
 assert.equal(signalInputs.data.metrics.market.flow.programTotalNetBuy, 17);
 assert.equal(signalInputs.data.rankings.volume.rank, 1);
+assert.equal(signalInputs.data.conditions.metrics.matchedCount, 1);
+assert.equal(signalInputs.data.signals.conditions.anyMatch, true);
 assert.equal(realtimeSignalSubscription.ok, true);
-assert.equal(realtimeSignalUpdates.length, 2);
+assert.equal(realtimeSignalUpdates.length, 4);
 assert.equal(realtimeSignalUpdates[0].quote.price, 70150);
 assert.equal(realtimeSignalUpdates[0].realtime.tradeCount, 1);
 assert.equal(realtimeSignalUpdates[1].metrics.orderBook.bestBidPrice, 70100);
 assert.equal(realtimeSignalUpdates[1].realtime.orderBookUpdateCount, 1);
+assert.equal(realtimeSignalUpdates[2].market.status.phase, "open");
+assert.equal(realtimeSignalUpdates[2].realtime.marketStatusUpdateCount, 1);
+assert.equal(realtimeSignalUpdates[3].conditions.metrics.matchedCount, 1);
+assert.equal(realtimeSignalUpdates[3].realtime.conditionSearchEventCount, 1);
 assert.equal(kiwoomCash.ok, true);
 assert.equal(kiwoomCash.data.summary.orderableAmount, 750000);
 assert.equal(lsCash.ok, true);
@@ -988,12 +1169,17 @@ assert.equal(lsSellDryRun.data.request.CSPAT00601InBlock1.BnsTpCode, "1");
 assert.equal(lsSellDryRun.data.safety.allowed, true);
 assert.equal(realtimeSubscription.ok, true);
 assert.equal(realtimeSubscription.id, "0B");
+assert.equal(marketStatusSubscription.ok, true);
+assert.equal(marketStatusSubscription.id, "0s");
 assert.equal(kiwoomRealtime.subscriptions.some((subscription) => subscription.id === "0B" && subscription.key === "005930"), true);
 assert.equal(kiwoomRealtime.subscriptions.some((subscription) => subscription.id === "0D" && subscription.key === "005930"), true);
+assert.equal(kiwoomRealtime.subscriptions.some((subscription) => subscription.id === "0s" && subscription.key === ""), true);
 assert.equal(realtimeMessages[0].kind, "trade");
 assert.equal(realtimeMessages[0].symbol, "005930");
 assert.equal(realtimeMessages[0].price, 70150);
 assert.equal(realtimeMessages[0].body["10"], "70150");
+assert.equal(marketStatusMessages[0].kind, "marketStatus");
+assert.equal(marketStatusMessages[0].eventName, "장시작");
 
 console.log("Mock Kiwoom result:", kiwoomResult.data);
 console.log("Mock LS result:", lsResult.data);
@@ -1009,6 +1195,10 @@ console.log("Mock QuoteService results:", {
   lsBasicInfo: lsBasicInfo.data,
   kiwoomVolumeRankings: kiwoomVolumeRankings.data,
   lsValueRankings: lsValueRankings.data,
+  kiwoomConditionList: kiwoomConditionList.data,
+  kiwoomConditionSearch: kiwoomConditionSearch.data,
+  lsConditionList: lsConditionList.data,
+  lsConditionSearch: lsConditionSearch.data,
   kiwoomMarketSnapshot: kiwoomMarketSnapshot.data,
   lsMarketSnapshot: lsMarketSnapshot.data,
   kiwoomIndexDailyCandles: kiwoomIndexDailyCandles.data,
@@ -1029,7 +1219,9 @@ console.log("Mock QuoteService results:", {
   kiwoomBuyDryRun: kiwoomBuyDryRun.data,
   lsSellDryRun: lsSellDryRun.data,
   realtimeSubscription,
+  marketStatusSubscription,
   realtimeMessage: realtimeMessages[0],
+  marketStatusMessage: marketStatusMessages[0],
 });
 console.log("Mock broker client examples passed.");
 

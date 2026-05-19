@@ -81,6 +81,27 @@ export const KIWOOM_CAPABILITIES = [
     apis: [{ id: "ka10027", role: "changeRateRanking", transport: "rest" }],
   },
   {
+    id: "scanner.conditionSearch.list",
+    status: "documented",
+    apis: [{ id: "ka10171", role: "conditionList", transport: "websocket" }],
+    caution: "조건검색은 키움 WebSocket 조건검색 요청 흐름을 사용한다.",
+  },
+  {
+    id: "scanner.conditionSearch.search",
+    status: "documented",
+    apis: [{ id: "ka10172", role: "conditionSearch", transport: "websocket" }],
+    caution: "조건검색은 키움 WebSocket 조건검색 요청 흐름을 사용한다.",
+  },
+  {
+    id: "scanner.conditionSearch.realtime",
+    status: "documented",
+    apis: [
+      { id: "ka10173", role: "realtimeStart", transport: "websocket" },
+      { id: "ka10174", role: "realtimeStop", transport: "websocket" },
+    ],
+    caution: "실시간 조건검색은 조건검색 목록 조회 이후 사용할 수 있다.",
+  },
+  {
     id: "signal.domesticStock.inputs",
     status: "composed",
     apis: [],
@@ -164,5 +185,10 @@ export const KIWOOM_CAPABILITIES = [
     id: "realtime.domesticStock.balance",
     status: "documented",
     apis: [{ id: "04", role: "balance", transport: "websocket" }],
+  },
+  {
+    id: "realtime.market.status",
+    status: "documented",
+    apis: [{ id: "0s", role: "marketSessionStatus", transport: "websocket" }],
   },
 ];

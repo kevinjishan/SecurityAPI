@@ -19,15 +19,16 @@ npm run examples:mock
 - `MarketDataService.getDomesticStockDailyCandles()` / `getDomesticStockMinuteCandles()` OHLCV 공통 응답 형태 확인
 - `MarketDataService.getDomesticStockBasicInfo()` 종목 기본정보 공통 응답 형태 확인
 - `ScannerService.getDomesticStockVolumeRankings()` / `getDomesticStockValueRankings()` 랭킹 공통 응답 형태 확인
+- `ScannerService.listConditionSearches()` / `searchCondition()` 조건검색 목록/결과 공통 응답 형태 확인
 - `MarketContextService.getDomesticMarketSnapshot()` / `getDomesticIndexDailyCandles()` / `getDomesticExpectedIndex()` 주요 지수, 시장 폭, 지수 추이, LS 예상지수 공통 응답 형태 확인
 - `MarketFlowService.getDomesticInvestorFlow()` / `getProgramTradingTrend()` 개인/외국인/기관 수급과 프로그램 매매 공통 응답 형태 확인
-- `SignalInputService.getDomesticStockSignalInputs()` 시세/호가/OHLCV/랭킹/시장 컨텍스트/수급 조합 입력값 확인
-- `SignalInputService.subscribeDomesticStockSignalInputs()` 실시간 체결/호가 기반 갱신 입력값 확인
+- `SignalInputService.getDomesticStockSignalInputs()` 시세/호가/OHLCV/랭킹/조건검색/시장 컨텍스트/수급 조합 입력값 확인
+- `SignalInputService.subscribeDomesticStockSignalInputs()` 실시간 체결/호가/장운영 상태/조건검색 기반 갱신 입력값 확인
 - `AccountService.getDomesticStockCash()` 예수금/주문가능금액 공통 응답 형태 확인
 - `AccountService.getDomesticStockBalance()` 잔고/평가손익 공통 응답 형태 확인
 - `AccountService.getDomesticStockOrderHistory()` 주문/체결 내역 공통 응답 형태 확인
 - `OrderService.buyDomesticStock()` / `sellDomesticStock()` dry-run 주문 요청과 안전장치 확인
-- `RealtimeService.subscribeDomesticStockTrades()` mock WebSocket 구독/체결 메시지 공통 필드 정규화 확인
+- `RealtimeService.subscribeDomesticStockTrades()` / `subscribeMarketStatus()` mock WebSocket 구독/체결/장운영 상태 메시지 공통 필드 정규화 확인
 - `WebSocketBrokerClient` 중복 구독 방지, 재연결, 구독 복구 테스트는 `npm test`에서 확인
 
 ## Real Credentials

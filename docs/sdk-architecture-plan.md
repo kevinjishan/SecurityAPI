@@ -296,7 +296,7 @@ futureOption.order.new
 
 ### 3.6 Domain Service Layer
 
-이 레이어는 2차 작업이며, 현재 국내주식 시세, 시장 데이터, 시장 컨텍스트, 계좌, 주문, 실시간 구독의 기본 구현을 제공한다.
+이 레이어는 2차 작업이며, 현재 국내주식 시세, 시장 데이터, 랭킹/조건검색 스캐너, 시장 컨텍스트, 계좌, 주문, 실시간 구독의 기본 구현을 제공한다.
 
 목표는 사용자가 증권사별 API ID/TR 코드를 몰라도 도메인 함수로 호출하게 하는 것이다.
 
@@ -316,6 +316,8 @@ await quote.getDomesticStockMultiCurrentPrice("ls", ["005930", "000660"]);
 `MarketContextService`는 주요 지수 현재가, 지수 일봉 추이, 상승/보합/하락 종목 수, 장전/장후 예상지수를 사용해 시장 전체의 방향성과 폭을 얇게 정리한다. 이 결과는 종목별 시그널 입력값 위에 붙일 수 있는 시장 배경 데이터이며, 매수/매도 판단은 수행하지 않는다. 예상지수는 현재 LS REST `t1485`만 매핑되어 있으며, 키움은 같은 REST 범위가 확인될 때 추가한다.
 
 `MarketFlowService`는 개인, 외국인, 기관계와 세부 기관 투자자의 순매수, 전체/차익/비차익 프로그램 매매 흐름을 공통 형태로 정리한다. 수급 데이터는 시장 판단 입력값이지만, 이 레이어 역시 매수/매도 판단은 수행하지 않는다.
+
+`ScannerService`는 거래량/거래대금/등락률 랭킹뿐 아니라 조건검색 목록, 조건식 실행 결과, 실시간 조건검색 세션을 공통 형태로 정리한다. 키움은 조건검색 요청 자체가 WebSocket 흐름이고, LS는 목록/일반검색은 REST, 실시간 이벤트는 `t1860` 등록 후 `AFR` WebSocket 구독으로 갈라지므로 이 차이를 서비스 내부에서 흡수한다.
 
 `SignalInputService`는 현재 코드 구조상 `src/services`에 함께 두지만, 논리적으로는 Domain Service 결과를 조합하는 `Signal / Decision Input Layer`에 속한다. 이 레이어는 다른 앱의 전략 코드가 읽을 입력값을 만들 뿐, 매수/매도 같은 애플리케이션 판단은 수행하지 않는다. 시장 컨텍스트와 수급 데이터는 기본 비용을 늘리지 않도록 옵션으로만 조회하고, 켜진 경우 `market`, `metrics.market`, `signals.market` 블록에 함께 담는다.
 
@@ -351,12 +353,16 @@ test/services/SignalInputService.test.mjs
 - `scanner.domesticStock.volumeRanking` capability 확인
 - `scanner.domesticStock.valueRanking` capability 확인
 - `scanner.domesticStock.changeRateRanking` capability 확인
+- `scanner.conditionSearch.list` capability 확인
+- `scanner.conditionSearch.search` capability 확인
+- `scanner.conditionSearch.realtime` capability 확인
 - `marketContext.domesticIndex.current` capability 확인
 - `marketContext.domesticIndex.dailyCandles` capability 확인
 - `marketContext.domesticIndex.expected` capability 확인
 - `marketContext.domesticMarket.snapshot` capability 확인
 - `marketFlow.domesticInvestor.netBuy` capability 확인
 - `marketFlow.programTrading.trend` capability 확인
+- `realtime.market.status` capability 확인
 - 키움 `ka10001` 호출
 - 키움 `ka10004` 호가 호출
 - 키움 `ka10095` 복수 현재가 호출
@@ -365,10 +371,15 @@ test/services/SignalInputService.test.mjs
 - 키움 `ka10030` 당일 거래량 상위 호출
 - 키움 `ka10032` 거래대금 상위 호출
 - 키움 `ka10027` 전일대비 등락률 상위 호출
+- 키움 `ka10171` 조건검색 목록 조회
+- 키움 `ka10172` 조건검색 일반 요청
+- 키움 `ka10173` 조건검색 실시간 요청
+- 키움 `ka10174` 조건검색 실시간 해제
 - 키움 `ka20001` 업종현재가 호출
 - 키움 `ka20006` 업종일봉조회 호출
 - 키움 `ka10051` 업종별투자자순매수 호출
 - 키움 `ka90005` 프로그램매매추이 시간대별 호출
+- 키움 `0s` 장시작시간 WebSocket 구독
 - LS `t1101` 현재가/호가 기본 호출, 옵션으로 `t1102` 등 명시 가능
 - LS `t8407` 복수 현재가 호출
 - LS `t1102` 종목 기본정보 호출
@@ -377,29 +388,36 @@ test/services/SignalInputService.test.mjs
 - LS `t1452` 거래량 상위 호출
 - LS `t1463` 거래대금 상위 호출
 - LS `t1441` 등락률 상위 호출
+- LS `t1866` 서버저장조건 리스트 조회
+- LS `t1859` 서버저장조건 조건검색
+- LS `t1860` 서버저장조건 실시간검색 등록/중지
+- LS `AFR` API 사용자조건검색 실시간 WebSocket 이벤트
 - LS `t1511` 업종현재가 호출
 - LS `t1514` 업종기간별추이 호출
 - LS `t1485` 예상지수 호출
 - LS `t1602` 시간대별투자자매매추이 호출
 - LS `t1632` 시간대별프로그램매매추이 호출
+- LS `JIF` 장운영정보 WebSocket 구독
 - `symbol`, `name`, `price`, `change`, `changeRate`, `volume`, `currency`, `source` 공통 형태 제공
 - 호가는 `asks`, `bids`, `totals`, `timestamp`, `source` 공통 형태 제공
 - OHLCV는 `date`, `time`, `timestamp`, `open`, `high`, `low`, `close`, `volume`, `value`, `raw` 공통 형태 제공
 - 스캐너 랭킹은 `rank`, `symbol`, `name`, `price`, `change`, `changeRate`, `volume`, `value`, `turnoverRate`, `raw` 공통 형태 제공
+- 조건검색은 `id`/`seq`/`queryIndex`, `name`, `groupName` 조건식 목록과 `symbol`, `name`, `price`, `change`, `changeRate`, `volume`, `eventType`, `realtimeKey` 공통 형태 제공
 - 시장 컨텍스트는 `kospi`, `kosdaq`, `kospi200`, `krx100` 주요 지수 현재가, 일봉 추이, 상승/보합/하락 종목 수, 상승 비율, 시장 방향성, LS 예상지수를 제공
 - 시장 수급은 `kospi`, `kosdaq`, `kospi200`의 개인/외국인/기관계 순매수와 세부 투자자별 순매수를 제공
 - 프로그램 매매 추이는 `kospi`, `kosdaq`의 전체/차익/비차익 매수/매도/순매수와 KOSPI200/Basis를 제공
-- `SignalInputService`는 현재가, 호가, 종목 기본정보, 일봉/분봉, 선택적 랭킹을 조합해 `metrics`와 `signals`를 제공
+- `SignalInputService`는 현재가, 호가, 종목 기본정보, 일봉/분봉, 선택적 랭킹/조건검색을 조합해 `metrics`와 `signals`를 제공
+- `SignalInputService`는 조건검색 결과에서 현재 종목의 매칭 여부를 `conditions`, `metrics.conditions`, `signals.conditions`에 포함
 - `SignalInputService`는 옵션으로 시장 스냅샷, 지수 일봉, 예상지수, 투자자 수급, 프로그램 매매 흐름을 같은 입력값에 포함
 - 시그널 입력값은 가격 모멘텀, 거래량 급증 비율, 호가 불균형, 당일 고저 범위 위치, 시장 방향성/폭/예상지수/수급 방향 입력값을 포함하며 매수/매도 판단은 포함하지 않음
-- `DomesticStockRealtimeSignalState`는 초기 시그널 스냅샷에 실시간 체결/호가 메시지를 적용해 `signal.domesticStock.realtimeInputs`를 갱신
-- `subscribeDomesticStockSignalInputs()`는 `RealtimeService` 구독을 사용해 체결/호가 업데이트마다 최신 입력값을 `onUpdate`로 전달
+- `DomesticStockRealtimeSignalState`는 초기 시그널 스냅샷에 실시간 체결/호가/조건검색 이벤트를 적용해 `signal.domesticStock.realtimeInputs`를 갱신
+- `RealtimeService.subscribeMarketStatus()`는 키움 `0s`, LS `JIF`를 `marketStatus` 메시지로 정규화하며 `session`, `phase`, `eventCode`, `eventName`, `time`, `remainingTime`을 제공
+- `subscribeDomesticStockSignalInputs()`는 `RealtimeService`와 선택적 `ScannerService` 실시간 조건검색 구독을 사용해 체결/호가/장운영 상태/조건검색 업데이트마다 최신 입력값을 `onUpdate`로 전달
 
 추후 다룰 것:
 
 - 공통 종목/가격/잔고/주문 모델 정의
 - 키움/LS 응답을 공통 모델로 변환
-- 조건검색, 시장 이벤트 조회
 - 시그널 입력값의 시장 컨텍스트를 전략 앱에서 바로 소비할 수 있는 예제 확대
 - 실시간 체결을 장중 누적 지표로 보존하는 장기 window/TTL 정책
 

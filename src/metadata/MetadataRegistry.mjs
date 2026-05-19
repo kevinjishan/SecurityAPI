@@ -234,7 +234,12 @@ function findEntry(manifest, id) {
     return null;
   }
 
-  return manifest.apis[rawId] ?? manifest.apis[rawId.toLowerCase()] ?? null;
+  const direct = manifest.apis[rawId] ?? manifest.apis[rawId.toLowerCase()];
+  if (direct) {
+    return direct;
+  }
+
+  return Object.entries(manifest.apis).find(([entryId]) => entryId.trim() === rawId)?.[1] ?? null;
 }
 
 function resolveDomain(entry, env) {

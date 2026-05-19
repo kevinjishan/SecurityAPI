@@ -6,6 +6,92 @@ const TRADE_CAPABILITY_ID = "realtime.domesticStock.trade";
 const ORDER_BOOK_CAPABILITY_ID = "realtime.domesticStock.orderBook";
 const ORDER_EVENT_CAPABILITY_ID = "realtime.domesticStock.orderEvent";
 const BALANCE_CAPABILITY_ID = "realtime.domesticStock.balance";
+const MARKET_STATUS_CAPABILITY_ID = "realtime.market.status";
+
+const KIWOOM_MARKET_STATUS_EVENTS = Object.freeze({
+  0: { session: "preopen", phase: "notice", eventName: "장시작전 알림" },
+  2: { session: "closingAuction", phase: "notice", eventName: "장마감 알림" },
+  3: { session: "regular", phase: "open", eventName: "장시작" },
+  4: { session: "regular", phase: "close", eventName: "장마감" },
+  8: { session: "regular", phase: "close", eventName: "정규장마감" },
+  9: { session: "closed", phase: "close", eventName: "전체장마감" },
+  a: { session: "afterHours", phase: "open", eventName: "시간외 종가매매 시작" },
+  b: { session: "afterHours", phase: "close", eventName: "시간외 종가매매 종료" },
+  c: { session: "afterHoursSingle", phase: "open", eventName: "시간외 단일가 시작" },
+  d: { session: "afterHoursSingle", phase: "close", eventName: "시간외 단일가 종료" },
+  e: { session: "derivatives", phase: "close", eventName: "선옵 장마감전 동시호가 종료" },
+  f: { session: "derivatives", phase: "notice", eventName: "선물옵션 장운영시간 알림" },
+  o: { session: "derivatives", phase: "open", eventName: "선옵 장시작" },
+  s: { session: "derivatives", phase: "auction", eventName: "선옵 장마감전 동시호가 시작" },
+  P: { session: "nxtPreMarket", phase: "notice", eventName: "NXT 프리마켓 시작 알림" },
+  Q: { session: "nxtPreMarket", phase: "close", eventName: "NXT 프리마켓 종료 알림" },
+  R: { session: "nxtMainMarket", phase: "notice", eventName: "NXT 메인마켓 시작 알림" },
+  S: { session: "nxtMainMarket", phase: "close", eventName: "NXT 메인마켓 종료 알림" },
+  T: { session: "nxtAfterMarket", phase: "auction", eventName: "NXT 에프터마켓 단일가 시작 알림" },
+  U: { session: "nxtAfterMarket", phase: "open", eventName: "NXT 에프터마켓 시작 알림" },
+  V: { session: "nxtAfterMarket", phase: "close", eventName: "NXT 에프터마켓 종료 알림" },
+});
+
+const LS_MARKET_STATUS_MARKETS = Object.freeze({
+  1: { market: "kospi", marketName: "KOSPI" },
+  2: { market: "kosdaq", marketName: "KOSDAQ" },
+  5: { market: "derivatives", marketName: "선물/옵션" },
+  6: { market: "nxt", marketName: "NXT" },
+  8: { market: "krxNightDerivatives", marketName: "KRX야간파생" },
+  9: { market: "usStock", marketName: "미국주식" },
+  A: { market: "chinaMorning", marketName: "중국주식오전" },
+  B: { market: "chinaAfternoon", marketName: "중국주식오후" },
+  C: { market: "hongKongMorning", marketName: "홍콩주식오전" },
+  D: { market: "hongKongAfternoon", marketName: "홍콩주식오후" },
+  E: { market: "japanMorning", marketName: "일본주식오전" },
+  F: { market: "japanAfternoon", marketName: "일본주식오후" },
+});
+
+const LS_MARKET_STATUS_EVENTS = Object.freeze({
+  11: { session: "preopen", phase: "auction", eventName: "장전동시호가개시" },
+  21: { session: "regular", phase: "open", eventName: "장시작" },
+  22: { session: "regular", phase: "countdown", eventName: "장개시10초전" },
+  23: { session: "regular", phase: "countdown", eventName: "장개시1분전" },
+  24: { session: "regular", phase: "countdown", eventName: "장개시5분전" },
+  25: { session: "regular", phase: "countdown", eventName: "장개시10분전" },
+  31: { session: "closingAuction", phase: "auction", eventName: "장후동시호가개시" },
+  41: { session: "regular", phase: "close", eventName: "장마감" },
+  42: { session: "regular", phase: "countdown", eventName: "장마감10초전" },
+  43: { session: "regular", phase: "countdown", eventName: "장마감1분전" },
+  44: { session: "regular", phase: "countdown", eventName: "장마감5분전" },
+  51: { session: "afterHours", phase: "open", eventName: "시간외종가매매개시" },
+  52: { session: "afterHoursSingle", phase: "open", eventName: "시간외종가매매종료,시간외단일가매매개시" },
+  54: { session: "afterHoursSingle", phase: "close", eventName: "시간외단일가매매종료" },
+  55: { session: "preMarket", phase: "open", eventName: "프리마켓 개시" },
+  56: { session: "afterMarket", phase: "open", eventName: "에프터마켓 개시" },
+  57: { session: "preMarket", phase: "close", eventName: "프리마켓 마감" },
+  58: { session: "afterMarket", phase: "close", eventName: "에프터마켓 마감" },
+  61: { session: "regular", phase: "halt", eventName: "서킷브레이크1단계발동" },
+  62: { session: "regular", phase: "resume", eventName: "서킷브레이크1단계해제,호가접수개시" },
+  63: { session: "regular", phase: "auction", eventName: "서킷브레이크1단계,동시호가종료" },
+  64: { session: "regular", phase: "sidecar", eventName: "사이드카 매도발동" },
+  65: { session: "regular", phase: "sidecarRelease", eventName: "사이드카 매도해제" },
+  66: { session: "regular", phase: "sidecar", eventName: "사이드카 매수발동" },
+  67: { session: "regular", phase: "sidecarRelease", eventName: "사이드카 매수해제" },
+  68: { session: "regular", phase: "halt", eventName: "서킷브레이크2단계발동" },
+  69: { session: "regular", phase: "halt", eventName: "서킷브레이크3단계발동,당일 장종료" },
+  70: { session: "regular", phase: "resume", eventName: "서킷브레이크2단계해제,호가접수개시" },
+  71: { session: "regular", phase: "auction", eventName: "서킷브레이크2단계,동시호가종료" },
+  A2: { session: "preMarket", phase: "countdown", eventName: "프리마켓 장개시10초전" },
+  A3: { session: "preMarket", phase: "countdown", eventName: "프리마켓 장개시1분전" },
+  A4: { session: "preMarket", phase: "countdown", eventName: "프리마켓 장개시5분전" },
+  A5: { session: "preMarket", phase: "countdown", eventName: "프리마켓 장개시10분전" },
+  B2: { session: "afterMarket", phase: "countdown", eventName: "에프터마켓 장개시10초전" },
+  B3: { session: "afterMarket", phase: "countdown", eventName: "에프터마켓 장개시1분전" },
+  B4: { session: "afterMarket", phase: "countdown", eventName: "에프터마켓 장개시5분전" },
+  B5: { session: "afterMarket", phase: "countdown", eventName: "에프터마켓 장개시10분전" },
+  C2: { session: "preMarket", phase: "countdown", eventName: "프리마켓 장마감10초전" },
+  C3: { session: "preMarket", phase: "countdown", eventName: "프리마켓 장마감1분전" },
+  C4: { session: "preMarket", phase: "countdown", eventName: "프리마켓 장마감5분전" },
+  D2: { session: "afterMarket", phase: "countdown", eventName: "에프터마켓 장마감10초전" },
+  D3: { session: "afterMarket", phase: "countdown", eventName: "에프터마켓 장마감1분전" },
+  D4: { session: "afterMarket", phase: "countdown", eventName: "에프터마켓 장마감5분전" },
+});
 
 export class RealtimeService {
   constructor(clients = {}, options = {}) {
@@ -54,6 +140,19 @@ export class RealtimeService {
       options,
       capabilityId: BALANCE_CAPABILITY_ID,
       streamKind: "account",
+    });
+  }
+
+  async subscribeMarketStatus(broker, handlers = {}, options = {}) {
+    const normalizedBroker = String(broker ?? "").trim().toLowerCase();
+
+    return this.subscribe({
+      broker,
+      key: options.key ?? defaultMarketStatusKey(normalizedBroker),
+      handlers,
+      options,
+      capabilityId: MARKET_STATUS_CAPABILITY_ID,
+      streamKind: "quote",
     });
   }
 
@@ -159,6 +258,10 @@ export function normalizeDomesticStockRealtimeOrderEvent(broker, payload) {
   return normalizeDomesticStockRealtimeMessage(broker, payload).filter((message) => message.kind === "orderEvent");
 }
 
+export function normalizeMarketStatusRealtimeMessage(broker, payload) {
+  return normalizeDomesticStockRealtimeMessage(broker, payload).filter((message) => message.kind === "marketStatus");
+}
+
 function selectRealtimeSource(broker, capabilities, capabilityId, options) {
   const preferredId = options.apiId ?? options.trCode;
   const sources = capabilities.findApis(capabilityId).filter((api) => api.transport === "websocket");
@@ -197,6 +300,10 @@ function normalizeRequiredKey(value, field) {
   return normalized;
 }
 
+function defaultMarketStatusKey(broker) {
+  return broker === "ls" ? "0" : "";
+}
+
 function failureResponse({ broker, source, error, capabilityId }) {
   const brokerError = error instanceof BrokerError
     ? error
@@ -228,6 +335,10 @@ function normalizeRealtimeDomainEvent(message) {
     return normalizeRealtimeOrderEvent(message);
   }
 
+  if (isMarketStatusMessage(message)) {
+    return normalizeRealtimeMarketStatus(message);
+  }
+
   return {
     ...message,
     kind: "unknown",
@@ -250,6 +361,12 @@ function isOrderEventMessage(message) {
   return message.broker === "kiwoom"
     ? message.id === "00"
     : ["SC0", "SC1", "SC2", "SC3", "SC4"].includes(message.id);
+}
+
+function isMarketStatusMessage(message) {
+  return message.broker === "kiwoom"
+    ? message.id === "0s"
+    : message.id === "JIF";
 }
 
 function normalizeRealtimeTrade(message) {
@@ -417,6 +534,48 @@ function normalizeRealtimeOrderEvent(message) {
     remainingQuantity: parseNumber(firstValue(body, ["unercqty", "orgordunercqty", "orgordundrqty"])),
     remainingQuantityRaw: nullableString(firstValue(body, ["unercqty", "orgordunercqty", "orgordundrqty"])),
     eventTime: nullableString(firstValue(body, ["exectime", "ordtm", "rcptexectime"])),
+  };
+}
+
+function normalizeRealtimeMarketStatus(message) {
+  const body = message.body ?? {};
+
+  if (message.broker === "kiwoom") {
+    const eventCode = nullableString(firstValue(body, ["215"]));
+    const event = KIWOOM_MARKET_STATUS_EVENTS[eventCode] ?? {};
+
+    return {
+      ...message,
+      kind: "marketStatus",
+      market: nullableString(message.key) || null,
+      marketCode: nullableString(message.key),
+      marketName: null,
+      session: event.session ?? null,
+      phase: event.phase ?? null,
+      eventCode,
+      eventName: event.eventName ?? message.name ?? null,
+      time: nullableString(firstValue(body, ["20"])),
+      remainingTime: nullableString(firstValue(body, ["214"])),
+    };
+  }
+
+  const marketCode = nullableString(firstValue(body, ["jangubun"]));
+  const eventCode = nullableString(firstValue(body, ["jstatus"]));
+  const market = LS_MARKET_STATUS_MARKETS[marketCode] ?? {};
+  const event = LS_MARKET_STATUS_EVENTS[eventCode] ?? {};
+
+  return {
+    ...message,
+    kind: "marketStatus",
+    market: market.market ?? null,
+    marketCode,
+    marketName: market.marketName ?? null,
+    session: event.session ?? null,
+    phase: event.phase ?? null,
+    eventCode,
+    eventName: event.eventName ?? null,
+    time: nullableString(firstValue(body, ["time", "chetime"])),
+    remainingTime: nullableString(firstValue(body, ["remainingTime", "remtime"])),
   };
 }
 
