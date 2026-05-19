@@ -168,3 +168,46 @@ set -a; source .env; set +a; KIWOOM_ENV=prod node examples/live-readonly/kiwoom-
 ### Decision
 
 The SDK can execute live read-only auth and public quote/market data examples for Kiwoom and LS with current secrets. Keep `KIWOOM_ENV=prod` for Kiwoom live checks. Continue to keep order and account-sensitive checks out of the public quote verification path.
+
+## Live Account Read-only Run - 2026-05-19T09:32:58Z
+
+### Environment
+
+- `SECURITY_API_LIVE_READONLY`: enabled.
+- `SECURITY_API_ALLOW_LIVE_ORDER`: disabled.
+- Required broker secrets: present.
+- `LS_MAC_ADDRESS`: absent, optional.
+- Network calls: executed for account read-only APIs only.
+- Order calls: not executed.
+- Account numbers: masked in output.
+- Monetary values: not printed; account summaries are recorded as `[SUMMARY_MASKED]`.
+- Tokens/secrets: not printed.
+
+### Commands
+
+```bash
+set -a; source .env; set +a; npm run examples:live-readonly:preflight
+set -a; source .env; set +a; node examples/live-readonly/account-readonly.mjs --json
+set -a; source .env; set +a; KIWOOM_ENV=prod node examples/live-readonly/account-readonly.mjs --json
+```
+
+The first account run used `.env` as-is and showed Kiwoom failures because `.env` still had `KIWOOM_ENV=mock`. The second run used `KIWOOM_ENV=prod` and is the authoritative live account read-only result.
+
+### Account Results
+
+| Broker | Environment | Scenario | API/TR | Result | Status | Broker Code | Masked Summary |
+| --- | --- | --- | --- | --- | ---: | --- | --- |
+| Kiwoom | `prod` | domestic account cash | `kt00001` | pass | 200 | `0` | `[SUMMARY_MASKED]` |
+| Kiwoom | `prod` | domestic account balance | `kt00018` | pass | 200 | `0` | `[SUMMARY_MASKED]`, position count `8` |
+| LS | `prod` | domestic account cash | `CSPAQ12200` | pass | 200 | `00136` | `[SUMMARY_MASKED]` |
+| LS | `prod` | domestic account balance | `t0424` | pass | 200 | `00000` | `[SUMMARY_MASKED]`, position count `0` |
+| LS | `prod` | overseas account cash | `COSOQ02701` | pass | 200 | `00136` | `[SUMMARY_MASKED]` |
+| LS | `prod` | overseas account balance | `COSOQ00201` | pass | 200 | `02679` | `[SUMMARY_MASKED]`, position count `0` |
+
+### No-data Handling
+
+LS `COSOQ00201` returned `02679 / 조회내역이 없습니다.` for overseas stock balance. This was verified as a no-data account state, not a transport/auth/order failure. The LS adapter now treats no-data messages as successful read-only responses while preserving the broker code in the result.
+
+### Decision
+
+Live account read-only verification is complete for the current implemented account capabilities. The SDK can execute Kiwoom domestic cash/balance, LS domestic cash/balance, and LS overseas cash/balance without order submission. Keep `KIWOOM_ENV=prod` for live account checks.

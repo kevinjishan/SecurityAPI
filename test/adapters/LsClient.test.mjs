@@ -283,6 +283,39 @@ test("treats documented LS no-data success codes as successful responses", async
   assert.deepEqual(result.data.CSPAQ13700OutBlock3, []);
 });
 
+test("treats LS no-data messages as successful responses", async () => {
+  const tokenStore = new MemoryTokenStore();
+  tokenStore.set("ls:prod", {
+    accessToken: "cached-token",
+    expiresAt: Date.now() + 60_000,
+  });
+
+  const client = new LsClient({
+    appKey: "app-key",
+    appSecretKey: "secret-key",
+    tokenStore,
+    fetch: async () =>
+      jsonResponse({
+        rsp_cd: "02679",
+        rsp_msg: "조회내역이 없습니다.",
+        COSOQ00201OutBlock4: [],
+      }),
+  });
+
+  const result = await client.request("COSOQ00201", {
+    COSOQ00201InBlock1: {
+      RecCnt: 1,
+      BaseDt: "20260519",
+      CrcyCode: "ALL",
+      AstkBalTpCode: "00",
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.rsp_cd, "02679");
+  assert.deepEqual(result.data.COSOQ00201OutBlock4, []);
+});
+
 test("treats documented LS order success codes as successful responses", async () => {
   const tokenStore = new MemoryTokenStore();
   tokenStore.set("ls:prod", {
