@@ -31,6 +31,7 @@
     "src/",
     "data/generated/",
     "docs/README.md",
+    "docs/sdk-distribution-guide.md",
     "docs/sdk-usage-guide.md",
     "docs/public-sdk-contract.md",
     "docs/live-readonly-verification-matrix.md",
