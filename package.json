@@ -18,8 +18,10 @@
     "generate:manifest": "node scripts/generate-manifest.mjs",
     "validate:manifest": "node scripts/validate-manifest.mjs",
     "examples:mock": "node examples/mock-clients.mjs",
+    "examples:live-readonly:preflight": "node examples/live-readonly/preflight.mjs",
+    "examples:live-readonly:validate": "node examples/live-readonly/validate.mjs",
     "test": "node --test",
-    "validate:all": "npm run validate:docs && npm run validate:manifest && npm test && npm run examples:mock"
+    "validate:all": "npm run validate:docs && npm run validate:manifest && npm test && npm run examples:mock && npm run examples:live-readonly:validate"
   },
   "engines": {
     "node": ">=20"

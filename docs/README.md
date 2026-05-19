@@ -19,6 +19,8 @@ SDK 구현에서 직접 참조하기 쉬운 정규화 manifest는 `data/generate
 - 요청/응답 필드로 찾기: `rg "종목코드|authorization|cont-yn" docs/`
 - 증권사별 보기: [키움증권](kiwoom/README.md), [LS증권](ls/README.md)
 - SDK 확장 계획: [SecurityAPI SDK Architecture Plan](sdk-architecture-plan.md)
+- Live read-only 검증 계획: [Live Read-only Verification Plan](live-readonly-verification-plan.md)
+- Live read-only 감사 기록: [2026-05-19](audits/live-readonly-2026-05-19.md)
 - SDK manifest 찾기: `jq '.apis.ka10001' data/generated/kiwoom-manifest.json`, `jq '.apis.t1101' data/generated/ls-manifest.json`
 
 ## 생성 규칙
@@ -127,6 +129,8 @@ caps.findApis("account.domesticStock.balance");
 
 도메인 서비스는 Broker Client를 사용하되, 결과를 공통 형태로 얇게 정리합니다.
 현재 국내주식 시세 조회, 시장 데이터 조회, 종목 스캐너/조건검색, 시장 컨텍스트 스냅샷/지수 추이/예상지수, 시장 수급/프로그램 매매 조회, 시그널 입력값 생성, 계좌 기본 조회, dry-run 기본 주문, 실시간 WebSocket 구독/장운영 상태 서비스와 LS 해외주식 현재가/호가/종목정보/마스터/차트/시간대별/계좌/주문/실시간 서비스를 제공합니다.
+
+외부 서버/앱 연동을 위한 안정화 설계는 [SDK Stabilization Goal Plan](sdk-stabilization-goal-plan.md), [Live Integration Readiness](live-integration-readiness.md), [Live Read-only Verification Plan](live-readonly-verification-plan.md), [Order Guard Verification Plan](order-guard-verification-plan.md), [Broker Error And Reject Policy](broker-error-reject-policy.md), [Public SDK Contract](public-sdk-contract.md), [Production Readiness Checklist](production-readiness-checklist.md)를 기준으로 합니다.
 
 ```js
 import { AccountService, KiwoomClient, LsClient, MarketContextService, MarketFlowService, MarketDataService, OrderService, OverseasStockAccountService, OverseasStockMarketDataService, OverseasStockOrderService, OverseasStockQuoteService, OverseasStockRealtimeService, QuoteService, RealtimeService, ScannerService, SignalInputService } from "security-api-reference";

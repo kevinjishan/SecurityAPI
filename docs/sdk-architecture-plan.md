@@ -2,7 +2,7 @@
 
 이 문서는 현재의 API 문서/메타데이터 저장소를 재사용 가능한 증권사 API SDK로 확장하기 위한 종합 방향성과 레이어별 구현 계획을 정리한다.
 
-상품 확장 범위는 [Core Expansion Roadmap](core-expansion-roadmap.md)을 기준으로 관리한다. 현재 서비스 확장 목표는 국내주식 core 유지와 해외주식 레이어 추가까지이며, 선물옵션/ELW/해외선물 같은 파생상품 서비스화는 이번 범위에서 제외한다.
+상품 확장 범위는 [Core Expansion Roadmap](core-expansion-roadmap.md)을 기준으로 관리한다. 현재 서비스 확장 목표는 국내주식 core 유지와 해외주식 레이어 추가까지이며, 선물옵션/ELW/해외선물 같은 파생상품 서비스화는 이번 범위에서 제외한다. core 구현 이후의 설계형 후속 작업은 [SDK Stabilization Goal Plan](sdk-stabilization-goal-plan.md)의 단계별 Goal을 기준으로 진행한다.
 
 ## 1. 방향성
 
@@ -557,6 +557,16 @@ npm run test:integration
 - 주문 API는 자동 retry 기본값을 사용하지 않는다.
 - 로그에는 authorization, app secret, 계좌번호를 남기지 않는다.
 - SDK는 원본 응답을 제공하되 민감정보 마스킹 옵션을 둔다.
+
+상세 안정화 설계:
+
+- [SDK Stabilization Goal Plan](sdk-stabilization-goal-plan.md)
+- [Live Integration Readiness](live-integration-readiness.md)
+- [Live Read-only Verification Plan](live-readonly-verification-plan.md)
+- [Order Guard Verification Plan](order-guard-verification-plan.md)
+- [Broker Error And Reject Policy](broker-error-reject-policy.md)
+- [Public SDK Contract](public-sdk-contract.md)
+- [Production Readiness Checklist](production-readiness-checklist.md)
 
 ## 8. 당장 만들 첫 PR 권장 범위
 

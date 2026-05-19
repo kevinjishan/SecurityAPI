@@ -35,3 +35,26 @@ npm run examples:mock
 ## Real Credentials
 
 실제 호출을 만들 때는 `.env.example`의 값을 기준으로 환경 변수를 설정합니다. 예제 검증 스크립트는 실제 증권사 서버를 호출하지 않습니다.
+
+## Live Read-only Examples
+
+Live read-only 예제는 주문 API를 호출하지 않는 조회/실시간 검증용 골격입니다. 기본 실행은 안전하게 차단되며, validate-only 모드는 실제 API를 호출하지 않습니다.
+
+```bash
+npm run examples:live-readonly:preflight
+npm run examples:live-readonly:validate
+```
+
+`preflight`는 환경변수와 guard 상태만 점검하며 실제 증권사 API를 호출하지 않습니다. 준비가 끝나지 않았으면 exit code `2`로 종료합니다.
+
+예제 파일:
+
+- `examples/live-readonly/preflight.mjs`
+- `examples/live-readonly/auth-only.mjs`
+- `examples/live-readonly/kiwoom-domestic-quote.mjs`
+- `examples/live-readonly/ls-domestic-quote.mjs`
+- `examples/live-readonly/ls-overseas-quote.mjs`
+- `examples/live-readonly/ls-overseas-realtime.mjs`
+- `examples/live-readonly/account-readonly.mjs`
+
+실제 read-only 호출을 실행하려면 로컬 환경에서만 `SECURITY_API_LIVE_READONLY=true`를 명시합니다. `SECURITY_API_ALLOW_LIVE_ORDER=true`가 설정되어 있으면 read-only 예제는 실행을 거부합니다.

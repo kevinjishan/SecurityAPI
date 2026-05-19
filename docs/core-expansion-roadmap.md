@@ -278,6 +278,11 @@ src/services/OverseasStockRealtimeService.mjs
 
 ## 8. 다음 작업
 
-1. 해외주식 확장 감사 문서를 최신 구현 범위로 갱신한다.
-2. `npm run validate:all`로 전체 문서/manifest/test/example을 다시 확인한다.
-3. 이후 범위는 해외주식 live integration 체크리스트와 예제 보강으로 분리한다.
+해외주식 core 구현 이후의 안정화 설계는 [SDK Stabilization Goal Plan](sdk-stabilization-goal-plan.md)을 기준으로 진행한다.
+
+1. [Live Integration Readiness](live-integration-readiness.md)
+2. [Live Read-only Verification Plan](live-readonly-verification-plan.md)
+3. [Order Guard Verification Plan](order-guard-verification-plan.md)
+4. [Broker Error And Reject Policy](broker-error-reject-policy.md)
+5. [Public SDK Contract](public-sdk-contract.md)
+6. [Production Readiness Checklist](production-readiness-checklist.md)
