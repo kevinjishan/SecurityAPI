@@ -4,6 +4,7 @@ import {
   AccountService,
   KiwoomClient,
   LsClient,
+  MarketBreadthService,
   MarketContextService,
   MarketFlowService,
   MarketDataService,
@@ -11,8 +12,10 @@ import {
   OverseasStockRealtimeService,
   QuoteService,
   RealtimeService,
+  RelativeStrengthService,
   ScannerService,
   SignalInputService,
+  TechnicalIndicatorService,
 } from "security-api-reference";
 
 class MockRealtimeClient {
@@ -933,17 +936,65 @@ const lsProgramTrading = await marketFlow.getProgramTradingTrend("ls", "kospi", 
   unit: "quantity",
   date: "20260519",
 });
-const signalInputs = await new SignalInputService({ kiwoom, ls }).getDomesticStockSignalInputs("kiwoom", "005930", {
+const signalInputs = await new SignalInputService({
+  clients: { kiwoom, ls },
+  kiwoom,
+  ls,
+  technical: new TechnicalIndicatorService({ kiwoom, ls }),
+  relativeStrength: new RelativeStrengthService({ kiwoom, ls }),
+  marketBreadth: new MarketBreadthService(),
+}).getDomesticStockSignalInputs("kiwoom", "005930", {
   includeRankings: true,
   includeConditionSearch: true,
   includeMarketContext: true,
   includeMarketIndexCandles: true,
   includeMarketFlow: true,
+  includeTechnicalIndicators: true,
+  includeRelativeStrength: true,
+  includeMarketBreadth: true,
   conditionSearches: [{ seq: "4", name: "거래량 급증" }],
   intervalMinutes: 5,
   minuteCount: 2,
   market: "kospi",
   baseDate: "20260519",
+  technicalIndicatorOptions: {
+    smaPeriods: [1],
+    emaPeriods: [1],
+    disparityPeriods: [1],
+    maAlignmentPeriods: [1],
+    slope: { periods: [1], lookback: 1 },
+    rsiPeriod: 1,
+    macd: { fastPeriod: 1, slowPeriod: 2, signalPeriod: 1 },
+    stochastic: { kPeriod: 1, kSmoothing: 1, dPeriod: 1 },
+    volumeMovingAveragePeriods: [1],
+    volumeRatioPeriod: 1,
+    valueRatioPeriod: 1,
+    mfiPeriod: 1,
+    atrPeriod: 1,
+    bollingerBands: { period: 1, standardDeviations: 2 },
+    standardDeviationPeriod: 1,
+  },
+  relativeStrengthOptions: {
+    periods: [1],
+    benchmark: { type: "sector", code: "semiconductor" },
+    benchmarkCandles: [
+      { date: "20260518", timestamp: "20260518", close: 2700 },
+      { date: "20260519", timestamp: "20260519", close: 2725 },
+    ],
+  },
+  candlesBySymbol: {
+    "005930": [
+      { date: "20260517", close: 69000 },
+      { date: "20260518", close: 70000 },
+      { date: "20260519", close: 70100 },
+    ],
+    "000660": [
+      { date: "20260517", close: 120000 },
+      { date: "20260518", close: 119000 },
+      { date: "20260519", close: 118000 },
+    ],
+  },
+  marketBreadthPeriod: 2,
 });
 const account = new AccountService({ kiwoom, ls });
 const kiwoomCash = await account.getDomesticStockCash("kiwoom");
@@ -1181,6 +1232,9 @@ assert.equal(signalInputs.data.metrics.price.current, 70000);
 assert.equal(signalInputs.data.metrics.orderBook.bestAskPrice, 70100);
 assert.equal(signalInputs.data.market.targetMarket, "kospi");
 assert.equal(signalInputs.data.metrics.market.flow.programTotalNetBuy, 17);
+assert.equal(signalInputs.data.technical.snapshot.indicators.trend.sma.p1.length, 1);
+assert.equal(signalInputs.data.relativeStrength.snapshot.benchmark.code, "semiconductor");
+assert.equal(signalInputs.data.marketBreadth.snapshot.universeSize, 2);
 assert.equal(signalInputs.data.rankings.volume.rank, 1);
 assert.equal(signalInputs.data.conditions.metrics.matchedCount, 1);
 assert.equal(signalInputs.data.signals.conditions.anyMatch, true);

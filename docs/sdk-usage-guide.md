@@ -73,11 +73,14 @@ import {
   AccountService,
   KiwoomClient,
   LsClient,
+  MarketBreadthService,
   MarketDataService,
   OrderService,
   OverseasStockQuoteService,
   OverseasStockRealtimeService,
   QuoteService,
+  RelativeStrengthService,
+  TechnicalIndicatorService,
 } from "security-api-reference";
 
 export function createSecurityApiClients() {
@@ -99,7 +102,10 @@ export function createSecurityApiClients() {
 export function createSecurityApiServices(clients = createSecurityApiClients()) {
   return {
     quote: new QuoteService(clients),
+    marketBreadth: new MarketBreadthService(),
     marketData: new MarketDataService(clients),
+    technical: new TechnicalIndicatorService(clients),
+    relativeStrength: new RelativeStrengthService(clients),
     account: new AccountService(clients),
     order: new OrderService(clients),
     overseasQuote: new OverseasStockQuoteService(clients),
@@ -138,6 +144,103 @@ console.log(balance.data.positions.length);
 ```
 
 계좌 조회 결과를 로그에 남길 때는 계좌번호, 금액, 토큰, 원문 `raw`를 그대로 출력하지 않는다. 앱 로그에는 position count, 성공/실패, broker code 같은 요약만 남긴다.
+
+## Technical Indicators
+
+기술적 지표는 증권사 API가 직접 제공하는 주문 판단값이 아니라, SDK가 표준화된 OHLCV 캔들 위에서 계산하는 read-only 계산 레이어다. 현재 `SMA`, `EMA`, `Disparity`, `MA slope`, `RSI`, `MACD`, `Stochastic`, `Volume ratio`, `Value ratio`, `OBV`, `MFI`, `ATR`, `Bollinger Bands`, `Standard deviation`, 캔들 패턴을 제공한다.
+
+```js
+const { technical } = createSecurityApiServices();
+
+const indicators = await technical.getDomesticStockIndicators("ls", "005930", {
+  count: 120,
+  smaPeriods: [5, 20, 60],
+  emaPeriods: [12, 26],
+  disparityPeriods: [20, 60],
+  rsiPeriod: 14,
+  volumeRatioPeriod: 20,
+  valueRatioPeriod: 20,
+  atrPeriod: 14,
+});
+if (!indicators.ok) {
+  throw indicators.error;
+}
+
+console.log(indicators.data.latest.trend.sma.p20, indicators.data.latest.momentum.rsi);
+console.log(indicators.data.latest.flags.maAlignment, indicators.data.latest.flags.valueRatioAlert);
+
+const calculated = technical.calculateFromCandles(indicators.data.candles, {
+  smaPeriods: [10],
+});
+```
+
+이 레이어는 매수/매도 추천을 반환하지 않는다. 전략 앱은 `latest`, `indicators`, `candles`를 입력값으로 받아 별도의 전략/알림/주문 승인 로직을 구성한다.
+
+## Relative Strength
+
+상대강도는 대상 캔들과 benchmark 캔들을 비교한다. KOSPI/KOSDAQ 같은 지수 benchmark는 SDK가 조회할 수 있고, 섹터 benchmark는 외부 앱이 섹터 지수 캔들을 넣는 방식으로 시작한다.
+
+```js
+const { relativeStrength } = createSecurityApiServices();
+
+const rs = await relativeStrength.getDomesticStockRelativeStrength("ls", "005930", {
+  benchmark: { type: "index", code: "kospi" },
+  periods: [20, 60],
+});
+if (!rs.ok) {
+  throw rs.error;
+}
+
+console.log(rs.data.latest.p20.direction, rs.data.latest.p20.spread);
+```
+
+섹터 대비 상대강도는 `benchmarkCandles`를 명시한다.
+
+```js
+const sectorRs = relativeStrength.calculateRelativeStrength({
+  targetCandles: stockCandles,
+  benchmarkCandles: semiconductorSectorCandles,
+  benchmark: { type: "sector", code: "semiconductor" },
+}, {
+  periods: [20, 60],
+});
+```
+
+## Market Breadth
+
+시장 폭 지표는 전체 종목 universe가 필요하므로 SDK가 기본으로 대량 live 호출을 수행하지 않는다. 외부 앱이 캐시한 시장 스냅샷이나 종목별 캔들을 넣어 계산한다.
+
+```js
+const { marketBreadth } = createSecurityApiServices();
+
+const adl = marketBreadth.calculateAdvanceDeclineLine([
+  { date: "20260520", advancing: 500, declining: 300, unchanged: 50 },
+  { date: "20260521", advancing: 350, declining: 450, unchanged: 60 },
+]);
+
+const aboveMa20 = marketBreadth.calculateAboveMovingAverageRatio(candlesBySymbol, {
+  market: "kospi",
+  period: 20,
+});
+```
+
+## Signal Inputs With Indicators
+
+전략 앱은 `SignalInputService`에서 기술지표, 상대강도, 시장 폭을 선택적으로 함께 받을 수 있다. 비용이 큰 시장 폭 입력은 기본 수집하지 않으며, 외부 앱이 캐시한 universe snapshot을 넣는다.
+
+```js
+const signalInputs = await signals.getDomesticStockSignalInputs("ls", "005930", {
+  includeTechnicalIndicators: true,
+  includeRelativeStrength: true,
+  includeMarketBreadth: true,
+  benchmark: { type: "index", code: "kospi" },
+  candlesBySymbol,
+});
+
+console.log(signalInputs.data.signals.technical.rsiZone);
+console.log(signalInputs.data.signals.relativeStrength.p20.direction);
+console.log(signalInputs.data.signals.marketBreadth.direction);
+```
 
 ## Realtime WebSocket
 

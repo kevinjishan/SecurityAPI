@@ -146,6 +146,119 @@ test("can include market context and flow in signal inputs", async () => {
   assert.equal(result.data.warnings.length, 0);
 });
 
+test("can include technical, relative strength, and market breadth in signal inputs", async () => {
+  const result = await new SignalInputService({
+    quote: {
+      async getDomesticStockCurrentPrice() {
+        return okResult("quote.domesticStock.currentPrice", "ka10001", {
+          broker: "kiwoom",
+          symbol: "005930",
+          price: 100,
+          change: 5,
+          changeRate: 5.26,
+          volume: 1000,
+        });
+      },
+      async getDomesticStockOrderBook() {
+        return okResult("quote.domesticStock.orderBook", "ka10004", {
+          asks: [{ level: 1, price: 101, quantity: 100 }],
+          bids: [{ level: 1, price: 100, quantity: 300 }],
+          totals: { askQuantity: 100, bidQuantity: 300 },
+        });
+      },
+    },
+    marketData: {
+      async getDomesticStockBasicInfo() {
+        return okResult("marketData.domesticStock.basicInfo", "ka10001", {});
+      },
+      async getDomesticStockDailyCandles() {
+        return okResult("marketData.domesticStock.dailyCandles", "ka10081", {
+          candles: [],
+        });
+      },
+      async getDomesticStockMinuteCandles() {
+        return okResult("marketData.domesticStock.minuteCandles", "ka10080", {
+          candles: [],
+        });
+      },
+    },
+    technical: {
+      async getDomesticStockIndicators() {
+        return okResult("technical.domesticStock.indicators", null, {
+          latest: {
+            trend: { sma: { p20: 100 }, maAlignment: "bullish" },
+            momentum: { rsi: 72, macd: { histogram: 1 } },
+            volume: { valueRatio: 3.2 },
+            volatility: { atr: 2 },
+            candlePatterns: { color: "bullish" },
+            flags: {
+              maAlignment: "bullish",
+              rsiZone: "overbought",
+              valueRatioAlert: true,
+              candleColor: "bullish",
+            },
+          },
+        });
+      },
+    },
+    relativeStrength: {
+      async getDomesticStockRelativeStrength() {
+        return okResult("relativeStrength.domesticStock.benchmark", null, {
+          benchmark: { type: "index", code: "kospi" },
+          periods: [20],
+          latest: {
+            p20: {
+              direction: "outperforming",
+              outperforming: true,
+              spread: 5,
+              ratio: 2,
+            },
+          },
+          alignedCount: 30,
+        });
+      },
+    },
+    marketBreadth: {
+      calculateAboveMovingAverageRatio() {
+        return okResult("marketBreadth.domesticMarket.indicators", null, {
+          market: "kospi",
+          aboveCount: 2,
+          comparableCount: 3,
+          universeSize: 3,
+          ratio: 0.66666667,
+          latest: {
+            aboveCount: 2,
+            comparableCount: 3,
+            ratio: 0.66666667,
+          },
+        });
+      },
+    },
+    scanner: {},
+  }).getDomesticStockSignalInputs("kiwoom", "005930", {
+    includeDailyCandles: false,
+    includeMinuteCandles: false,
+    includeTechnicalIndicators: true,
+    includeRelativeStrength: true,
+    includeMarketBreadth: true,
+    candlesBySymbol: {
+      "005930": [
+        { date: "20260501", close: 100 },
+        { date: "20260502", close: 101 },
+      ],
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.metrics.technical.momentum.rsi, 72);
+  assert.equal(result.data.signals.technical.rsiZone, "overbought");
+  assert.equal(result.data.metrics.relativeStrength.latest.p20.spread, 5);
+  assert.equal(result.data.signals.relativeStrength.p20.direction, "outperforming");
+  assert.equal(result.data.metrics.marketBreadth.ratio, 0.66666667);
+  assert.equal(result.data.signals.marketBreadth.direction, "positive");
+  assert.equal(result.data.source.technicalIndicators.capability, "technical.domesticStock.indicators");
+});
+
 test("can include condition search matches in signal inputs", async () => {
   const client = new FakeClient("kiwoom");
   const service = new SignalInputService({ kiwoom: client });

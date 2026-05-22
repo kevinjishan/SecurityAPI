@@ -40,6 +40,24 @@ export const KIWOOM_CAPABILITIES = [
     apis: [{ id: "ka10080", role: "minuteChart", transport: "rest" }],
   },
   {
+    id: "technical.domesticStock.indicators",
+    status: "composed",
+    apis: [],
+    caution: "기술적 지표는 표준화된 OHLCV 캔들 위에서 SDK가 계산한다. 매수/매도 판단은 포함하지 않는다.",
+  },
+  {
+    id: "relativeStrength.domesticStock.benchmark",
+    status: "composed",
+    apis: [],
+    caution: "상대강도는 종목 캔들과 벤치마크 캔들을 조합한 SDK 계산값이며, 섹터 매핑은 외부 앱 또는 provider가 제공한다.",
+  },
+  {
+    id: "marketBreadth.domesticMarket.indicators",
+    status: "composed",
+    apis: [],
+    caution: "시장 폭 지표는 외부 앱이 제공하는 universe snapshot을 기반으로 계산하며, 전체시장 live 수집은 SDK 기본 동작이 아니다.",
+  },
+  {
     id: "marketContext.domesticIndex.current",
     status: "serviceReady",
     apis: [{ id: "ka20001", role: "sectorIndexCurrent", transport: "rest" }],

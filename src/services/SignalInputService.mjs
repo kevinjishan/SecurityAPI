@@ -1,10 +1,13 @@
 import { BrokerError, assertBroker } from "../core/index.mjs";
+import { MarketBreadthService } from "./MarketBreadthService.mjs";
 import { MarketContextService } from "./MarketContextService.mjs";
 import { MarketDataService } from "./MarketDataService.mjs";
 import { MarketFlowService } from "./MarketFlowService.mjs";
 import { QuoteService } from "./QuoteService.mjs";
 import { RealtimeService } from "./RealtimeService.mjs";
+import { RelativeStrengthService } from "./RelativeStrengthService.mjs";
 import { ScannerService } from "./ScannerService.mjs";
+import { TechnicalIndicatorService } from "./TechnicalIndicatorService.mjs";
 
 const SIGNAL_INPUT_CAPABILITY_ID = "signal.domesticStock.inputs";
 const REALTIME_SIGNAL_INPUT_CAPABILITY_ID = "signal.domesticStock.realtimeInputs";
@@ -15,14 +18,20 @@ export class SignalInputService {
       || dependencies.marketData
       || dependencies.marketContext
       || dependencies.marketFlow
+      || dependencies.marketBreadth
       || dependencies.realtime
-      || dependencies.scanner;
+      || dependencies.scanner
+      || dependencies.relativeStrength
+      || dependencies.technical;
     this.clients = hasServiceDependencies ? dependencies.clients ?? {} : dependencies;
     this.quote = dependencies.quote ?? new QuoteService(this.clients);
     this.marketData = dependencies.marketData ?? new MarketDataService(this.clients);
     this.marketContext = dependencies.marketContext ?? new MarketContextService(this.clients);
     this.marketFlow = dependencies.marketFlow ?? new MarketFlowService(this.clients);
+    this.marketBreadth = dependencies.marketBreadth ?? new MarketBreadthService();
     this.scanner = dependencies.scanner ?? new ScannerService(this.clients);
+    this.technical = dependencies.technical ?? new TechnicalIndicatorService(this.clients);
+    this.relativeStrength = dependencies.relativeStrength ?? new RelativeStrengthService(this.clients);
     this.realtime = dependencies.realtime ?? new RealtimeService(this.clients, dependencies.realtimeOptions ?? {});
   }
 
@@ -39,7 +48,10 @@ export class SignalInputService {
         marketData: this.marketData,
         marketContext: this.marketContext,
         marketFlow: this.marketFlow,
+        marketBreadth: this.marketBreadth,
         scanner: this.scanner,
+        technical: this.technical,
+        relativeStrength: this.relativeStrength,
         broker: normalizedBroker,
         symbol: normalizedSymbol,
         options: normalizeOptions(options),
@@ -279,6 +291,15 @@ export function buildDomesticStockSignalInputs({ broker, symbol, results = {}, o
   const market = options.marketBackground === undefined
     ? buildMarketBackground({ results, options })
     : clone(options.marketBackground);
+  const technical = options.technicalBackground === undefined
+    ? buildTechnicalBackground(results.technicalIndicators)
+    : clone(options.technicalBackground);
+  const relativeStrength = options.relativeStrengthBackground === undefined
+    ? buildRelativeStrengthBackground(results.relativeStrength)
+    : clone(options.relativeStrengthBackground);
+  const marketBreadth = options.marketBreadthBackground === undefined
+    ? buildMarketBreadthBackground(results.marketBreadth)
+    : clone(options.marketBreadthBackground);
 
   const metrics = buildMetrics({
     currentPrice,
@@ -303,15 +324,24 @@ export function buildDomesticStockSignalInputs({ broker, symbol, results = {}, o
     },
     rankings: rankingContext,
     conditions: conditionContext,
+    technical,
+    relativeStrength,
+    marketBreadth,
     metrics: {
       ...metrics,
       conditions: conditionContext?.metrics ?? null,
       market: market?.metrics ?? null,
+      technical: technical?.metrics ?? null,
+      relativeStrength: relativeStrength?.metrics ?? null,
+      marketBreadth: marketBreadth?.metrics ?? null,
     },
     signals: {
       ...buildSignals(metrics, thresholds),
       conditions: conditionContext?.indicators ?? null,
       market: market?.indicators ?? null,
+      technical: technical?.indicators ?? null,
+      relativeStrength: relativeStrength?.indicators ?? null,
+      marketBreadth: marketBreadth?.indicators ?? null,
     },
     thresholds,
     realtime: options.realtime ?? null,
@@ -432,7 +462,19 @@ export function applyDomesticStockRealtimeSignalMessage(initialInputs, message, 
   return state.applyRealtimeMessage(message, options);
 }
 
-async function collectSignalSources({ quote, marketData, marketContext, marketFlow, scanner, broker, symbol, options }) {
+async function collectSignalSources({
+  quote,
+  marketData,
+  marketContext,
+  marketFlow,
+  marketBreadth,
+  scanner,
+  technical,
+  relativeStrength,
+  broker,
+  symbol,
+  options,
+}) {
   const tasks = [
     ["currentPrice", quote.getDomesticStockCurrentPrice(broker, symbol, options.currentPriceOptions)],
   ];
@@ -500,6 +542,27 @@ async function collectSignalSources({ quote, marketData, marketContext, marketFl
     ]);
   }
 
+  if (options.includeTechnicalIndicators) {
+    tasks.push([
+      "technicalIndicators",
+      technical.getDomesticStockIndicators(broker, symbol, options.technicalIndicatorOptions),
+    ]);
+  }
+
+  if (options.includeRelativeStrength) {
+    tasks.push([
+      "relativeStrength",
+      relativeStrength.getDomesticStockRelativeStrength(broker, symbol, options.relativeStrengthOptions),
+    ]);
+  }
+
+  if (options.includeMarketBreadth) {
+    tasks.push([
+      "marketBreadth",
+      resolveMarketBreadth(marketBreadth, options),
+    ]);
+  }
+
   const settled = await Promise.all(tasks.map(async ([key, promise]) => [key, await promise]));
   const results = Object.fromEntries(settled);
 
@@ -533,6 +596,9 @@ function normalizeOptions(options) {
   const includeMarketFlow = Boolean(options.includeMarketFlow);
   const conditionSearches = normalizeConditionSearchOptions(options);
   const includeConditionSearch = Boolean(options.includeConditionSearch) || conditionSearches.length > 0;
+  const includeTechnicalIndicators = Boolean(options.includeTechnicalIndicators);
+  const includeRelativeStrength = Boolean(options.includeRelativeStrength);
+  const includeMarketBreadth = Boolean(options.includeMarketBreadth);
 
   return {
     includeOrderBook: options.includeOrderBook !== false,
@@ -546,6 +612,9 @@ function normalizeOptions(options) {
     includeExpectedIndex: Boolean(options.includeExpectedIndex),
     includeMarketFlow,
     includeProgramTrading: Boolean(options.includeProgramTrading) || (includeMarketFlow && options.includeProgramTrading !== false),
+    includeTechnicalIndicators,
+    includeRelativeStrength,
+    includeMarketBreadth,
     market,
     marketIndex,
     marketFlowMarket,
@@ -596,6 +665,77 @@ function normalizeOptions(options) {
       ...(options.marketFlowOptions ?? {}),
       ...(options.programTradingOptions ?? {}),
     },
+    technicalIndicatorOptions: {
+      count: options.technicalCount ?? options.dailyCount ?? 220,
+      baseDate: options.baseDate,
+      profile: options.indicatorProfile,
+      ...(options.technicalIndicatorOptions ?? {}),
+    },
+    relativeStrengthOptions: {
+      count: options.relativeStrengthCount ?? options.dailyCount ?? 120,
+      baseDate: options.baseDate,
+      benchmark: options.benchmark ?? { type: "index", code: marketIndex },
+      benchmarkCandles: options.benchmarkCandles,
+      periods: options.relativeStrengthPeriods,
+      ...(options.relativeStrengthOptions ?? {}),
+    },
+    marketBreadthOptions: {
+      market,
+      period: options.marketBreadthPeriod ?? 20,
+      lookback: options.marketBreadthLookback ?? 252,
+      ...(options.marketBreadthOptions ?? {}),
+    },
+    marketBreadthSnapshot: options.marketBreadthSnapshot,
+    marketBreadthRows: options.marketBreadthRows,
+    highLowRows: options.highLowRows,
+    candlesBySymbol: options.candlesBySymbol,
+  };
+}
+
+async function resolveMarketBreadth(marketBreadth, options) {
+  if (options.marketBreadthSnapshot) {
+    return okComputedResult(options.marketBreadthSnapshot);
+  }
+
+  if (options.marketBreadthRows) {
+    return marketBreadth.calculateAdvanceDeclineLine(options.marketBreadthRows, options.marketBreadthOptions);
+  }
+
+  if (options.highLowRows) {
+    return marketBreadth.calculateHighLowRatio(options.highLowRows, options.marketBreadthOptions);
+  }
+
+  if (options.candlesBySymbol) {
+    return marketBreadth.calculateAboveMovingAverageRatio(options.candlesBySymbol, options.marketBreadthOptions);
+  }
+
+  return {
+    ok: false,
+    broker: null,
+    capability: "marketBreadth.domesticMarket.indicators",
+    id: null,
+    data: null,
+    raw: null,
+    headers: {},
+    status: 0,
+    error: BrokerError.validation("market breadth input is required", {
+      details: {
+        acceptedInputs: ["marketBreadthSnapshot", "marketBreadthRows", "highLowRows", "candlesBySymbol"],
+      },
+    }),
+  };
+}
+
+function okComputedResult(data) {
+  return {
+    ok: true,
+    broker: null,
+    capability: "marketBreadth.domesticMarket.indicators",
+    id: null,
+    data,
+    raw: data,
+    headers: {},
+    status: 0,
   };
 }
 
@@ -755,6 +895,109 @@ function buildMarketBackground({ results, options }) {
       programFlow: signedDirection(programTotalNetBuy, 0),
     },
   };
+}
+
+function buildTechnicalBackground(result) {
+  const data = resultData(result);
+  if (!data) {
+    return null;
+  }
+
+  const latest = data.latest ?? null;
+
+  return {
+    snapshot: data,
+    metrics: {
+      trend: latest?.trend ?? null,
+      momentum: latest?.momentum ?? null,
+      volume: latest?.volume ?? null,
+      volatility: latest?.volatility ?? null,
+      candlePatterns: latest?.candlePatterns ?? null,
+    },
+    indicators: {
+      maAlignment: latest?.flags?.maAlignment ?? null,
+      disparity20Overheated: latest?.flags?.disparity20Overheated ?? null,
+      rsiZone: latest?.flags?.rsiZone ?? null,
+      macdBias: latest?.flags?.macdBias ?? null,
+      volumeRatioAboveEarlyTrend: latest?.flags?.volumeRatioAboveEarlyTrend ?? null,
+      valueRatioAlert: latest?.flags?.valueRatioAlert ?? null,
+      candleColor: latest?.flags?.candleColor ?? null,
+      longBullishCandle: latest?.flags?.longBullishCandle ?? null,
+      longBearishCandle: latest?.flags?.longBearishCandle ?? null,
+      doji: latest?.flags?.doji ?? null,
+      hammer: latest?.flags?.hammer ?? null,
+    },
+  };
+}
+
+function buildRelativeStrengthBackground(result) {
+  const data = resultData(result);
+  if (!data) {
+    return null;
+  }
+
+  return {
+    snapshot: data,
+    metrics: {
+      benchmark: data.benchmark ?? null,
+      periods: data.periods ?? [],
+      latest: data.latest ?? {},
+      alignedCount: data.alignedCount ?? null,
+    },
+    indicators: Object.fromEntries(
+      Object.entries(data.latest ?? {}).map(([period, item]) => [
+        period,
+        item ? {
+          direction: item.direction,
+          outperforming: item.outperforming,
+          spread: item.spread,
+          ratio: item.ratio,
+        } : null,
+      ]),
+    ),
+  };
+}
+
+function buildMarketBreadthBackground(result) {
+  const data = resultData(result);
+  if (!data) {
+    return null;
+  }
+
+  const latest = data.latest ?? null;
+
+  return {
+    snapshot: data,
+    metrics: {
+      market: data.market ?? null,
+      latest,
+      ratio: data.ratio ?? latest?.ratio ?? null,
+      universeSize: data.universeSize ?? null,
+      comparableCount: data.comparableCount ?? null,
+    },
+    indicators: {
+      direction: marketBreadthDirection(data),
+      ratio: data.ratio ?? latest?.ratio ?? null,
+      aboveMovingAverageRatio: data.aboveCount !== undefined ? data.ratio : null,
+      highLowRatio: data.highCount !== undefined ? data.ratio : null,
+      advanceDeclineLine: latest?.value ?? null,
+    },
+  };
+}
+
+function marketBreadthDirection(data) {
+  const latest = data?.latest ?? null;
+
+  if (Number.isFinite(latest?.netAdvances)) {
+    return signedDirection(latest.netAdvances, 0);
+  }
+
+  const ratioValue = data?.ratio ?? latest?.ratio;
+  if (Number.isFinite(ratioValue)) {
+    return signedDirection(ratioValue - 0.5, 0);
+  }
+
+  return null;
 }
 
 function buildMetrics({ currentPrice, basicInfo, orderBook, dailyCandles, minuteCandles, rankingContext }) {
@@ -1481,6 +1724,9 @@ function rebuildSignalDataFromSnapshot(data, options) {
       market: data.market?.targetMarket,
       marketBackground: data.market,
       conditionSearchBackground: data.conditions,
+      technicalBackground: data.technical,
+      relativeStrengthBackground: data.relativeStrength,
+      marketBreadthBackground: data.marketBreadth,
     },
     results: {
       currentPrice: signalResult("currentPrice", data.quote, data),
@@ -1494,6 +1740,9 @@ function rebuildSignalDataFromSnapshot(data, options) {
         changeRate: rankingResult("changeRate", data.rankings?.changeRate, data),
       },
       conditionSearches: conditionSearchResults(data),
+      technicalIndicators: signalResult("technicalIndicators", data.technical?.snapshot, data),
+      relativeStrength: signalResult("relativeStrength", data.relativeStrength?.snapshot, data),
+      marketBreadth: signalResult("marketBreadth", data.marketBreadth?.snapshot, data),
       ...marketResults,
     },
   });

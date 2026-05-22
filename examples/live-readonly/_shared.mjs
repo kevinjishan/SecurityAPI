@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import {
   AccountService,
   KiwoomClient,
+  MarketBreadthService,
   LsClient,
   MarketContextService,
   MarketDataService,
@@ -13,6 +14,8 @@ import {
   OverseasStockRealtimeService,
   QuoteService,
   RealtimeService,
+  RelativeStrengthService,
+  TechnicalIndicatorService,
 } from "security-api-reference";
 
 export const LIVE_READONLY_FLAG = "SECURITY_API_LIVE_READONLY";
@@ -159,6 +162,9 @@ export function buildDomesticServices(clients) {
     marketFlow: new MarketFlowService(clients),
     account: new AccountService(clients),
     realtime: new RealtimeService(clients),
+    technical: new TechnicalIndicatorService(clients),
+    relativeStrength: new RelativeStrengthService(clients),
+    marketBreadth: new MarketBreadthService(),
   };
 }
 

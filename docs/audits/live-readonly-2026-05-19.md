@@ -235,6 +235,33 @@ set -a; source .env; set +a; SECURITY_API_REALTIME_WAIT_MS=${SECURITY_API_REALTI
 ### Guard Result
 
 - Preflight result: `pass`.
+
+## Technical / Market Signal Verification Template
+
+This section is prepared for the next read-only run. It should be filled only with masked summaries from `examples/live-readonly/technical-market-signals.mjs`; do not paste raw candle arrays, raw token responses, account values, or order-related data.
+
+Recommended command:
+
+```bash
+set -a; source .env; set +a; KIWOOM_ENV=prod SECURITY_API_LIVE_READONLY=true SECURITY_API_ALLOW_LIVE_ORDER=false npm run examples:live-readonly:signals -- --json
+```
+
+Expected scenarios:
+
+| Scenario | Source | Expected audit fields | Result |
+| --- | --- | --- | --- |
+| Domestic technical indicators | Stock daily candles, read-only | symbol, interval, candleCount, latest SMA/RSI/MACD/volume/ATR/candleColor summary | pending |
+| Relative strength vs KOSPI | Stock daily candles + index daily candles, read-only | symbol, benchmark, periods, alignedCount, latest direction/spread/ratio summary | pending |
+| Market breadth snapshot | Static/provided snapshot | ADL latest, high/low latest, above moving average ratio latest, universe size | pending |
+
+Guard expectations:
+
+- `SECURITY_API_LIVE_READONLY=true`
+- `SECURITY_API_ALLOW_LIVE_ORDER=false` or unset
+- no order API call
+- no order event subscription
+- no raw token/account/password output
+- market breadth uses provided snapshot input only unless a separate universe collection design is approved
 - `SECURITY_API_ALLOW_LIVE_ORDER=false`.
 - Runnable realtime example: yes.
 - No order event TRs (`AS0`~`AS4`) were subscribed.

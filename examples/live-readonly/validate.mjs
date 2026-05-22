@@ -7,6 +7,7 @@ const scripts = [
   "ls-overseas-quote.mjs",
   "ls-overseas-realtime.mjs",
   "account-readonly.mjs",
+  "technical-market-signals.mjs",
 ];
 
 for (const script of scripts) {

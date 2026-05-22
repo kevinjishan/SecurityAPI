@@ -31,6 +31,18 @@ export const CAPABILITY_DEFINITIONS = Object.freeze({
     area: "marketData",
     label: "국내주식 분봉 OHLCV",
   },
+  "technical.domesticStock.indicators": {
+    area: "technical",
+    label: "국내주식 기술적 지표",
+  },
+  "relativeStrength.domesticStock.benchmark": {
+    area: "relativeStrength",
+    label: "국내주식 벤치마크 상대강도",
+  },
+  "marketBreadth.domesticMarket.indicators": {
+    area: "marketBreadth",
+    label: "국내 시장 폭 지표",
+  },
   "marketContext.domesticIndex.current": {
     area: "marketContext",
     label: "국내 주요 지수 현재가",
@@ -158,6 +170,10 @@ export const CAPABILITY_DEFINITIONS = Object.freeze({
   "overseasStock.marketData.timeSeries": {
     area: "overseasStock",
     label: "해외주식 시간대별 체결",
+  },
+  "overseasStock.technical.indicators": {
+    area: "overseasStock",
+    label: "해외주식 기술적 지표",
   },
   "overseasStock.account.cash": {
     area: "overseasStock",

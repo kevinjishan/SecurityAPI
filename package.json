@@ -21,6 +21,7 @@
     "examples:mock": "node examples/mock-clients.mjs",
     "examples:live-readonly:preflight": "node examples/live-readonly/preflight.mjs",
     "examples:live-readonly:validate": "node examples/live-readonly/validate.mjs",
+    "examples:live-readonly:signals": "node examples/live-readonly/technical-market-signals.mjs",
     "test": "node --test",
     "validate:all": "npm run validate:docs && npm run validate:manifest && npm test && npm run examples:mock && npm run examples:live-readonly:validate"
   },
@@ -29,11 +30,14 @@
   },
   "files": [
     "src/",
+    "examples/README.md",
+    "examples/live-readonly/",
     "data/generated/",
     "docs/README.md",
     "docs/sdk-distribution-guide.md",
     "docs/sdk-usage-guide.md",
     "docs/public-sdk-contract.md",
+    "docs/technical-indicators-and-market-signals-design.md",
     "docs/live-readonly-verification-matrix.md",
     "docs/live-readonly-verification-plan.md",
     "docs/live-integration-readiness.md",

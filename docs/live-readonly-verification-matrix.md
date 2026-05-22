@@ -52,6 +52,9 @@ Last updated: 2026-05-19
 | Overseas account balance | LS | `OverseasStockAccountService.getOverseasStockBalance` | `COSOQ00201` | `live-pass` | LS no-data message treated as successful empty account state. |
 | Overseas realtime trade | LS | `OverseasStockRealtimeService.subscribeOverseasStockTrades` | `GSC` | `live-pass` | Subscribe, message receive, unsubscribe verified. |
 | Overseas realtime order book | LS | `OverseasStockRealtimeService.subscribeOverseasStockOrderBook` | `GSH` | `live-pass` | Subscribe, message receive, unsubscribe verified. |
+| Technical indicators | Kiwoom/LS | `TechnicalIndicatorService.getDomesticStockIndicators` | `ka10081` or LS chart TR | `local-pass` | Live-readonly example added; validates guard/masking locally and can run against read-only candle APIs. |
+| Relative strength | Kiwoom/LS | `RelativeStrengthService.getDomesticStockRelativeStrength` | stock candle + index candle TRs | `local-pass` | Live-readonly example added; target stock and KOSPI/index candles remain read-only. |
+| Market breadth snapshot | Local | `MarketBreadthService` calculators | snapshot | `local-pass` | Uses provided snapshot input only; no bulk universe collection in live-readonly example. |
 
 ## Local-only Coverage
 
@@ -84,6 +87,7 @@ set -a; source .env; set +a; node examples/live-readonly/ls-domestic-quote.mjs -
 set -a; source .env; set +a; node examples/live-readonly/ls-overseas-quote.mjs --json
 set -a; source .env; set +a; KIWOOM_ENV=prod node examples/live-readonly/account-readonly.mjs --json
 set -a; source .env; set +a; node examples/live-readonly/ls-overseas-realtime.mjs --json
+set -a; source .env; set +a; KIWOOM_ENV=prod npm run examples:live-readonly:signals -- --json
 npm run validate:all
 ```
 
@@ -91,4 +95,4 @@ Do not run live examples unless `SECURITY_API_LIVE_READONLY=true` and `SECURITY_
 
 ## Current Decision
 
-The SDK is live-verified for the implemented OAuth, public REST market data, account read-only REST, and LS overseas quote WebSocket paths listed above. It is not live-approved for order submission or order event subscriptions. External apps may use this matrix to decide which SDK paths are already proven against real broker servers and which paths still require separate validation.
+The SDK is live-verified for the implemented OAuth, public REST market data, account read-only REST, and LS overseas quote WebSocket paths listed above. Technical indicators, relative strength, and market breadth are wired into the live-readonly validation path but still need a real read-only run before their matrix status can move from `local-pass` to `live-pass`. It is not live-approved for order submission or order event subscriptions. External apps may use this matrix to decide which SDK paths are already proven against real broker servers and which paths still require separate validation.

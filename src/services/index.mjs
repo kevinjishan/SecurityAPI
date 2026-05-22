@@ -60,6 +60,27 @@ export {
 } from "./MarketDataService.mjs";
 
 export {
+  DEFAULT_TECHNICAL_PROFILE,
+  TechnicalIndicatorService,
+  averageTrueRange,
+  calculateBollingerBands,
+  calculateTechnicalIndicators,
+  detectCandlePatterns,
+  exponentialMovingAverage,
+  moneyFlowIndex,
+  movingAverageAlignment,
+  movingAverageConvergenceDivergence,
+  movingAverageDisparity,
+  movingAverageSlope,
+  onBalanceVolume,
+  ratioToMovingAverage,
+  relativeStrengthIndex,
+  rollingStandardDeviation,
+  simpleMovingAverage,
+  stochasticOscillator,
+} from "./TechnicalIndicatorService.mjs";
+
+export {
   MarketContextService,
   normalizeDomesticIndexDailyCandles,
   normalizeDomesticIndexCurrent,
@@ -72,6 +93,18 @@ export {
   normalizeDomesticInvestorFlow,
   normalizeProgramTradingTrend,
 } from "./MarketFlowService.mjs";
+
+export {
+  MarketBreadthService,
+  calculateAboveMovingAverageRatio,
+  calculateAdvanceDeclineLine,
+  calculateHighLowRatio,
+} from "./MarketBreadthService.mjs";
+
+export {
+  RelativeStrengthService,
+  calculateRelativeStrength,
+} from "./RelativeStrengthService.mjs";
 
 export {
   ScannerService,

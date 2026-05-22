@@ -22,6 +22,9 @@ test("lists Kiwoom capabilities and supports prefixes", () => {
   assert.equal(caps instanceof BrokerCapabilities, true);
   assert.equal(caps.supports("quote.domesticStock.currentPrice"), true);
   assert.equal(caps.supports("quote.domesticStock"), true);
+  assert.equal(caps.supports("technical.domesticStock.indicators"), true);
+  assert.equal(caps.supports("relativeStrength.domesticStock.benchmark"), true);
+  assert.equal(caps.supports("marketBreadth.domesticMarket.indicators"), true);
   assert.equal(caps.supports("overseasStock.quote.currentPrice"), false);
   assert.ok(caps.listIds().includes("order.domesticStock.buy"));
 });
@@ -61,6 +64,10 @@ test("lists LS capabilities across domestic, overseas, and derivatives", () => {
   assert.equal(caps.supports("overseasStock.account"), true);
   assert.equal(caps.supports("overseasStock.order"), true);
   assert.equal(caps.supports("overseasStock.realtime"), true);
+  assert.equal(caps.supports("technical.domesticStock.indicators"), true);
+  assert.equal(caps.supports("relativeStrength.domesticStock.benchmark"), true);
+  assert.equal(caps.supports("marketBreadth.domesticMarket.indicators"), true);
+  assert.equal(caps.supports("overseasStock.technical.indicators"), true);
   assert.equal(caps.hasMetadata("overseasStock.quote"), true);
   assert.equal(caps.hasMetadata("overseasStock.order"), true);
   assert.equal(caps.supports("futureOption.order"), false);
@@ -191,6 +198,9 @@ test("returns capability definitions", () => {
 
   assert.equal(getCapabilityDefinition("quote.domesticStock.currentPrice").area, "quote");
   assert.equal(definitions["order.domesticStock.buy"].label, "국내주식 매수");
+  assert.equal(definitions["technical.domesticStock.indicators"].label, "국내주식 기술적 지표");
+  assert.equal(definitions["relativeStrength.domesticStock.benchmark"].label, "국내주식 벤치마크 상대강도");
+  assert.equal(definitions["marketBreadth.domesticMarket.indicators"].label, "국내 시장 폭 지표");
   assert.equal(definitions["overseasStock.realtime.trade"].label, "해외주식 실시간 체결");
 });
 
