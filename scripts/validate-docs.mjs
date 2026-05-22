@@ -11,6 +11,9 @@ const EXPECTED = {
   lsGroups: 8,
   lsApis: 41,
   lsTrs: 365,
+  dbGroups: 19,
+  dbApis: 165,
+  dbTrs: 165,
 };
 
 async function main() {
@@ -19,6 +22,10 @@ async function main() {
   const lsMenu = await readJson(path.join(RAW_DIR, "ls", "menu.json"));
   const lsTrsByApiId = await readJson(path.join(RAW_DIR, "ls", "trs-by-api-id.json"));
   const lsPropertiesByTrId = await readJson(path.join(RAW_DIR, "ls", "properties-by-tr-id.json"));
+  const dbMenu = await readJson(path.join(RAW_DIR, "db", "menu.json"));
+  const dbTrsByApiId = await readJson(path.join(RAW_DIR, "db", "trs-by-api-id.json"));
+  const dbPropertiesByTrId = await readJson(path.join(RAW_DIR, "db", "properties-by-tr-id.json"));
+  const kisMenu = await readJson(path.join(RAW_DIR, "kis", "menu.json"));
 
   const kiwoomDocs = (await listMarkdown(path.join(DOCS_DIR, "kiwoom"))).filter(
     (file) => !file.endsWith(`${path.sep}README.md`) && !file.endsWith(`${path.sep}errors.md`),
@@ -26,11 +33,21 @@ async function main() {
   const lsDocs = (await listMarkdown(path.join(DOCS_DIR, "ls"))).filter(
     (file) => !file.endsWith(`${path.sep}README.md`),
   );
+  const dbDocs = (await listMarkdown(path.join(DOCS_DIR, "db"))).filter(
+    (file) => !file.endsWith(`${path.sep}README.md`),
+  );
+  const kisDocs = (await listMarkdown(path.join(DOCS_DIR, "kis"))).filter(
+    (file) => !file.endsWith(`${path.sep}README.md`),
+  );
 
   const kiwoomApis = kiwoomRaw.resp_data ?? [];
   const lsGroups = lsMenu.groups ?? [];
   const lsApis = lsGroups.flatMap((group) => group.apis ?? []);
   const lsTrs = Object.values(lsTrsByApiId).flat();
+  const dbGroups = dbMenu.groups ?? [];
+  const dbApis = dbGroups.flatMap((group) => group.apis ?? []);
+  const dbTrs = Object.values(dbTrsByApiId).flat();
+  const kisApis = kisMenu.apis ?? [];
 
   assertEqual(kiwoomApis.length, EXPECTED.kiwoomApis, "Kiwoom raw API count");
   assertEqual((kiwoomErrors.resp_data ?? []).length, EXPECTED.kiwoomErrors, "Kiwoom error code count");
@@ -41,13 +58,22 @@ async function main() {
   assertEqual(lsTrs.length, EXPECTED.lsTrs, "LS TR count");
   assertEqual(lsDocs.length, lsTrs.length, "LS markdown TR count");
 
-  await validateCommonSections([...kiwoomDocs, ...lsDocs]);
+  assertEqual(dbGroups.length, EXPECTED.dbGroups, "DB group count");
+  assertEqual(dbApis.length, EXPECTED.dbApis, "DB API page count");
+  assertEqual(dbTrs.length, EXPECTED.dbTrs, "DB TR count");
+  assertEqual(dbDocs.length, dbTrs.length, "DB markdown TR count");
+  assertEqual(kisDocs.length, kisApis.length, "KIS markdown API path count");
+
+  await validateCommonSections([...kiwoomDocs, ...lsDocs, ...dbDocs, ...kisDocs]);
   await validateKiwoomFieldCounts(kiwoomDocs, kiwoomApis);
   await validateLsFieldCounts(lsDocs, lsTrs, lsPropertiesByTrId);
+  await validateLsFieldCounts(dbDocs, dbTrs, dbPropertiesByTrId);
 
   console.log("Validation passed.");
   console.log(`Kiwoom: ${kiwoomDocs.length} API docs, ${(kiwoomErrors.resp_data ?? []).length} errors`);
   console.log(`LS: ${lsGroups.length} groups, ${lsApis.length} API pages, ${lsDocs.length} TR docs`);
+  console.log(`DB: ${dbGroups.length} groups, ${dbApis.length} API pages, ${dbDocs.length} TR docs`);
+  console.log(`KIS: ${kisMenu.categories?.length ?? 0} categories, ${kisDocs.length} API docs`);
 }
 
 async function validateCommonSections(files) {
@@ -71,7 +97,12 @@ function validateSourceUrl(file, sourceUrl) {
     throw new Error(`${file} has invalid source_url: ${sourceUrl}`);
   }
 
-  const allowedHosts = new Set(["openapi.kiwoom.com", "openapi.ls-sec.co.kr"]);
+  const allowedHosts = new Set([
+    "openapi.kiwoom.com",
+    "openapi.ls-sec.co.kr",
+    "openapi.db-fi.com",
+    "apiportal.koreainvestment.com",
+  ]);
   if (parsed.protocol !== "https:" || !allowedHosts.has(parsed.hostname)) {
     throw new Error(`${file} has unexpected source_url: ${sourceUrl}`);
   }

@@ -29,12 +29,18 @@ export {
 
 export {
   BaseBrokerClient,
+  DbClient,
   KiwoomClient,
+  KisClient,
   LsClient,
   WebSocketBrokerClient,
+  parseDbExpiresAt,
+  parseDbToken,
   normalizeRealtimeMessage,
   parseKiwoomExpiresAt,
   parseKiwoomToken,
+  parseKisExpiresAt,
+  parseKisToken,
   parseLsExpiresAt,
   parseLsToken,
 } from "./adapters/index.mjs";
@@ -43,7 +49,9 @@ export {
   BrokerCapabilities,
   CAPABILITY_DEFINITIONS,
   CAPABILITY_STATUSES,
+  DB_CAPABILITIES,
   KIWOOM_CAPABILITIES,
+  KIS_CAPABILITIES,
   LS_CAPABILITIES,
   assertCapabilityReferences,
   getCapabilities,

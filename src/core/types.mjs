@@ -1,6 +1,6 @@
 import { BrokerError } from "./BrokerError.mjs";
 
-export const BROKERS = Object.freeze(["kiwoom", "ls"]);
+export const BROKERS = Object.freeze(["kiwoom", "ls", "db", "kis"]);
 export const BROKER_ENVIRONMENTS = Object.freeze(["prod", "dev", "mock"]);
 export const REQUEST_OPERATIONS = Object.freeze(["auth", "request", "revoke", "unknown"]);
 

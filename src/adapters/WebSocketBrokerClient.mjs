@@ -3,6 +3,8 @@ import { BrokerError, assertBroker } from "../core/index.mjs";
 const DEFAULT_REALTIME_IDS = Object.freeze({
   kiwoom: "0B",
   ls: "S3_",
+  db: "S00",
+  kis: "H0STCNT0",
 });
 
 const DEFAULT_RECONNECT_MAX_ATTEMPTS = 5;
@@ -45,7 +47,9 @@ export class WebSocketBrokerClient {
 
     const id = options.id ?? DEFAULT_REALTIME_IDS[this.broker];
     const endpoint = await this.brokerClient.getEndpoint(id);
-    this.token = await this.brokerClient.getAccessToken();
+    this.token = this.broker === "kis"
+      ? { accessToken: await this.brokerClient.getApprovalKey(), tokenType: "Approval" }
+      : await this.brokerClient.getAccessToken();
     this.connectedId = id;
     this.closedByUser = false;
 
@@ -189,6 +193,23 @@ export class WebSocketBrokerClient {
       };
     }
 
+    if (this.broker === "kis") {
+      return {
+        header: {
+          approval_key: this.token.accessToken,
+          custtype: options.customerType ?? "P",
+          tr_type: action === "subscribe" ? "1" : "2",
+          "content-type": "utf-8",
+        },
+        body: {
+          input: {
+            tr_id: id,
+            tr_key: key,
+          },
+        },
+      };
+    }
+
     return {
       header: {
         token: this.token.accessToken,
@@ -329,7 +350,11 @@ export function normalizeRealtimeMessage(broker, payload) {
     return normalizeKiwoomRealtimeMessage(payload);
   }
 
-  return normalizeLsRealtimeMessage(payload);
+  if (normalizedBroker === "kis") {
+    return normalizeKisRealtimeMessage(payload);
+  }
+
+  return normalizeLsLikeRealtimeMessage(normalizedBroker, payload);
 }
 
 function normalizeKiwoomRealtimeMessage(payload) {
@@ -344,14 +369,27 @@ function normalizeKiwoomRealtimeMessage(payload) {
   }));
 }
 
-function normalizeLsRealtimeMessage(payload) {
+function normalizeLsLikeRealtimeMessage(broker, payload) {
   const header = payload?.header ?? {};
   return [{
-    broker: "ls",
+    broker,
     id: nullableString(header.tr_cd ?? payload?.body?.tr_cd),
     name: null,
     key: nullableString(header.tr_key ?? payload?.body?.tr_key ?? payload?.body?.shcode ?? payload?.body?.shtnIsuno),
     body: payload?.body ?? {},
+    raw: payload,
+  }];
+}
+
+function normalizeKisRealtimeMessage(payload) {
+  const header = payload?.header ?? {};
+  const body = payload?.body?.output ?? payload?.body ?? {};
+  return [{
+    broker: "kis",
+    id: nullableString(header.tr_id ?? payload?.body?.tr_id ?? payload?.body?.input?.tr_id),
+    name: null,
+    key: nullableString(header.tr_key ?? payload?.body?.tr_key ?? payload?.body?.input?.tr_key ?? body?.stck_shrn_iscd),
+    body,
     raw: payload,
   }];
 }
@@ -386,7 +424,7 @@ function hasHeaders(options = {}) {
 }
 
 function normalizeWebSocketUrl(broker, url) {
-  if (broker !== "ls") {
+  if (!["ls", "db"].includes(broker)) {
     return url;
   }
 

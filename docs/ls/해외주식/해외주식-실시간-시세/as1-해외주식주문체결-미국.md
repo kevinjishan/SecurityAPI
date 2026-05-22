@@ -1,7 +1,7 @@
 ---
 broker: "LS증권"
 source_url: "https://openapi.ls-sec.co.kr/apiservice?group_id=cdb7e1bc-f7c5-425c-8248-aa83dbb6919f&api_id=0c023f96-5137-48cf-8682-8dd30bbc81be"
-scraped_at: "2026-05-18T05:16:18.548Z"
+scraped_at: "2026-05-22T15:19:33.392Z"
 category: "해외주식"
 api_id: "0c023f96-5137-48cf-8682-8dd30bbc81be"
 api_name: "[해외주식] 실시간 시세"

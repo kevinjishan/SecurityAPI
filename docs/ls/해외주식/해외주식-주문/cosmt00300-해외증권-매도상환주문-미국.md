@@ -1,7 +1,7 @@
 ---
 broker: "LS증권"
 source_url: "https://openapi.ls-sec.co.kr/apiservice?group_id=cdb7e1bc-f7c5-425c-8248-aa83dbb6919f&api_id=6bafc43c-6080-4541-bfc2-c2608b269ca0"
-scraped_at: "2026-05-18T05:16:18.548Z"
+scraped_at: "2026-05-22T15:19:33.392Z"
 category: "해외주식"
 api_id: "6bafc43c-6080-4541-bfc2-c2608b269ca0"
 api_name: "[해외주식] 주문"

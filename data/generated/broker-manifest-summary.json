@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-18T06:37:12.104Z",
+  "generatedAt": "2026-05-22T15:19:48.595Z",
   "brokers": {
     "kiwoom": {
       "apis": 207,
@@ -11,6 +11,19 @@
       "apiPages": 41,
       "trs": 365,
       "manifest": "data/generated/ls-manifest.json"
+    },
+    "db": {
+      "groups": 19,
+      "apiPages": 165,
+      "trs": 165,
+      "manifest": "data/generated/db-manifest.json"
+    },
+    "kis": {
+      "categories": 22,
+      "portalPaths": 338,
+      "apis": 339,
+      "sampleMappedPaths": 273,
+      "manifest": "data/generated/kis-manifest.json"
     }
   }
 }

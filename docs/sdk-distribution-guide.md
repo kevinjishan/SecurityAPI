@@ -42,7 +42,7 @@ Excluded from package:
 - `.env`
 - `node_modules/`
 - `data/raw/`
-- generated per-API Markdown docs under `docs/kiwoom/` and `docs/ls/`
+- generated per-API Markdown docs under `docs/kiwoom/`, `docs/ls/`, `docs/db/`, and `docs/kis/`
 - tests
 - examples
 - scripts
@@ -105,7 +105,7 @@ Run this in the consuming app after install.
 
 ```bash
 node --input-type=module - <<'NODE'
-import { KiwoomClient, LsClient, QuoteService, getCapabilities } from "security-api-reference";
+import { DbClient, KiwoomClient, KisClient, LsClient, QuoteService, getCapabilities } from "security-api-reference";
 import { createMetadataRegistry } from "security-api-reference/metadata";
 import { WebSocketBrokerClient } from "security-api-reference/adapters";
 import { BrokerError } from "security-api-reference/core";
@@ -113,19 +113,23 @@ import { AccountService } from "security-api-reference/services";
 
 const registry = await createMetadataRegistry();
 const entry = registry.requireEntry("ls", "t1101");
-const caps = getCapabilities("ls");
+const kisEntry = registry.requireEntry("kis", "/uapi/domestic-stock/v1/quotations/inquire-price");
+const caps = getCapabilities("kis");
 
 console.log(JSON.stringify({
   ok: true,
   imports: [
     Boolean(KiwoomClient),
     Boolean(LsClient),
+    Boolean(DbClient),
+    Boolean(KisClient),
     Boolean(QuoteService),
     Boolean(WebSocketBrokerClient),
     Boolean(BrokerError),
     Boolean(AccountService)
   ],
   entry: entry.id,
+  kisEntry: kisEntry.id,
   supportsQuote: caps.supports("quote.domesticStock.currentPrice")
 }));
 NODE
@@ -134,7 +138,7 @@ NODE
 Expected:
 
 ```json
-{"ok":true,"imports":[true,true,true,true,true,true],"entry":"t1101","supportsQuote":true}
+{"ok":true,"imports":[true,true,true,true,true,true,true,true],"entry":"t1101","kisEntry":"/uapi/domestic-stock/v1/quotations/inquire-price","supportsQuote":true}
 ```
 
 ## Pack Dry-run
@@ -149,11 +153,11 @@ Current expected shape:
 
 | Metric | Expected |
 | --- | ---: |
-| Total files | about 48 |
-| Package size | about 1.8 MB |
-| Unpacked size | about 25 MB |
+| Total files | about 72 |
+| Package size | about 2.6 MB |
+| Unpacked size | about 36 MB |
 
-The package is large mainly because generated broker manifests are included. This is intentional because runtime metadata lookup depends on `data/generated/`.
+The package is large mainly because generated broker manifests are included, especially LS and DB. This is intentional because runtime metadata lookup depends on `data/generated/`.
 
 ## Verified Distribution Checks
 
@@ -184,12 +188,22 @@ KIWOOM_ENV=prod
 LS_APP_KEY=
 LS_APP_SECRET_KEY=
 LS_ENV=prod
+
+DB_APP_KEY=
+DB_APP_SECRET_KEY=
+DB_ENV=prod
+
+KIS_APP_KEY=
+KIS_APP_SECRET_KEY=
+KIS_ENV=prod
+KIS_CUSTOMER_TYPE=P
 ```
 
 Optional:
 
 ```bash
 LS_MAC_ADDRESS=
+DB_MAC_ADDRESS=
 ```
 
 Read-only live guard:

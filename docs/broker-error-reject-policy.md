@@ -1,6 +1,6 @@
 # Broker Error And Reject Policy
 
-이 문서는 SecurityAPI가 Kiwoom/LS 오류, 주문 reject, 네트워크 실패를 외부 앱에서 일관되게 처리할 수 있도록 분류 기준을 정리한다.
+이 문서는 SecurityAPI가 Kiwoom/LS/DB/KIS 오류, 주문 reject, 네트워크 실패를 외부 앱에서 일관되게 처리할 수 있도록 분류 기준을 정리한다.
 
 ## Goals
 
@@ -19,7 +19,7 @@ type BrokerErrorShape = {
   name: "BrokerError";
   code: string;
   message: string;
-  broker?: "kiwoom" | "ls";
+  broker?: "kiwoom" | "ls" | "db" | "kis";
   id?: string;
   operation?: "auth" | "request" | "revoke" | "unknown";
   status?: number;
@@ -44,7 +44,7 @@ type BrokerErrorShape = {
 | `VALIDATION_ERROR` | 호출 전 입력 검증 실패 | blank symbol, missing order field | No | 입력값을 확인해 주세요. |
 | `AUTH_ERROR` | 인증/토큰 실패 | token issue failed, expired token rejected | No | 인증에 실패했습니다. |
 | `UNSUPPORTED_CAPABILITY` | 지원하지 않는 기능 | broker lacks capability | No | 현재 지원하지 않는 기능입니다. |
-| `API_ERROR` | broker 업무 오류 | Kiwoom `return_code`, LS `rsp_cd` error | No by default | 증권사 처리 오류입니다. |
+| `API_ERROR` | broker 업무 오류 | Kiwoom `return_code`, LS/DB `rsp_cd`, KIS `rt_cd` error | No by default | 증권사 처리 오류입니다. |
 | `HTTP_ERROR` | HTTP status 오류 | 4xx/5xx response | 5xx only | 서버 응답 오류입니다. |
 | `NETWORK_ERROR` | 네트워크 연결 실패 | DNS/TLS/socket failure | Yes for read-only | 네트워크 연결 오류입니다. |
 | `TIMEOUT` | timeout | request timeout | Yes for read-only | 요청 시간이 초과되었습니다. |
@@ -78,6 +78,37 @@ Policy:
 - documented success/no-data/order-success codes can remain `ok: true` where client already recognizes them.
 - business failure becomes `API_ERROR`.
 - `details` should include `rsp_cd`, `rsp_msg`, TR code, and block name if available.
+- order reject response must be treated as order-domain failure, not generic network failure.
+
+### DB
+
+DB API response can include:
+
+- `rsp_cd`
+- `rsp_msg`
+- OAuth-style `error`, `error_code`, `error_description`
+
+Policy:
+
+- documented success/no-data/order-success codes can remain `ok: true` where client already recognizes them.
+- business failure becomes `API_ERROR`.
+- `details` should include `rsp_cd`, `rsp_msg`, and TR code when available.
+- order reject response must be treated as order-domain failure, not generic network failure.
+
+### KIS
+
+KIS API response can include:
+
+- `rt_cd`
+- `msg_cd`
+- `msg1`
+- OAuth-style `error`, `error_code`, `error_description`
+
+Policy:
+
+- `rt_cd === "0"` remains `ok: true`.
+- non-zero `rt_cd` becomes `API_ERROR`.
+- `details` should include `rt_cd`, `msg_cd`, `msg1`, and REST path when available.
 - order reject response must be treated as order-domain failure, not generic network failure.
 
 ## Order Reject Policy

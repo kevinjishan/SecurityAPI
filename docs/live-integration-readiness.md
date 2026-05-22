@@ -1,12 +1,12 @@
 # Live Integration Readiness
 
-이 문서는 SecurityAPI를 실제 Kiwoom/LS API에 연결하기 전에 준비해야 할 조건을 정리한다. 이 단계는 실제 서버 호출이나 실제 주문 전송을 수행하지 않는다. 목적은 live 검증을 시작하기 전에 환경, 권한, 계좌, 로그 기준이 충분히 명확한지 확인하는 것이다.
+이 문서는 SecurityAPI를 실제 Kiwoom/LS/DB/KIS API에 연결하기 전에 준비해야 할 조건을 정리한다. 이 단계는 실제 서버 호출이나 실제 주문 전송을 수행하지 않는다. 목적은 live 검증을 시작하기 전에 환경, 권한, 계좌, 로그 기준이 충분히 명확한지 확인하는 것이다.
 
 ## Scope
 
 포함:
 
-- Kiwoom/LS API 키와 환경 변수 준비 기준
+- Kiwoom/LS/DB/KIS API 키와 환경 변수 준비 기준
 - 모의/운영 서버 구분
 - REST/WebSocket 연결 준비 조건
 - 조회, 계좌, 주문, 실시간 기능별 권한 구분
@@ -33,6 +33,16 @@
 | `LS_APP_SECRET_KEY` | LS REST/WebSocket auth | LS secret key |
 | `LS_MAC_ADDRESS` | LS REST request header | 선택값. 법인/특정 운영 환경에서 `mac_address` 헤더가 요구될 때만 설정한다. |
 | `LS_ENV` | LS endpoint selection | 현재 manifest 기준 일부 LS mock endpoint는 없을 수 있으므로 `prod` 사용 여부를 명시해야 한다. |
+| `DB_APP_KEY` | DB REST/WebSocket auth | DB 앱키 |
+| `DB_APP_SECRET_KEY` | DB REST/WebSocket auth | DB secret key |
+| `DB_MAC_ADDRESS` | DB REST request header | 선택값. DB 환경에서 `mac_address` 헤더가 요구될 때만 설정한다. |
+| `DB_ENV` | DB endpoint selection | 현재 manifest 기준 mock domain이 없는 API가 있으므로 `prod` 사용 여부를 명시해야 한다. |
+| `KIS_APP_KEY` | KIS REST/WebSocket auth | KIS 앱키 |
+| `KIS_APP_SECRET_KEY` | KIS REST/WebSocket auth | KIS app secret |
+| `KIS_ENV` | KIS endpoint selection | `prod` 또는 `mock` |
+| `KIS_CUSTOMER_TYPE` | KIS request header | 개인 고객 기본값은 `P` |
+| `KIS_ACCOUNT_NO` | KIS account read-only params | 선택값. 계좌 read-only 호출 시 caller가 `CANO`로 전달한다. |
+| `KIS_ACCOUNT_PRODUCT_CODE` | KIS account read-only params | 선택값. 기본 상품코드는 보통 `01`이다. |
 | `SECURITY_API_LIVE_READONLY` | live read-only examples | 실제 read-only 호출 허용 플래그. 설계상 기본값은 disabled. |
 | `SECURITY_API_ALLOW_LIVE_ORDER` | live order examples | 실제 주문 전송 허용 플래그. 이 문서 범위에서는 사용하지 않는다. |
 
@@ -42,6 +52,8 @@
 | --- | --- | --- | --- | --- |
 | Kiwoom | `https://api.kiwoom.com` | manifest의 mock/dev domain | `wss://api.kiwoom.com:10000` | API ID 기반. WebSocket은 실시간 문서의 domain을 따른다. |
 | LS | `https://openapi.ls-sec.co.kr:8080` | manifest에 없는 TR은 mock 사용 불가 | `wss://openapi.ls-sec.co.kr:9443` | TR 코드 기반. `mac_address` 헤더 요구 여부를 환경별로 확인한다. |
+| DB | `https://openapi.dbsec.co.kr:8443` | manifest에 없는 endpoint는 mock 사용 불가 | `wss://openapi.dbsec.co.kr:7070` / mock `wss://openapi.dbsec.co.kr:17070` | TR 코드 기반. LS형 포털 구조를 쓰지만 별도 DB client로 호출한다. |
+| KIS | `https://openapi.koreainvestment.com:9443` | `https://openapivts.koreainvestment.com:29443` | `ws://ops.koreainvestment.com:21000` / mock `ws://ops.koreainvestment.com:31000` | REST access token과 WebSocket approval key가 분리된다. |
 
 ## Capability Permission Checklist
 
@@ -61,12 +73,13 @@
 2. Prepare `.env` from `.env.example` without committing it.
 3. Verify OAuth token issue/revoke on the selected broker environment.
 4. Run domestic quote read-only checks.
-5. Run LS overseas quote/market-data read-only checks.
-6. Run WebSocket quote subscriptions with a low-risk symbol.
-7. Run account read-only checks only after account permission is confirmed.
-8. Run order dry-run and guard checks without a broker client capable of live submission.
-9. Review order guard audit output.
-10. Do not proceed to live order send without a separate approved goal.
+5. Run DB/KIS domestic quote and candle read-only checks only after credentials are confirmed.
+6. Run LS overseas quote/market-data read-only checks.
+7. Run WebSocket quote subscriptions with a low-risk symbol. For KIS, verify approval key issuance separately from REST token issuance.
+8. Run account read-only checks only after account permission is confirmed.
+9. Run order dry-run and guard checks without a broker client capable of live submission.
+10. Review order guard audit output.
+11. Do not proceed to live order send without a separate approved goal.
 
 ## Read-only Boundary
 
@@ -97,7 +110,7 @@ Order guard verification may create:
 
 Order guard verification must not:
 
-- submit orders to Kiwoom or LS
+- submit orders to Kiwoom, LS, DB, or KIS
 - use real account passwords in fixtures
 - run retry on order requests
 - log full account numbers, passwords, app secrets, or access tokens

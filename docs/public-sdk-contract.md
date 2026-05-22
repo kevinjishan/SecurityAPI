@@ -38,6 +38,8 @@ Internal files under `src/**` are not contract unless exported through one of th
 
 - `KiwoomClient`
 - `LsClient`
+- `DbClient`
+- `KisClient`
 - `WebSocketBrokerClient`
 - token parser helpers
 - realtime message normalizer
@@ -108,7 +110,7 @@ Most service methods return a wrapper with this shape.
 ```ts
 type ServiceResult<T> = {
   ok: boolean;
-  broker: "kiwoom" | "ls";
+  broker: "kiwoom" | "ls" | "db" | "kis";
   capability?: string;
   id?: string | null;
   data: T | null;
@@ -140,7 +142,7 @@ Order services return dry-run previews by default.
 type OrderDryRunResult = {
   ok: true;
   dryRun: true;
-  broker: "kiwoom" | "ls";
+  broker: "kiwoom" | "ls" | "db" | "kis";
   capability: string;
   id: string;
   data: {
@@ -170,7 +172,7 @@ Realtime services return:
 ```ts
 type RealtimeSubscription = {
   ok: boolean;
-  broker: "kiwoom" | "ls";
+  broker: "kiwoom" | "ls" | "db" | "kis";
   capability: string;
   id: string | null;
   ids?: string[];

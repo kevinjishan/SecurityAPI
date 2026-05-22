@@ -11,9 +11,11 @@ const registry = await createMetadataRegistry();
 
 test("loads generated broker manifests", () => {
   assert.equal(createMetadataRegistryFromPackage, createMetadataRegistry);
-  assert.deepEqual(registry.listBrokers(), ["kiwoom", "ls"]);
+  assert.deepEqual(registry.listBrokers(), ["kiwoom", "ls", "db", "kis"]);
   assert.equal(registry.listApiIds("kiwoom").length, 207);
   assert.equal(registry.listApiIds("ls").length, 365);
+  assert.equal(registry.listApiIds("db").length, 165);
+  assert.equal(registry.listApiIds("kis").length, 339);
 });
 
 test("looks up Kiwoom endpoint metadata", () => {
@@ -46,6 +48,22 @@ test("looks up LS endpoint metadata", () => {
   assert.equal(endpoint.path, "/stock/market-data");
   assert.equal(endpoint.url, "https://openapi.ls-sec.co.kr:8080/stock/market-data");
   assert.equal(endpoint.authRequired, true);
+});
+
+test("looks up DB and KIS endpoint metadata", () => {
+  const dbEndpoint = registry.getEndpoint("db", "PRICE");
+  assert.equal(dbEndpoint.broker, "db");
+  assert.equal(dbEndpoint.id, "PRICE");
+  assert.equal(dbEndpoint.method, "POST");
+  assert.equal(dbEndpoint.domain, "https://openapi.dbsec.co.kr:8443");
+  assert.equal(dbEndpoint.path, "/api/v1/quote/kr-stock/inquiry/price");
+  assert.equal(dbEndpoint.authRequired, true);
+
+  const kisEndpoint = registry.getEndpoint("kis", "/uapi/domestic-stock/v1/quotations/inquire-price", { env: "mock" });
+  assert.equal(kisEndpoint.broker, "kis");
+  assert.equal(kisEndpoint.method, "GET");
+  assert.equal(kisEndpoint.domain, "https://openapivts.koreainvestment.com:29443");
+  assert.equal(kisEndpoint.path, "/uapi/domestic-stock/v1/quotations/inquire-price");
 });
 
 test("returns request and response fields by location", () => {

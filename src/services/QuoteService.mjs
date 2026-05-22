@@ -202,6 +202,14 @@ export function normalizeDomesticStockCurrentPrice(broker, symbol, sourceId, pay
     return normalizeLsCurrentPrice(symbol, sourceId, payload);
   }
 
+  if (broker === "db") {
+    return normalizeDbCurrentPrice(symbol, sourceId, payload);
+  }
+
+  if (broker === "kis") {
+    return normalizeKisCurrentPrice(symbol, sourceId, payload);
+  }
+
   throw BrokerError.unsupported(`Unsupported quote normalization broker: ${broker}`, {
     broker,
     details: { sourceId },
@@ -219,6 +227,16 @@ export function normalizeDomesticStockMultiCurrentPrice(broker, symbols, sourceI
     return rows.map((row) => normalizeLsCurrentPrice(firstValue(row, ["shcode"]) ?? "", sourceId, row));
   }
 
+  if (broker === "db") {
+    const rows = Array.isArray(payload?.Out) ? payload.Out : Array.isArray(payload?.output) ? payload.output : [];
+    return rows.map((row) => normalizeDbCurrentPrice(firstValue(row, ["Iscd", "ShrnIscd"]) ?? "", sourceId, row));
+  }
+
+  if (broker === "kis") {
+    const rows = Array.isArray(payload?.output) ? payload.output : [];
+    return rows.map((row) => normalizeKisCurrentPrice(firstValue(row, ["stck_shrn_iscd", "mksc_shrn_iscd"]) ?? "", sourceId, row));
+  }
+
   throw BrokerError.unsupported(`Unsupported multi quote normalization broker: ${broker}`, {
     broker,
     details: { sourceId, symbols },
@@ -232,6 +250,14 @@ export function normalizeDomesticStockOrderBook(broker, symbol, sourceId, payloa
 
   if (broker === "ls") {
     return normalizeLsOrderBook(symbol, sourceId, payload);
+  }
+
+  if (broker === "db") {
+    return normalizeDbOrderBook(symbol, sourceId, payload);
+  }
+
+  if (broker === "kis") {
+    return normalizeKisOrderBook(symbol, sourceId, payload);
   }
 
   throw BrokerError.unsupported(`Unsupported order book normalization broker: ${broker}`, {
@@ -289,15 +315,24 @@ function selectQuoteSource(broker, capabilities, capabilityId, options) {
 
 function defaultSourceId(broker, capabilityId) {
   if (capabilityId === CURRENT_PRICE_CAPABILITY_ID) {
-    return broker === "kiwoom" ? "ka10001" : "t1101";
+    if (broker === "kiwoom") return "ka10001";
+    if (broker === "ls") return "t1101";
+    if (broker === "db") return "PRICE";
+    if (broker === "kis") return "/uapi/domestic-stock/v1/quotations/inquire-price";
   }
 
   if (capabilityId === ORDER_BOOK_CAPABILITY_ID) {
-    return broker === "kiwoom" ? "ka10004" : "t1101";
+    if (broker === "kiwoom") return "ka10004";
+    if (broker === "ls") return "t1101";
+    if (broker === "db") return "HOGA";
+    if (broker === "kis") return "/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn";
   }
 
   if (capabilityId === MULTI_CURRENT_PRICE_CAPABILITY_ID) {
-    return broker === "kiwoom" ? "ka10095" : "t8407";
+    if (broker === "kiwoom") return "ka10095";
+    if (broker === "ls") return "t8407";
+    if (broker === "db") return "MULTIPRICE";
+    if (broker === "kis") return "/uapi/domestic-stock/v1/quotations/intstock-multprice";
   }
 
   return null;
@@ -316,6 +351,22 @@ async function requestCurrentPrice(client, broker, sourceId, symbol, options) {
         shcode: symbol,
         ...lsExchangeParam(sourceId, options),
       },
+    }, requestOptions);
+  }
+
+  if (broker === "db") {
+    return client.request(sourceId, {
+      In: {
+        InputCondMrktDivCode: options.marketDivision ?? options.market ?? "J",
+        InputIscd1: symbol,
+      },
+    }, requestOptions);
+  }
+
+  if (broker === "kis") {
+    return client.request(sourceId, {
+      FID_COND_MRKT_DIV_CODE: options.marketDivision ?? options.market ?? "J",
+      FID_INPUT_ISCD: symbol,
     }, requestOptions);
   }
 
@@ -341,6 +392,22 @@ async function requestOrderBook(client, broker, sourceId, symbol, options) {
     }, requestOptions);
   }
 
+  if (broker === "db") {
+    return client.request(sourceId, {
+      In: {
+        InputCondMrktDivCode: options.marketDivision ?? options.market ?? "J",
+        InputIscd1: symbol,
+      },
+    }, requestOptions);
+  }
+
+  if (broker === "kis") {
+    return client.request(sourceId, {
+      FID_COND_MRKT_DIV_CODE: options.marketDivision ?? options.market ?? "J",
+      FID_INPUT_ISCD: symbol,
+    }, requestOptions);
+  }
+
   throw BrokerError.unsupported(`Unsupported order book request broker: ${broker}`, {
     broker,
     details: { sourceId },
@@ -361,6 +428,24 @@ async function requestMultiCurrentPrice(client, broker, sourceId, symbols, optio
         shcode: symbols.join(""),
       },
     }, requestOptions);
+  }
+
+  if (broker === "db") {
+    const input = { dataCnt: symbols.length };
+    symbols.slice(0, 30).forEach((symbol, index) => {
+      input[`InputCondMrktDivCode${index + 1}`] = options.marketDivision ?? options.market ?? "J";
+      input[`InputIscd${index + 1}`] = symbol;
+    });
+    return client.request(sourceId, { In: input }, requestOptions);
+  }
+
+  if (broker === "kis") {
+    const params = {};
+    symbols.slice(0, 30).forEach((symbol, index) => {
+      params[`FID_COND_MRKT_DIV_CODE_${index + 1}`] = options.marketDivision ?? options.market ?? "J";
+      params[`FID_INPUT_ISCD_${index + 1}`] = symbol;
+    });
+    return client.request(sourceId, params, requestOptions);
   }
 
   throw BrokerError.unsupported(`Unsupported multi quote request broker: ${broker}`, {
@@ -424,6 +509,62 @@ function normalizeLsCurrentPrice(symbol, sourceId, payload) {
   };
 }
 
+function normalizeDbCurrentPrice(symbol, sourceId, payload) {
+  const block = payload?.Out ?? payload?.output ?? payload;
+  const priceRaw = firstValue(block, ["Prpr", "StckPrpr", "price"]);
+  const changeRaw = firstValue(block, ["PrdyVrss", "change"]);
+  const changeRateRaw = firstValue(block, ["PrdyCtrt", "diff"]);
+  const volumeRaw = firstValue(block, ["AcmlVol", "volume"]);
+
+  return {
+    broker: "db",
+    symbol: String(firstValue(block, ["Iscd", "ShrnIscd"]) ?? symbol),
+    name: nullableString(firstValue(block, ["KorIsnm", "IsuNm", "hname"])),
+    price: parsePrice(priceRaw),
+    priceRaw: nullableString(priceRaw),
+    change: parseNumber(changeRaw),
+    changeRaw: nullableString(changeRaw),
+    changeRate: parseNumber(changeRateRaw),
+    changeRateRaw: nullableString(changeRateRaw),
+    volume: parseNumber(volumeRaw),
+    volumeRaw: nullableString(volumeRaw),
+    currency: "KRW",
+    source: {
+      broker: "db",
+      id: sourceId,
+      capabilityId: CURRENT_PRICE_CAPABILITY_ID,
+    },
+  };
+}
+
+function normalizeKisCurrentPrice(symbol, sourceId, payload) {
+  const block = payload?.output ?? payload;
+  const priceRaw = firstValue(block, ["stck_prpr", "prpr", "last"]);
+  const changeRaw = firstValue(block, ["prdy_vrss"]);
+  const changeRateRaw = firstValue(block, ["prdy_ctrt"]);
+  const volumeRaw = firstValue(block, ["acml_vol"]);
+
+  return {
+    broker: "kis",
+    symbol: String(firstValue(block, ["stck_shrn_iscd", "mksc_shrn_iscd"]) ?? symbol),
+    name: nullableString(firstValue(block, ["hts_kor_isnm", "prdt_name"])),
+    price: parsePrice(priceRaw),
+    priceRaw: nullableString(priceRaw),
+    change: parseNumber(changeRaw),
+    changeRaw: nullableString(changeRaw),
+    changeRate: parseNumber(changeRateRaw),
+    changeRateRaw: nullableString(changeRateRaw),
+    volume: parseNumber(volumeRaw),
+    volumeRaw: nullableString(volumeRaw),
+    currency: "KRW",
+    source: {
+      broker: "kis",
+      id: sourceId,
+      capabilityId: CURRENT_PRICE_CAPABILITY_ID,
+    },
+  };
+}
+
 function normalizeKiwoomOrderBook(symbol, sourceId, payload) {
   return {
     broker: "kiwoom",
@@ -468,6 +609,52 @@ function normalizeLsOrderBook(symbol, sourceId, payload) {
   };
 }
 
+function normalizeDbOrderBook(symbol, sourceId, payload) {
+  const block = payload?.Out ?? payload?.output ?? payload;
+
+  return {
+    broker: "db",
+    symbol: String(firstValue(block, ["ShrnIscd", "Iscd"]) ?? symbol),
+    asks: Array.from({ length: 10 }, (_, index) => orderBookLevel(index + 1, block?.[`Askp${index + 1}`] ?? block?.[`askp${index + 1}`], block?.[`AskpRsqn${index + 1}`] ?? block?.[`askp_rsqn${index + 1}`])),
+    bids: Array.from({ length: 10 }, (_, index) => orderBookLevel(index + 1, block?.[`Bidp${index + 1}`] ?? block?.[`bidp${index + 1}`], block?.[`BidpRsqn${index + 1}`] ?? block?.[`bidp_rsqn${index + 1}`])),
+    totals: {
+      askQuantity: parseNumber(firstValue(block, ["TotalAskpRsqn", "AskpTtalRsqn"])),
+      askQuantityRaw: nullableString(firstValue(block, ["TotalAskpRsqn", "AskpTtalRsqn"])),
+      bidQuantity: parseNumber(firstValue(block, ["TotalBidpRsqn", "BidpTtalRsqn"])),
+      bidQuantityRaw: nullableString(firstValue(block, ["TotalBidpRsqn", "BidpTtalRsqn"])),
+    },
+    timestamp: nullableString(firstValue(block, ["BsopHour", "Hour"])),
+    source: {
+      broker: "db",
+      id: sourceId,
+      capabilityId: ORDER_BOOK_CAPABILITY_ID,
+    },
+  };
+}
+
+function normalizeKisOrderBook(symbol, sourceId, payload) {
+  const block = payload?.output1 ?? payload?.output ?? payload;
+
+  return {
+    broker: "kis",
+    symbol,
+    asks: Array.from({ length: 10 }, (_, index) => kisOrderBookLevel(block, "ask", index + 1)),
+    bids: Array.from({ length: 10 }, (_, index) => kisOrderBookLevel(block, "bid", index + 1)),
+    totals: {
+      askQuantity: parseNumber(firstValue(block, ["total_askp_rsqn"])),
+      askQuantityRaw: nullableString(firstValue(block, ["total_askp_rsqn"])),
+      bidQuantity: parseNumber(firstValue(block, ["total_bidp_rsqn"])),
+      bidQuantityRaw: nullableString(firstValue(block, ["total_bidp_rsqn"])),
+    },
+    timestamp: nullableString(firstValue(block, ["aspr_acpt_hour"])),
+    source: {
+      broker: "kis",
+      id: sourceId,
+      capabilityId: ORDER_BOOK_CAPABILITY_ID,
+    },
+  };
+}
+
 function kiwoomOrderBookLevel(payload, side, level) {
   const prefix = side === "ask" ? "sel" : "buy";
   const priceKey = level === 1 ? `${prefix}_fpr_bid` : `${prefix}_${level}th_pre_bid`;
@@ -479,6 +666,14 @@ function kiwoomOrderBookLevel(payload, side, level) {
 function lsOrderBookLevel(payload, side, level) {
   const priceKey = side === "ask" ? `offerho${level}` : `bidho${level}`;
   const quantityKey = side === "ask" ? `offerrem${level}` : `bidrem${level}`;
+
+  return orderBookLevel(level, payload?.[priceKey], payload?.[quantityKey]);
+}
+
+function kisOrderBookLevel(payload, side, level) {
+  const prefix = side === "ask" ? "askp" : "bidp";
+  const priceKey = `${prefix}${level}`;
+  const quantityKey = `${prefix}_rsqn${level}`;
 
   return orderBookLevel(level, payload?.[priceKey], payload?.[quantityKey]);
 }

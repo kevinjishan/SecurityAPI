@@ -7,7 +7,7 @@
 포함:
 
 - OAuth 연결 검증 순서
-- 국내주식 read-only REST 검증
+- 4개 증권사 국내주식 read-only REST 검증
 - LS 해외주식 read-only REST 검증
 - 계좌 read-only 검증
 - WebSocket 실시간 구독 검증
@@ -44,10 +44,14 @@
 
 - Kiwoom `au10001`
 - LS `token`
+- DB `token`
+- KIS `/oauth2/tokenP`
+- KIS `/oauth2/Approval` for WebSocket approval key
 
 성공 기준:
 
 - access token이 발급된다.
+- KIS approval key가 REST access token과 별도 흐름으로 발급된다.
 - token이 로그에 원문으로 남지 않는다.
 - revoke를 실행하는 경우 성공 또는 broker-defined no-op으로 기록된다.
 
@@ -63,8 +67,12 @@
 | --- | --- | --- | --- |
 | `QuoteService` | Kiwoom | `getDomesticStockCurrentPrice` | `005930` |
 | `QuoteService` | LS | `getDomesticStockCurrentPrice` | `005930` |
+| `QuoteService` | DB | `getDomesticStockCurrentPrice` | `005930` |
+| `QuoteService` | KIS | `getDomesticStockCurrentPrice` | `005930` |
 | `MarketDataService` | Kiwoom | `getDomesticStockDailyCandles` | `005930` |
 | `MarketDataService` | LS | `getDomesticStockMinuteCandles` | `005930` |
+| `MarketDataService` | DB | `getDomesticStockDailyCandles` | `005930` |
+| `MarketDataService` | KIS | `getDomesticStockDailyCandles` | `005930` |
 | `MarketContextService` | Kiwoom/LS | `getDomesticIndexCurrent` | `kospi` |
 | `MarketFlowService` | Kiwoom/LS | `getDomesticInvestorFlow` | `kospi` |
 
@@ -110,6 +118,10 @@
 | `AccountService` | Kiwoom | `getDomesticStockBalance` |
 | `AccountService` | LS | `getDomesticStockCash` |
 | `AccountService` | LS | `getDomesticStockBalance` |
+| `AccountService` | DB | `getDomesticStockCash` |
+| `AccountService` | DB | `getDomesticStockBalance` |
+| `AccountService` | KIS | `getDomesticStockCash` |
+| `AccountService` | KIS | `getDomesticStockBalance` |
 | `OverseasStockAccountService` | LS | `getOverseasStockCash` |
 | `OverseasStockAccountService` | LS | `getOverseasStockBalance` |
 
@@ -131,7 +143,10 @@
 | --- | --- | --- | --- |
 | `RealtimeService` | Kiwoom | `subscribeDomesticStockTrades` | `0B` |
 | `RealtimeService` | LS | `subscribeDomesticStockTrades` | `S3_`/`K3_`/`US3` |
+| `RealtimeService` | DB | `subscribeDomesticStockTrades` | `S00` |
+| `RealtimeService` | KIS | `subscribeDomesticStockTrades` | `H0STCNT0` |
 | `RealtimeService` | Kiwoom/LS | `subscribeMarketStatus` | `0s`/`JIF` |
+| `RealtimeService` | DB/KIS | `subscribeDomesticStockOrderBook` | `S01`/`H0STASP0` |
 | `OverseasStockRealtimeService` | LS | `subscribeOverseasStockTrades` | `GSC` |
 | `OverseasStockRealtimeService` | LS | `subscribeOverseasStockOrderBook` | `GSH` |
 
@@ -150,6 +165,8 @@
 examples/live-readonly/auth-only.mjs
 examples/live-readonly/kiwoom-domestic-quote.mjs
 examples/live-readonly/ls-domestic-quote.mjs
+examples/live-readonly/db-domestic-quote.mjs
+examples/live-readonly/kis-domestic-quote.mjs
 examples/live-readonly/ls-overseas-quote.mjs
 examples/live-readonly/ls-overseas-realtime.mjs
 examples/live-readonly/account-readonly.mjs

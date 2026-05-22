@@ -109,6 +109,14 @@ export function normalizeDomesticStockBasicInfo(broker, symbol, sourceId, payloa
     return normalizeLsBasicInfo(symbol, sourceId, payload);
   }
 
+  if (broker === "db") {
+    return normalizeDbBasicInfo(symbol, sourceId, payload);
+  }
+
+  if (broker === "kis") {
+    return normalizeKisBasicInfo(symbol, sourceId, payload);
+  }
+
   throw BrokerError.unsupported(`Unsupported market data normalization broker: ${broker}`, {
     broker,
     details: { sourceId },
@@ -122,6 +130,14 @@ export function normalizeDomesticStockDailyCandles(broker, symbol, sourceId, pay
 
   if (broker === "ls") {
     return normalizeLsCandles(symbol, sourceId, "1d", payload?.t8410OutBlock1, payload?.t8410OutBlock);
+  }
+
+  if (broker === "db") {
+    return normalizeDbCandles(symbol, sourceId, "1d", payload?.Out ?? payload?.output);
+  }
+
+  if (broker === "kis") {
+    return normalizeKisCandles(symbol, sourceId, "1d", payload?.output2, payload?.output1);
   }
 
   throw BrokerError.unsupported(`Unsupported daily candle normalization broker: ${broker}`, {
@@ -139,6 +155,14 @@ export function normalizeDomesticStockMinuteCandles(broker, symbol, sourceId, pa
 
   if (broker === "ls") {
     return normalizeLsCandles(symbol, sourceId, interval, payload?.t8412OutBlock1, payload?.t8412OutBlock);
+  }
+
+  if (broker === "db") {
+    return normalizeDbCandles(symbol, sourceId, interval, payload?.Out ?? payload?.output);
+  }
+
+  if (broker === "kis") {
+    return normalizeKisCandles(symbol, sourceId, interval, payload?.output2, payload?.output1);
   }
 
   throw BrokerError.unsupported(`Unsupported minute candle normalization broker: ${broker}`, {
@@ -205,6 +229,22 @@ async function requestBasicInfo(client, broker, sourceId, symbol, options) {
     }, requestOptions);
   }
 
+  if (broker === "db") {
+    return client.request(sourceId, {
+      In: {
+        InputCondMrktDivCode: options.marketDivision ?? options.market ?? "J",
+        InputIscd1: symbol,
+      },
+    }, requestOptions);
+  }
+
+  if (broker === "kis") {
+    return client.request(sourceId, {
+      FID_COND_MRKT_DIV_CODE: options.marketDivision ?? options.market ?? "J",
+      FID_INPUT_ISCD: symbol,
+    }, requestOptions);
+  }
+
   throw BrokerError.unsupported(`Unsupported basic info request broker: ${broker}`, {
     broker,
     details: { sourceId },
@@ -234,6 +274,29 @@ async function requestDailyCandles(client, broker, sourceId, symbol, options) {
         comp_yn: "N",
         sujung: options.adjusted === false ? "N" : "Y",
       },
+    }, requestOptions);
+  }
+
+  if (broker === "db") {
+    return client.request(sourceId, {
+      In: {
+        InputOrgAdjPrc: options.adjusted === false ? "0" : "1",
+        InputCondMrktDivCode: options.marketDivision ?? options.market ?? "J",
+        InputIscd1: symbol,
+        InputDate1: normalizeOptionalDate(options.startDate),
+        InputDate2: normalizeOptionalDate(options.endDate ?? options.baseDate),
+      },
+    }, requestOptions);
+  }
+
+  if (broker === "kis") {
+    return client.request(sourceId, {
+      FID_COND_MRKT_DIV_CODE: options.marketDivision ?? options.market ?? "J",
+      FID_INPUT_ISCD: symbol,
+      FID_INPUT_DATE_1: normalizeOptionalDate(options.startDate),
+      FID_INPUT_DATE_2: normalizeOptionalDate(options.endDate ?? options.baseDate),
+      FID_PERIOD_DIV_CODE: options.periodCode ?? "D",
+      FID_ORG_ADJ_PRC: options.adjusted === false ? "0" : "1",
     }, requestOptions);
   }
 
@@ -271,6 +334,28 @@ async function requestMinuteCandles(client, broker, sourceId, symbol, options) {
         cts_time: options.ctsTime ?? "",
         comp_yn: "N",
       },
+    }, requestOptions);
+  }
+
+  if (broker === "db") {
+    return client.request(sourceId, {
+      In: {
+        InputCondMrktDivCode: options.marketDivision ?? options.market ?? "J",
+        dataCnt: options.count ?? 500,
+        InputOrgAdjPrc: options.adjusted === false ? "0" : "1",
+        InputIscd1: symbol,
+        InputDate1: normalizeOptionalDate(options.baseDate),
+        InputDivXtick: String(intervalMinutes),
+      },
+    }, requestOptions);
+  }
+
+  if (broker === "kis") {
+    return client.request(sourceId, {
+      FID_COND_MRKT_DIV_CODE: options.marketDivision ?? options.market ?? "J",
+      FID_INPUT_ISCD: symbol,
+      FID_INPUT_HOUR_1: options.startTime ?? "090000",
+      FID_PW_DATA_INCU_YN: options.includePastData === false ? "N" : "Y",
     }, requestOptions);
   }
 
@@ -332,6 +417,66 @@ function normalizeLsBasicInfo(symbol, sourceId, payload) {
     currency: "KRW",
     source: {
       broker: "ls",
+      id: sourceId,
+      capabilityId: BASIC_INFO_CAPABILITY_ID,
+    },
+  };
+}
+
+function normalizeDbBasicInfo(symbol, sourceId, payload) {
+  const block = payload?.Out ?? payload?.output ?? payload;
+
+  return {
+    broker: "db",
+    symbol: normalizeSymbolCode(firstValue(block, ["Iscd", "ShrnIscd"]) ?? symbol),
+    name: nullableString(firstValue(block, ["KorIsnm", "IsuNm"])),
+    price: parsePrice(firstValue(block, ["Prpr"])),
+    priceRaw: nullableString(firstValue(block, ["Prpr"])),
+    open: parsePrice(firstValue(block, ["Oprc"])),
+    high: parsePrice(firstValue(block, ["Hprc"])),
+    low: parsePrice(firstValue(block, ["Lprc"])),
+    volume: parseNumber(firstValue(block, ["AcmlVol"])),
+    volumeRaw: nullableString(firstValue(block, ["AcmlVol"])),
+    referencePrice: parsePrice(firstValue(block, ["Sdpr"])),
+    highLimit: parsePrice(firstValue(block, ["Mxpr"])),
+    lowLimit: parsePrice(firstValue(block, ["Llam"])),
+    marketCap: parseNumber(firstValue(block, ["StckAvls", "marketcap"])),
+    marketCapRaw: nullableString(firstValue(block, ["StckAvls", "marketcap"])),
+    listedShares: parseNumber(firstValue(block, ["LstnStcn"])),
+    listedSharesRaw: nullableString(firstValue(block, ["LstnStcn"])),
+    currency: "KRW",
+    source: {
+      broker: "db",
+      id: sourceId,
+      capabilityId: BASIC_INFO_CAPABILITY_ID,
+    },
+  };
+}
+
+function normalizeKisBasicInfo(symbol, sourceId, payload) {
+  const block = payload?.output ?? payload;
+
+  return {
+    broker: "kis",
+    symbol: normalizeSymbolCode(firstValue(block, ["stck_shrn_iscd", "mksc_shrn_iscd"]) ?? symbol),
+    name: nullableString(firstValue(block, ["hts_kor_isnm", "prdt_name"])),
+    price: parsePrice(firstValue(block, ["stck_prpr"])),
+    priceRaw: nullableString(firstValue(block, ["stck_prpr"])),
+    open: parsePrice(firstValue(block, ["stck_oprc"])),
+    high: parsePrice(firstValue(block, ["stck_hgpr"])),
+    low: parsePrice(firstValue(block, ["stck_lwpr"])),
+    volume: parseNumber(firstValue(block, ["acml_vol"])),
+    volumeRaw: nullableString(firstValue(block, ["acml_vol"])),
+    referencePrice: parsePrice(firstValue(block, ["stck_sdpr"])),
+    highLimit: parsePrice(firstValue(block, ["stck_mxpr"])),
+    lowLimit: parsePrice(firstValue(block, ["stck_llam"])),
+    marketCap: parseNumber(firstValue(block, ["hts_avls"])),
+    marketCapRaw: nullableString(firstValue(block, ["hts_avls"])),
+    listedShares: parseNumber(firstValue(block, ["lstn_stcn"])),
+    listedSharesRaw: nullableString(firstValue(block, ["lstn_stcn"])),
+    currency: "KRW",
+    source: {
+      broker: "kis",
       id: sourceId,
       capabilityId: BASIC_INFO_CAPABILITY_ID,
     },
@@ -407,6 +552,74 @@ function normalizeLsCandles(symbol, sourceId, interval, rows, summary = {}) {
     },
     source: {
       broker: "ls",
+      id: sourceId,
+      capabilityId: interval === "1d" ? DAILY_CANDLES_CAPABILITY_ID : MINUTE_CANDLES_CAPABILITY_ID,
+    },
+  };
+}
+
+function normalizeDbCandles(symbol, sourceId, interval, rows) {
+  return {
+    broker: "db",
+    symbol,
+    interval,
+    candles: (Array.isArray(rows) ? rows : []).map((row) => {
+      const date = nullableString(firstValue(row, ["Date"]));
+      const time = nullableString(firstValue(row, ["Hour"]));
+
+      return {
+        date,
+        time,
+        timestamp: date && time ? `${date}${time}` : date,
+        open: parsePrice(firstValue(row, ["Oprc"])),
+        high: parsePrice(firstValue(row, ["Hprc"])),
+        low: parsePrice(firstValue(row, ["Lprc"])),
+        close: parsePrice(firstValue(row, ["Prpr"])),
+        volume: parseNumber(firstValue(row, ["CntgVol", "AcmlVol"])),
+        volumeRaw: nullableString(firstValue(row, ["CntgVol", "AcmlVol"])),
+        value: parseNumber(firstValue(row, ["AcmlTrPbmn"])),
+        valueRaw: nullableString(firstValue(row, ["AcmlTrPbmn"])),
+        change: null,
+        changeRaw: null,
+        raw: row,
+      };
+    }),
+    source: {
+      broker: "db",
+      id: sourceId,
+      capabilityId: interval === "1d" ? DAILY_CANDLES_CAPABILITY_ID : MINUTE_CANDLES_CAPABILITY_ID,
+    },
+  };
+}
+
+function normalizeKisCandles(symbol, sourceId, interval, rows, summary = {}) {
+  return {
+    broker: "kis",
+    symbol: normalizeSymbolCode(firstValue(summary, ["stck_shrn_iscd", "mksc_shrn_iscd"]) ?? symbol),
+    interval,
+    candles: (Array.isArray(rows) ? rows : []).map((row) => {
+      const date = nullableString(firstValue(row, ["stck_bsop_date"]));
+      const time = nullableString(firstValue(row, ["stck_cntg_hour"]));
+
+      return {
+        date,
+        time,
+        timestamp: date && time ? `${date}${time}` : date,
+        open: parsePrice(firstValue(row, ["stck_oprc"])),
+        high: parsePrice(firstValue(row, ["stck_hgpr"])),
+        low: parsePrice(firstValue(row, ["stck_lwpr"])),
+        close: parsePrice(firstValue(row, ["stck_clpr", "stck_prpr"])),
+        volume: parseNumber(firstValue(row, ["acml_vol", "cntg_vol"])),
+        volumeRaw: nullableString(firstValue(row, ["acml_vol", "cntg_vol"])),
+        value: parseNumber(firstValue(row, ["acml_tr_pbmn"])),
+        valueRaw: nullableString(firstValue(row, ["acml_tr_pbmn"])),
+        change: parseNumber(firstValue(row, ["prdy_vrss"])),
+        changeRaw: nullableString(firstValue(row, ["prdy_vrss"])),
+        raw: row,
+      };
+    }),
+    source: {
+      broker: "kis",
       id: sourceId,
       capabilityId: interval === "1d" ? DAILY_CANDLES_CAPABILITY_ID : MINUTE_CANDLES_CAPABILITY_ID,
     },

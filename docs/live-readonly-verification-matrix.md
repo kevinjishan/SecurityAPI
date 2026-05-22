@@ -20,7 +20,7 @@ Last updated: 2026-05-22
 | --- | --- | --- | --- |
 | `SECURITY_API_LIVE_READONLY` | `true` | enabled during live runs | `guard-pass` |
 | `SECURITY_API_ALLOW_LIVE_ORDER` | `false` or unset | disabled during live runs | `guard-pass` |
-| `.env` secrets | present locally, never committed | Kiwoom/LS secrets present | `guard-pass` |
+| `.env` secrets | present locally, never committed | Kiwoom/LS secrets present for prior live runs; DB/KIS secret names are documented but not live-run in this matrix | `guard-pass` |
 | Secret masking | token/account/password not printed | audit records contain only masked summaries | `live-pass` |
 | Order API calls | must not run | not executed | `live-pass` |
 | Order event subscriptions | must not run in this check | `AS0`~`AS4` not subscribed | `live-pass` |
@@ -62,19 +62,22 @@ These capabilities are implemented and covered by `npm run validate:all`, but we
 
 | Area | Broker | Capability / Method | Reason |
 | --- | --- | --- | --- |
-| Domestic realtime trade/order book | Kiwoom/LS | `RealtimeService.subscribeDomesticStockTrades`, `subscribeDomesticStockOrderBook` | Deferred to a separate realtime market-hours check. |
+| OAuth | DB/KIS | `DbClient.getAccessToken`, `KisClient.getAccessToken`, `KisClient.getApprovalKey` | Mock HTTP covered; live credential verification is a separate goal. |
+| Domestic quote/candles | DB/KIS | `QuoteService`, `MarketDataService` | Mock HTTP and generated metadata covered; live read-only not executed yet. |
+| Domestic account read-only | DB/KIS | `AccountService` | Mock response normalization covered; real account read-only verification requires account permission. |
+| Domestic realtime trade/order book | Kiwoom/LS/DB/KIS | `RealtimeService.subscribeDomesticStockTrades`, `subscribeDomesticStockOrderBook` | Deferred to a separate realtime market-hours check. |
 | Market status realtime | Kiwoom/LS | `RealtimeService.subscribeMarketStatus` | Deferred to a separate realtime market-hours check. |
 | Scanner / condition search | Kiwoom/LS | `ScannerService` methods | Read-only, but not included in the first live verification path. |
 | Signal inputs | Kiwoom/LS | `SignalInputService` methods | Composed SDK calculation; underlying quote/market reads were partially verified live. |
-| Order dry-run builders | Kiwoom/LS | `OrderService`, `OverseasStockOrderService` | Local guard/dry-run only; live order submission is out of scope. |
+| Order dry-run builders | Kiwoom/LS/DB/KIS | `OrderService`, `OverseasStockOrderService` | Local guard/dry-run only; live order submission is out of scope. |
 
 ## Explicitly Excluded From Live Read-only
 
 | Area | Broker | API/TR | Reason |
 | --- | --- | --- | --- |
-| Domestic live order send | Kiwoom/LS | broker order TRs | Requires separate order approval flow and must never run under read-only guard. |
+| Domestic live order send | Kiwoom/LS/DB/KIS | broker order TRs/API paths | Requires separate order approval flow and must never run under read-only guard. |
 | Overseas live order send | LS | overseas order TRs | Requires separate order approval flow and must never run under read-only guard. |
-| Domestic order event realtime | Kiwoom/LS | `00`, `SC0`~`SC4` | Account/order event stream; excluded from read-only quote verification. |
+| Domestic order event realtime | Kiwoom/LS/DB/KIS | `00`, `SC0`~`SC4`, `IS0`/`IS1`, `H0STCNI0` | Account/order event stream; excluded from read-only quote verification. |
 | Overseas order event realtime | LS | `AS0`~`AS4` | Account/order event stream; excluded from read-only quote verification. |
 
 ## Verification Commands

@@ -34,7 +34,9 @@ Git dependency 예시:
 
 ```js
 import {
+  DbClient,
   KiwoomClient,
+  KisClient,
   LsClient,
   QuoteService,
 } from "security-api-reference";
@@ -53,6 +55,15 @@ LS_APP_KEY=
 LS_APP_SECRET_KEY=
 LS_ENV=prod
 
+DB_APP_KEY=
+DB_APP_SECRET_KEY=
+DB_ENV=prod
+
+KIS_APP_KEY=
+KIS_APP_SECRET_KEY=
+KIS_ENV=prod
+KIS_CUSTOMER_TYPE=P
+
 SECURITY_API_LIVE_READONLY=false
 SECURITY_API_ALLOW_LIVE_ORDER=false
 ```
@@ -61,6 +72,8 @@ Notes:
 
 - `KIWOOM_ENV=prod`가 실제 키움 live 검증에서 사용된 환경이다.
 - `LS_MAC_ADDRESS`는 법인 계정 등 broker가 요구하는 경우에만 설정한다.
+- `DB_MAC_ADDRESS`는 DB증권 환경이 요구하는 경우에만 설정한다.
+- `KIS_CUSTOMER_TYPE`은 개인 고객 기본값 `P`를 사용한다.
 - live read-only 예제를 실행할 때만 `SECURITY_API_LIVE_READONLY=true`를 명시한다.
 - 주문 관련 앱은 기본값으로 `SECURITY_API_ALLOW_LIVE_ORDER=false`를 유지한다.
 
@@ -71,7 +84,9 @@ Notes:
 ```js
 import {
   AccountService,
+  DbClient,
   KiwoomClient,
+  KisClient,
   LsClient,
   MarketBreadthService,
   MarketDataService,
@@ -95,6 +110,18 @@ export function createSecurityApiClients() {
       appSecretKey: process.env.LS_APP_SECRET_KEY,
       macAddress: process.env.LS_MAC_ADDRESS,
       env: process.env.LS_ENV ?? "prod",
+    }),
+    db: new DbClient({
+      appKey: process.env.DB_APP_KEY,
+      appSecretKey: process.env.DB_APP_SECRET_KEY,
+      macAddress: process.env.DB_MAC_ADDRESS,
+      env: process.env.DB_ENV ?? "prod",
+    }),
+    kis: new KisClient({
+      appKey: process.env.KIS_APP_KEY,
+      appSecretKey: process.env.KIS_APP_SECRET_KEY,
+      env: process.env.KIS_ENV ?? "prod",
+      customerType: process.env.KIS_CUSTOMER_TYPE ?? "P",
     }),
   };
 }
@@ -127,6 +154,10 @@ if (!domestic.ok) {
 }
 console.log(domestic.data.symbol, domestic.data.price);
 
+const dbPrice = await quote.getDomesticStockCurrentPrice("db", "005930");
+const kisPrice = await quote.getDomesticStockCurrentPrice("kis", "005930");
+console.log(dbPrice.ok, kisPrice.ok);
+
 const overseas = await overseasQuote.getOverseasStockCurrentPrice("ls", {
   symbol: "TSLA",
   exchangeCode: "82",
@@ -141,6 +172,16 @@ if (!balance.ok) {
   throw balance.error;
 }
 console.log(balance.data.positions.length);
+
+const kisBalance = await account.getDomesticStockBalance("kis", {
+  params: {
+    CANO: process.env.KIS_ACCOUNT_NO,
+    ACNT_PRDT_CD: process.env.KIS_ACCOUNT_PRODUCT_CODE ?? "01",
+  },
+});
+if (!kisBalance.ok) {
+  throw kisBalance.error;
+}
 ```
 
 계좌 조회 결과를 로그에 남길 때는 계좌번호, 금액, 토큰, 원문 `raw`를 그대로 출력하지 않는다. 앱 로그에는 position count, 성공/실패, broker code 같은 요약만 남긴다.
@@ -302,9 +343,14 @@ UI나 API endpoint를 외부 앱에서 열기 전에 capability를 확인한다.
 import { getCapabilities } from "security-api-reference";
 
 const lsCaps = getCapabilities("ls");
+const kisCaps = getCapabilities("kis");
 
 if (lsCaps.supports("overseasStock.quote.currentPrice")) {
   // show overseas quote feature
+}
+
+if (kisCaps.hasMetadata("overseasStock.quote.currentPrice")) {
+  // KIS overseas quote docs are discoverable, but not serviceReady yet.
 }
 
 const allowAccountEventStreams = process.env.SECURITY_API_ALLOW_ACCOUNT_EVENTS === "true";
@@ -325,7 +371,7 @@ Order services are intentionally dry-run by default. This lets an app inspect th
 ```js
 const { order } = createSecurityApiServices();
 
-const preview = await order.buyDomesticStock("kiwoom", {
+const preview = await order.buyDomesticStock("kis", {
   symbol: "005930",
   quantity: 1,
   estimatedPrice: 70000,

@@ -1,7 +1,7 @@
 ---
 broker: "LS증권"
 source_url: "https://openapi.ls-sec.co.kr/apiservice?group_id=ffd2def7-a118-40f7-a0ab-cd4c6a538a90&api_id=2d923333-f816-4df9-932d-ad390437b66f"
-scraped_at: "2026-05-18T05:16:18.548Z"
+scraped_at: "2026-05-22T15:19:33.392Z"
 category: "OAuth 인증"
 api_id: "2d923333-f816-4df9-932d-ad390437b66f"
 api_name: "접근토큰 폐기"

@@ -3,10 +3,14 @@ import { createMetadataRegistry } from "../metadata/index.mjs";
 import { CAPABILITY_DEFINITIONS, getCapabilityDefinition } from "./definitions.mjs";
 import { KIWOOM_CAPABILITIES } from "./kiwoom.mjs";
 import { LS_CAPABILITIES } from "./ls.mjs";
+import { DB_CAPABILITIES } from "./db.mjs";
+import { KIS_CAPABILITIES } from "./kis.mjs";
 
 const BROKER_CAPABILITIES = Object.freeze({
   kiwoom: KIWOOM_CAPABILITIES,
   ls: LS_CAPABILITIES,
+  db: DB_CAPABILITIES,
+  kis: KIS_CAPABILITIES,
 });
 
 export const CAPABILITY_STATUSES = Object.freeze({

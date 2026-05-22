@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 const DEFAULT_MANIFEST_DIR = new URL("../../data/generated/", import.meta.url);
-const BROKERS = ["kiwoom", "ls"];
+const BROKERS = ["kiwoom", "ls", "db", "kis"];
 const BROKER_SET = new Set(BROKERS);
 const FIELD_LOCATIONS = new Set(["header", "body"]);
 const FIELD_DIRECTIONS = new Set(["request", "response"]);
@@ -30,6 +30,8 @@ export async function loadGeneratedManifests(options = {}) {
   return {
     kiwoom: await readManifest(manifestDir, "kiwoom-manifest.json"),
     ls: await readManifest(manifestDir, "ls-manifest.json"),
+    db: await readManifest(manifestDir, "db-manifest.json"),
+    kis: await readManifest(manifestDir, "kis-manifest.json"),
   };
 }
 

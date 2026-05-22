@@ -100,6 +100,14 @@ export function normalizeDomesticStockCash(broker, sourceId, payload) {
     return normalizeLsCash(sourceId, payload);
   }
 
+  if (broker === "db") {
+    return normalizeDbCash(sourceId, payload);
+  }
+
+  if (broker === "kis") {
+    return normalizeKisCash(sourceId, payload);
+  }
+
   throw BrokerError.unsupported(`Unsupported cash normalization broker: ${broker}`, {
     broker,
     details: { sourceId },
@@ -115,6 +123,14 @@ export function normalizeDomesticStockBalance(broker, sourceId, payload) {
     return normalizeLsBalance(sourceId, payload);
   }
 
+  if (broker === "db") {
+    return normalizeDbBalance(sourceId, payload);
+  }
+
+  if (broker === "kis") {
+    return normalizeKisBalance(sourceId, payload);
+  }
+
   throw BrokerError.unsupported(`Unsupported balance normalization broker: ${broker}`, {
     broker,
     details: { sourceId },
@@ -128,6 +144,14 @@ export function normalizeDomesticStockOrderHistory(broker, sourceId, payload) {
 
   if (broker === "ls") {
     return normalizeLsOrderHistory(sourceId, payload);
+  }
+
+  if (broker === "db") {
+    return normalizeDbOrderHistory(sourceId, payload);
+  }
+
+  if (broker === "kis") {
+    return normalizeKisOrderHistory(sourceId, payload);
   }
 
   throw BrokerError.unsupported(`Unsupported order history normalization broker: ${broker}`, {
@@ -185,15 +209,24 @@ function selectAccountSource(broker, capabilities, capabilityId, options) {
 
 function defaultSourceId(broker, capabilityId) {
   if (capabilityId === CASH_CAPABILITY_ID) {
-    return broker === "kiwoom" ? "kt00001" : "CSPAQ12200";
+    if (broker === "kiwoom") return "kt00001";
+    if (broker === "ls") return "CSPAQ12200";
+    if (broker === "db") return "CDPCQ00100";
+    if (broker === "kis") return "/uapi/domestic-stock/v1/trading/inquire-psbl-order";
   }
 
   if (capabilityId === BALANCE_CAPABILITY_ID) {
-    return broker === "kiwoom" ? "kt00018" : "t0424";
+    if (broker === "kiwoom") return "kt00018";
+    if (broker === "ls") return "t0424";
+    if (broker === "db") return "CSPAQ03420";
+    if (broker === "kis") return "/uapi/domestic-stock/v1/trading/inquire-balance";
   }
 
   if (capabilityId === ORDER_HISTORY_CAPABILITY_ID) {
-    return broker === "kiwoom" ? "kt00007" : "CSPAQ13700";
+    if (broker === "kiwoom") return "kt00007";
+    if (broker === "ls") return "CSPAQ13700";
+    if (broker === "db") return "CSPAQ04800";
+    if (broker === "kis") return "/uapi/domestic-stock/v1/trading/inquire-daily-ccld";
   }
 
   return null;
@@ -227,6 +260,22 @@ function defaultCashParams(broker, sourceId) {
     return { [`${sourceId}InBlock1`]: {} };
   }
 
+  if (broker === "db") {
+    return {};
+  }
+
+  if (broker === "kis") {
+    return {
+      CANO: "",
+      ACNT_PRDT_CD: "01",
+      PDNO: "",
+      ORD_UNPR: "",
+      ORD_DVSN: "00",
+      CMA_EVLU_AMT_ICLD_YN: "N",
+      OVRS_ICLD_YN: "N",
+    };
+  }
+
   return {};
 }
 
@@ -252,6 +301,30 @@ function defaultBalanceParams(broker, sourceId) {
 
   if (broker === "ls") {
     return { [`${sourceId}InBlock1`]: {} };
+  }
+
+  if (broker === "db" && sourceId === "CSPAQ03420") {
+    return { In: { QryTpCode0: "1" } };
+  }
+
+  if (broker === "db") {
+    return { In: {} };
+  }
+
+  if (broker === "kis") {
+    return {
+      CANO: "",
+      ACNT_PRDT_CD: "01",
+      AFHR_FLPR_YN: "N",
+      OFL_YN: "",
+      INQR_DVSN: "02",
+      UNPR_DVSN: "01",
+      FUND_STTL_ICLD_YN: "N",
+      FNCG_AMT_AUTO_RDPT_YN: "N",
+      PRCS_DVSN: "01",
+      CTX_AREA_FK100: "",
+      CTX_AREA_NK100: "",
+    };
   }
 
   return {};
@@ -290,6 +363,38 @@ function defaultOrderHistoryParams(broker, sourceId, options) {
 
   if (broker === "ls") {
     return { [`${sourceId}InBlock1`]: {} };
+  }
+
+  if (broker === "db" && sourceId === "CSPAQ04800") {
+    return {
+      In: {
+        SorTpYn: "0",
+        ExecYn: "0",
+        TrdMktCode: "00",
+        BnsTpCode: "0",
+        IsuTpCode: "0",
+        QryTp: "0",
+      },
+    };
+  }
+
+  if (broker === "kis") {
+    return {
+      CANO: "",
+      ACNT_PRDT_CD: "01",
+      INQR_STRT_DT: orderDate ?? formatYmd(new Date()),
+      INQR_END_DT: orderDate ?? formatYmd(new Date()),
+      SLL_BUY_DVSN_CD: "00",
+      INQR_DVSN: "00",
+      PDNO: symbol ?? "",
+      CCLD_DVSN: "00",
+      ORD_GNO_BRNO: "",
+      ODNO: "",
+      INQR_DVSN_3: "00",
+      INQR_DVSN_1: "",
+      CTX_AREA_FK100: "",
+      CTX_AREA_NK100: "",
+    };
   }
 
   return {};
@@ -351,6 +456,54 @@ function normalizeLsCash(sourceId, payload) {
   };
 }
 
+function normalizeDbCash(sourceId, payload) {
+  const block = payload?.Out1 ?? payload?.Out ?? payload;
+
+  return {
+    broker: "db",
+    summary: {
+      deposit: accountNumber(firstValue(block, ["DpsBalAmt", "Dps"])),
+      depositRaw: nullableString(firstValue(block, ["DpsBalAmt", "Dps"])),
+      withdrawableAmount: accountNumber(firstValue(block, ["WthdwAbleAmt", "MnyoutAbleAmt"])),
+      withdrawableAmountRaw: nullableString(firstValue(block, ["WthdwAbleAmt", "MnyoutAbleAmt"])),
+      orderableAmount: accountNumber(firstValue(block, ["OrdAbleAmt", "MnyOrdAbleAmt"])),
+      orderableAmountRaw: nullableString(firstValue(block, ["OrdAbleAmt", "MnyOrdAbleAmt"])),
+      substituteAmount: accountNumber(firstValue(block, ["SubstAmt"])),
+      substituteAmountRaw: nullableString(firstValue(block, ["SubstAmt"])),
+    },
+    currency: "KRW",
+    source: {
+      broker: "db",
+      id: sourceId,
+      capabilityId: CASH_CAPABILITY_ID,
+    },
+  };
+}
+
+function normalizeKisCash(sourceId, payload) {
+  const block = payload?.output ?? payload;
+
+  return {
+    broker: "kis",
+    summary: {
+      deposit: accountNumber(firstValue(block, ["dnca_tot_amt"])),
+      depositRaw: nullableString(firstValue(block, ["dnca_tot_amt"])),
+      withdrawableAmount: accountNumber(firstValue(block, ["ord_psbl_cash"])),
+      withdrawableAmountRaw: nullableString(firstValue(block, ["ord_psbl_cash"])),
+      orderableAmount: accountNumber(firstValue(block, ["ord_psbl_cash"])),
+      orderableAmountRaw: nullableString(firstValue(block, ["ord_psbl_cash"])),
+      nrcvbBuyAmount: accountNumber(firstValue(block, ["nrcvb_buy_amt"])),
+      nrcvbBuyAmountRaw: nullableString(firstValue(block, ["nrcvb_buy_amt"])),
+    },
+    currency: "KRW",
+    source: {
+      broker: "kis",
+      id: sourceId,
+      capabilityId: CASH_CAPABILITY_ID,
+    },
+  };
+}
+
 function normalizeKiwoomBalance(sourceId, payload) {
   const rows = Array.isArray(payload?.acnt_evlt_remn_indv_tot) ? payload.acnt_evlt_remn_indv_tot : [];
 
@@ -399,6 +552,60 @@ function normalizeLsBalance(sourceId, payload) {
     currency: "KRW",
     source: {
       broker: "ls",
+      id: sourceId,
+      capabilityId: BALANCE_CAPABILITY_ID,
+    },
+  };
+}
+
+function normalizeDbBalance(sourceId, payload) {
+  const block = payload?.Out ?? {};
+  const rows = payload?.Out1 ?? [];
+
+  return {
+    broker: "db",
+    summary: {
+      purchaseAmount: accountNumber(firstValue(block, ["TotBuyAmt"])),
+      purchaseAmountRaw: nullableString(firstValue(block, ["TotBuyAmt"])),
+      valuationAmount: accountNumber(firstValue(block, ["TotEvalAmt"])),
+      valuationAmountRaw: nullableString(firstValue(block, ["TotEvalAmt"])),
+      profitLoss: accountNumber(firstValue(block, ["TotEvalPnlAmt"])),
+      profitLossRaw: nullableString(firstValue(block, ["TotEvalPnlAmt"])),
+      profitRate: parseNumber(firstValue(block, ["TotErnrat"])),
+      profitRateRaw: nullableString(firstValue(block, ["TotErnrat"])),
+      estimatedAssetAmount: accountNumber(firstValue(block, ["DpsastAmt"])),
+      estimatedAssetAmountRaw: nullableString(firstValue(block, ["DpsastAmt"])),
+    },
+    positions: (Array.isArray(rows) ? rows : []).map((row) => normalizeDbPosition(row)),
+    currency: "KRW",
+    source: {
+      broker: "db",
+      id: sourceId,
+      capabilityId: BALANCE_CAPABILITY_ID,
+    },
+  };
+}
+
+function normalizeKisBalance(sourceId, payload) {
+  const rows = payload?.output1 ?? [];
+  const summary = payload?.output2?.[0] ?? payload?.output2 ?? {};
+
+  return {
+    broker: "kis",
+    summary: {
+      purchaseAmount: accountNumber(firstValue(summary, ["pchs_amt_smtl_amt"])),
+      purchaseAmountRaw: nullableString(firstValue(summary, ["pchs_amt_smtl_amt"])),
+      valuationAmount: accountNumber(firstValue(summary, ["evlu_amt_smtl_amt"])),
+      valuationAmountRaw: nullableString(firstValue(summary, ["evlu_amt_smtl_amt"])),
+      profitLoss: accountNumber(firstValue(summary, ["evlu_pfls_smtl_amt"])),
+      profitLossRaw: nullableString(firstValue(summary, ["evlu_pfls_smtl_amt"])),
+      totalAssetAmount: accountNumber(firstValue(summary, ["tot_evlu_amt"])),
+      totalAssetAmountRaw: nullableString(firstValue(summary, ["tot_evlu_amt"])),
+    },
+    positions: (Array.isArray(rows) ? rows : []).map((row) => normalizeKisPosition(row)),
+    currency: "KRW",
+    source: {
+      broker: "kis",
       id: sourceId,
       capabilityId: BALANCE_CAPABILITY_ID,
     },
@@ -466,6 +673,47 @@ function normalizeLsOrderHistory(sourceId, payload) {
   };
 }
 
+function normalizeDbOrderHistory(sourceId, payload) {
+  const rows = payload?.Out1 ?? payload?.Out ?? [];
+
+  return {
+    broker: "db",
+    summary: {
+      count: Array.isArray(rows) ? rows.length : 0,
+    },
+    orders: (Array.isArray(rows) ? rows : []).map((row) => normalizeDbOrderHistoryRow(row)),
+    currency: "KRW",
+    source: {
+      broker: "db",
+      id: sourceId,
+      capabilityId: ORDER_HISTORY_CAPABILITY_ID,
+    },
+  };
+}
+
+function normalizeKisOrderHistory(sourceId, payload) {
+  const rows = payload?.output1 ?? [];
+  const summary = payload?.output2?.[0] ?? payload?.output2 ?? {};
+
+  return {
+    broker: "kis",
+    summary: {
+      buyOrderQuantity: accountNumber(firstValue(summary, ["tot_ccld_qty", "buy_qty"])),
+      buyOrderQuantityRaw: nullableString(firstValue(summary, ["tot_ccld_qty", "buy_qty"])),
+      buyExecutedAmount: accountNumber(firstValue(summary, ["tot_ccld_amt"])),
+      buyExecutedAmountRaw: nullableString(firstValue(summary, ["tot_ccld_amt"])),
+      count: Array.isArray(rows) ? rows.length : 0,
+    },
+    orders: (Array.isArray(rows) ? rows : []).map((row) => normalizeKisOrderHistoryRow(row)),
+    currency: "KRW",
+    source: {
+      broker: "kis",
+      id: sourceId,
+      capabilityId: ORDER_HISTORY_CAPABILITY_ID,
+    },
+  };
+}
+
 function normalizeKiwoomPosition(row) {
   const symbol = nullableString(firstValue(row, ["stk_cd"]));
 
@@ -513,6 +761,56 @@ function normalizeLsPosition(row) {
     profitLossRaw: nullableString(firstValue(row, ["dtsunik"])),
     profitRate: parseNumber(firstValue(row, ["sunikrt"])),
     profitRateRaw: nullableString(firstValue(row, ["sunikrt"])),
+  };
+}
+
+function normalizeDbPosition(row) {
+  const issueNumber = nullableString(firstValue(row, ["IsuNo", "ShtnIsuNo"]));
+
+  return {
+    symbol: stripLsIssueNumber(issueNumber),
+    symbolRaw: issueNumber,
+    name: nullableString(firstValue(row, ["IsuNm"])),
+    quantity: accountNumber(firstValue(row, ["BalQty", "BalQty0"])),
+    quantityRaw: nullableString(firstValue(row, ["BalQty", "BalQty0"])),
+    tradableQuantity: accountNumber(firstValue(row, ["AbleQty"])),
+    tradableQuantityRaw: nullableString(firstValue(row, ["AbleQty"])),
+    averagePrice: accountNumber(firstValue(row, ["ExecPrc", "AvrPrc"])),
+    averagePriceRaw: nullableString(firstValue(row, ["ExecPrc", "AvrPrc"])),
+    currentPrice: accountNumber(firstValue(row, ["NowPrc", "Prpr"])),
+    currentPriceRaw: nullableString(firstValue(row, ["NowPrc", "Prpr"])),
+    purchaseAmount: accountNumber(firstValue(row, ["BuyAmt", "PchsAmt"])),
+    purchaseAmountRaw: nullableString(firstValue(row, ["BuyAmt", "PchsAmt"])),
+    valuationAmount: accountNumber(firstValue(row, ["EvalAmt"])),
+    valuationAmountRaw: nullableString(firstValue(row, ["EvalAmt"])),
+    profitLoss: accountNumber(firstValue(row, ["EvalPnlAmt"])),
+    profitLossRaw: nullableString(firstValue(row, ["EvalPnlAmt"])),
+    profitRate: parseNumber(firstValue(row, ["Ernrat"])),
+    profitRateRaw: nullableString(firstValue(row, ["Ernrat"])),
+  };
+}
+
+function normalizeKisPosition(row) {
+  return {
+    symbol: nullableString(firstValue(row, ["pdno"])),
+    symbolRaw: nullableString(firstValue(row, ["pdno"])),
+    name: nullableString(firstValue(row, ["prdt_name"])),
+    quantity: accountNumber(firstValue(row, ["hldg_qty"])),
+    quantityRaw: nullableString(firstValue(row, ["hldg_qty"])),
+    tradableQuantity: accountNumber(firstValue(row, ["ord_psbl_qty"])),
+    tradableQuantityRaw: nullableString(firstValue(row, ["ord_psbl_qty"])),
+    averagePrice: accountNumber(firstValue(row, ["pchs_avg_pric"])),
+    averagePriceRaw: nullableString(firstValue(row, ["pchs_avg_pric"])),
+    currentPrice: accountNumber(firstValue(row, ["prpr"])),
+    currentPriceRaw: nullableString(firstValue(row, ["prpr"])),
+    purchaseAmount: accountNumber(firstValue(row, ["pchs_amt"])),
+    purchaseAmountRaw: nullableString(firstValue(row, ["pchs_amt"])),
+    valuationAmount: accountNumber(firstValue(row, ["evlu_amt"])),
+    valuationAmountRaw: nullableString(firstValue(row, ["evlu_amt"])),
+    profitLoss: accountNumber(firstValue(row, ["evlu_pfls_amt"])),
+    profitLossRaw: nullableString(firstValue(row, ["evlu_pfls_amt"])),
+    profitRate: parseNumber(firstValue(row, ["evlu_pfls_rt"])),
+    profitRateRaw: nullableString(firstValue(row, ["evlu_pfls_rt"])),
   };
 }
 
@@ -579,6 +877,64 @@ function normalizeLsOrderHistoryRow(row) {
     orderTime: nullableString(firstValue(row, ["OrdTime"])),
     executionTime: nullableString(firstValue(row, ["ExecTrxTime", "LastExecTime"])),
     channel: nullableString(firstValue(row, ["CommdaNm", "RegCommdaCode"])),
+    raw: row,
+  };
+}
+
+function normalizeDbOrderHistoryRow(row) {
+  const issueNumber = nullableString(firstValue(row, ["IsuNo", "ShtnIsuNo"]));
+
+  return {
+    orderNumber: nullableString(firstValue(row, ["OrdNo"])),
+    originalOrderNumber: nullableString(firstValue(row, ["OrgOrdNo"])),
+    executionNumber: nullableString(firstValue(row, ["ExecNo"])),
+    symbol: stripLsIssueNumber(issueNumber),
+    symbolRaw: issueNumber,
+    name: nullableString(firstValue(row, ["IsuNm"])),
+    side: normalizeLsSide(firstValue(row, ["BnsTpCode", "BnsTpNm"])),
+    sideRaw: nullableString(firstValue(row, ["BnsTpNm", "BnsTpCode"])),
+    orderType: nullableString(firstValue(row, ["OrdPtnCode", "OrdprcPtnCode"])),
+    status: nullableString(firstValue(row, ["ExecYn", "OrdStatus"])),
+    orderQuantity: accountNumber(firstValue(row, ["OrdQty"])),
+    orderQuantityRaw: nullableString(firstValue(row, ["OrdQty"])),
+    orderPrice: accountNumber(firstValue(row, ["OrdPrc"])),
+    orderPriceRaw: nullableString(firstValue(row, ["OrdPrc"])),
+    executedQuantity: accountNumber(firstValue(row, ["ExecQty", "AllExecQty"])),
+    executedQuantityRaw: nullableString(firstValue(row, ["ExecQty", "AllExecQty"])),
+    executedPrice: accountNumber(firstValue(row, ["ExecPrc", "AvrExecPrc"])),
+    executedPriceRaw: nullableString(firstValue(row, ["ExecPrc", "AvrExecPrc"])),
+    remainingQuantity: accountNumber(firstValue(row, ["MrcAbleQty", "MrcQty"])),
+    remainingQuantityRaw: nullableString(firstValue(row, ["MrcAbleQty", "MrcQty"])),
+    orderTime: nullableString(firstValue(row, ["OrdTime", "OrdTm"])),
+    executionTime: nullableString(firstValue(row, ["ExecTime", "ExecTrxTime"])),
+    raw: row,
+  };
+}
+
+function normalizeKisOrderHistoryRow(row) {
+  return {
+    orderNumber: nullableString(firstValue(row, ["odno"])),
+    originalOrderNumber: nullableString(firstValue(row, ["orgn_odno"])),
+    executionNumber: nullableString(firstValue(row, ["ccld_no"])),
+    symbol: nullableString(firstValue(row, ["pdno"])),
+    symbolRaw: nullableString(firstValue(row, ["pdno"])),
+    name: nullableString(firstValue(row, ["prdt_name"])),
+    side: normalizeKisSide(firstValue(row, ["sll_buy_dvsn_cd", "sll_buy_dvsn_cd_name"])),
+    sideRaw: nullableString(firstValue(row, ["sll_buy_dvsn_cd_name", "sll_buy_dvsn_cd"])),
+    orderType: nullableString(firstValue(row, ["ord_dvsn_name", "ord_dvsn_cd"])),
+    status: nullableString(firstValue(row, ["ccld_dvsn", "ccld_dvsn_name"])),
+    orderQuantity: accountNumber(firstValue(row, ["ord_qty"])),
+    orderQuantityRaw: nullableString(firstValue(row, ["ord_qty"])),
+    orderPrice: accountNumber(firstValue(row, ["ord_unpr"])),
+    orderPriceRaw: nullableString(firstValue(row, ["ord_unpr"])),
+    executedQuantity: accountNumber(firstValue(row, ["tot_ccld_qty"])),
+    executedQuantityRaw: nullableString(firstValue(row, ["tot_ccld_qty"])),
+    executedPrice: accountNumber(firstValue(row, ["avg_prvs"])),
+    executedPriceRaw: nullableString(firstValue(row, ["avg_prvs"])),
+    remainingQuantity: accountNumber(firstValue(row, ["rmn_qty"])),
+    remainingQuantityRaw: nullableString(firstValue(row, ["rmn_qty"])),
+    orderDate: nullableString(firstValue(row, ["ord_dt"])),
+    orderTime: nullableString(firstValue(row, ["ord_tmd"])),
     raw: row,
   };
 }
@@ -760,6 +1116,23 @@ function normalizeLsSide(value) {
   }
 
   if (text === "1" || text.includes("매도")) {
+    return "sell";
+  }
+
+  return null;
+}
+
+function normalizeKisSide(value) {
+  const text = nullableString(value);
+  if (!text) {
+    return null;
+  }
+
+  if (text === "02" || text.includes("매수")) {
+    return "buy";
+  }
+
+  if (text === "01" || text.includes("매도")) {
     return "sell";
   }
 

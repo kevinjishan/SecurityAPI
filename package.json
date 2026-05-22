@@ -1,7 +1,7 @@
 {
   "name": "security-api-reference",
   "version": "1.0.0",
-  "description": "Kiwoom and LS Securities Open API reference SDK for broker metadata, read-only services, realtime subscriptions, and guarded order request builders.",
+  "description": "Kiwoom, LS, DB, and Korea Investment Securities Open API reference SDK for broker metadata, read-only services, realtime subscriptions, and guarded order request builders.",
   "private": true,
   "type": "module",
   "main": "./src/index.mjs",
@@ -45,6 +45,7 @@
     "docs/order-guard-verification-plan.md",
     "docs/broker-error-reject-policy.md",
     "docs/production-readiness-checklist.md",
+    "docs/broker-expansion-db-kis-plan.md",
     "README.md"
   ],
   "repository": {
@@ -54,6 +55,8 @@
   "keywords": [
     "kiwoom",
     "ls-securities",
+    "db-securities",
+    "korea-investment",
     "broker-api",
     "openapi",
     "sdk"

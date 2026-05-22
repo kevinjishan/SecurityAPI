@@ -11,11 +11,16 @@ const EXPECTED = {
   lsGroups: 8,
   lsApiPages: 41,
   lsTrs: 365,
+  dbGroups: 19,
+  dbApiPages: 165,
+  dbTrs: 165,
 };
 
 async function main() {
   const kiwoomManifest = await readJson(path.join(GENERATED_DIR, "kiwoom-manifest.json"));
   const lsManifest = await readJson(path.join(GENERATED_DIR, "ls-manifest.json"));
+  const dbManifest = await readJson(path.join(GENERATED_DIR, "db-manifest.json"));
+  const kisManifest = await readJson(path.join(GENERATED_DIR, "kis-manifest.json"));
   const summary = await readJson(path.join(GENERATED_DIR, "broker-manifest-summary.json"));
 
   const kiwoomRaw = await readJson(path.join(RAW_DIR, "kiwoom", "api-info-list.json"));
@@ -23,18 +28,30 @@ async function main() {
   const lsMenu = await readJson(path.join(RAW_DIR, "ls", "menu.json"));
   const lsTrsByApiId = await readJson(path.join(RAW_DIR, "ls", "trs-by-api-id.json"));
   const lsPropertiesByTrId = await readJson(path.join(RAW_DIR, "ls", "properties-by-tr-id.json"));
+  const dbMenu = await readJson(path.join(RAW_DIR, "db", "menu.json"));
+  const dbTrsByApiId = await readJson(path.join(RAW_DIR, "db", "trs-by-api-id.json"));
+  const dbPropertiesByTrId = await readJson(path.join(RAW_DIR, "db", "properties-by-tr-id.json"));
+  const kisMenu = await readJson(path.join(RAW_DIR, "kis", "menu.json"));
 
   validateTopLevel(kiwoomManifest, "kiwoom");
   validateTopLevel(lsManifest, "ls");
+  validateTopLevel(dbManifest, "db");
+  validateTopLevel(kisManifest, "kis");
   validateCommonEntries(kiwoomManifest);
   validateCommonEntries(lsManifest);
+  validateCommonEntries(dbManifest);
+  validateCommonEntries(kisManifest);
   validateKiwoom(kiwoomManifest, kiwoomRaw, kiwoomErrors);
   validateLs(lsManifest, lsMenu, lsTrsByApiId, lsPropertiesByTrId);
-  validateSummary(summary, kiwoomManifest, lsManifest);
+  validateDb(dbManifest, dbMenu, dbTrsByApiId, dbPropertiesByTrId);
+  validateKis(kisManifest, kisMenu);
+  validateSummary(summary, kiwoomManifest, lsManifest, dbManifest, kisManifest);
 
   console.log("Manifest validation passed.");
   console.log(`Kiwoom manifest: ${Object.keys(kiwoomManifest.apis).length} APIs`);
   console.log(`LS manifest: ${Object.keys(lsManifest.apis).length} TRs`);
+  console.log(`DB manifest: ${Object.keys(dbManifest.apis).length} TRs`);
+  console.log(`KIS manifest: ${Object.keys(kisManifest.apis).length} APIs`);
 }
 
 function validateTopLevel(manifest, broker) {
@@ -143,12 +160,67 @@ function validateLs(manifest, menu, trsByApiId, propertiesByTrId) {
   }
 }
 
-function validateSummary(summary, kiwoomManifest, lsManifest) {
+function validateDb(manifest, menu, trsByApiId, propertiesByTrId) {
+  const groups = menu.groups ?? [];
+  const apiPages = groups.flatMap((group) => group.apis ?? []);
+  const trs = Object.values(trsByApiId).flat();
+  assertEqual(groups.length, EXPECTED.dbGroups, "DB group count");
+  assertEqual(apiPages.length, EXPECTED.dbApiPages, "DB API page count");
+  assertEqual(trs.length, EXPECTED.dbTrs, "DB raw TR count");
+  assertEqual(Object.keys(manifest.apis).length, EXPECTED.dbTrs, "DB manifest TR count");
+  assertEqual(manifest.counts.groups, EXPECTED.dbGroups, "DB manifest group count");
+  assertEqual(manifest.counts.apiPages, EXPECTED.dbApiPages, "DB manifest API page count");
+
+  const token = manifest.apis.token;
+  const price = manifest.apis.PRICE;
+  assertTruthy(token, "DB token exists");
+  assertTruthy(price, "DB PRICE exists");
+  assertEqual(token.authRequired, false, "DB token authRequired");
+  assertEqual(price.authRequired, true, "DB PRICE authRequired");
+  assertEqual(price.path, "/api/v1/quote/kr-stock/inquiry/price", "DB PRICE path");
+
+  for (const tr of trs) {
+    const direct = manifest.apis[tr.trCode];
+    const entry = direct?.db?.trId === tr.id
+      ? direct
+      : Object.values(manifest.apis).find((candidate) => candidate.db?.trId === tr.id);
+    const properties = propertiesByTrId[tr.id] ?? [];
+    assertTruthy(entry, `DB manifest entry ${tr.trCode}`);
+    assertEqual(entry.headers.request.length, properties.filter((item) => item.bodyType === "req_h").length, `${entry.id} request header count`);
+    assertEqual(entry.headers.response.length, properties.filter((item) => item.bodyType === "res_h").length, `${entry.id} response header count`);
+    assertEqual(entry.body.request.length, properties.filter((item) => item.bodyType === "req_b").length, `${entry.id} request body count`);
+    assertEqual(entry.body.response.length, properties.filter((item) => item.bodyType === "res_b").length, `${entry.id} response body count`);
+  }
+}
+
+function validateKis(manifest, menu) {
+  const portalApis = menu.apis ?? [];
+  assertEqual(manifest.counts.portalPaths, portalApis.length, "KIS portal path count");
+  assertEqual(Object.keys(manifest.apis).length, portalApis.length + 1, "KIS manifest count includes hashkey helper");
+
+  const token = manifest.apis["/oauth2/tokenP"];
+  const price = manifest.apis["/uapi/domestic-stock/v1/quotations/inquire-price"];
+  const hash = manifest.apis["/uapi/hashkey"];
+  assertTruthy(token, "KIS token exists");
+  assertTruthy(price, "KIS inquire-price exists");
+  assertTruthy(hash, "KIS hashkey exists");
+  assertEqual(token.authRequired, false, "KIS token authRequired");
+  assertEqual(price.authRequired, true, "KIS price authRequired");
+  assertEqual(price.method, "GET", "KIS price method");
+  assertEqual(price.kis.trIds[0], "FHKST01010100", "KIS price TR ID");
+}
+
+function validateSummary(summary, kiwoomManifest, lsManifest, dbManifest, kisManifest) {
   assertEqual(summary.brokers?.kiwoom?.apis, kiwoomManifest.counts.APIs, "summary kiwoom apis");
   assertEqual(summary.brokers?.kiwoom?.errors, kiwoomManifest.counts.errors, "summary kiwoom errors");
   assertEqual(summary.brokers?.ls?.trs, lsManifest.counts.APIs, "summary ls trs");
   assertEqual(summary.brokers?.ls?.groups, lsManifest.counts.groups, "summary ls groups");
   assertEqual(summary.brokers?.ls?.apiPages, lsManifest.counts.apiPages, "summary ls apiPages");
+  assertEqual(summary.brokers?.db?.trs, dbManifest.counts.APIs, "summary db trs");
+  assertEqual(summary.brokers?.db?.groups, dbManifest.counts.groups, "summary db groups");
+  assertEqual(summary.brokers?.db?.apiPages, dbManifest.counts.apiPages, "summary db apiPages");
+  assertEqual(summary.brokers?.kis?.apis, kisManifest.counts.APIs, "summary kis apis");
+  assertEqual(summary.brokers?.kis?.portalPaths, kisManifest.counts.portalPaths, "summary kis portal paths");
 }
 
 async function readJson(filePath) {

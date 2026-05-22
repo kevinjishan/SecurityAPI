@@ -167,6 +167,7 @@ export class OrderService {
 
       const result = await client.request(source.id, params, {
         ...(options.requestOptions ?? {}),
+        ...(normalizedBroker === "kis" ? { side } : {}),
         retryable: false,
       });
 
@@ -210,6 +211,14 @@ export function normalizeDomesticStockOrder(broker, sourceId, side, payload) {
     return normalizeLsOrder(sourceId, side, payload);
   }
 
+  if (broker === "db") {
+    return normalizeDbOrder(sourceId, side, payload);
+  }
+
+  if (broker === "kis") {
+    return normalizeKisOrder(sourceId, side, payload);
+  }
+
   throw BrokerError.unsupported(`Unsupported order normalization broker: ${broker}`, {
     broker,
     details: { sourceId, side },
@@ -246,9 +255,7 @@ function selectOrderSource(broker, capabilities, capabilityId, options) {
 function buildNewOrderRequest(broker, sourceId, side, order) {
   const normalized = normalizeNewOrder(order);
   normalized.side = side;
-  const params = broker === "kiwoom"
-    ? buildKiwoomNewOrder(side, normalized)
-    : buildLsNewOrder(side, normalized);
+  const params = buildBrokerNewOrder(broker, side, normalized);
 
   return {
     normalized,
@@ -258,9 +265,7 @@ function buildNewOrderRequest(broker, sourceId, side, order) {
 
 function buildModifyOrderRequest(broker, sourceId, side, order) {
   const normalized = normalizeModifyOrder(order);
-  const params = broker === "kiwoom"
-    ? buildKiwoomModifyOrder(normalized)
-    : buildLsModifyOrder(normalized);
+  const params = buildBrokerModifyOrder(broker, normalized);
 
   return {
     normalized,
@@ -270,14 +275,60 @@ function buildModifyOrderRequest(broker, sourceId, side, order) {
 
 function buildCancelOrderRequest(broker, sourceId, side, order) {
   const normalized = normalizeCancelOrder(order);
-  const params = broker === "kiwoom"
-    ? buildKiwoomCancelOrder(normalized)
-    : buildLsCancelOrder(normalized);
+  const params = buildBrokerCancelOrder(broker, normalized);
 
   return {
     normalized,
     params: mergeParams(params, order.params),
   };
+}
+
+function buildBrokerNewOrder(broker, side, order) {
+  if (broker === "kiwoom") {
+    return buildKiwoomNewOrder(side, order);
+  }
+  if (broker === "ls") {
+    return buildLsNewOrder(side, order);
+  }
+  if (broker === "db") {
+    return buildDbNewOrder(side, order);
+  }
+  if (broker === "kis") {
+    return buildKisNewOrder(side, order);
+  }
+  throw BrokerError.unsupported(`Unsupported order request broker: ${broker}`, { broker });
+}
+
+function buildBrokerModifyOrder(broker, order) {
+  if (broker === "kiwoom") {
+    return buildKiwoomModifyOrder(order);
+  }
+  if (broker === "ls") {
+    return buildLsModifyOrder(order);
+  }
+  if (broker === "db") {
+    return buildDbModifyOrder(order);
+  }
+  if (broker === "kis") {
+    return buildKisModifyOrder(order);
+  }
+  throw BrokerError.unsupported(`Unsupported modify order request broker: ${broker}`, { broker });
+}
+
+function buildBrokerCancelOrder(broker, order) {
+  if (broker === "kiwoom") {
+    return buildKiwoomCancelOrder(order);
+  }
+  if (broker === "ls") {
+    return buildLsCancelOrder(order);
+  }
+  if (broker === "db") {
+    return buildDbCancelOrder(order);
+  }
+  if (broker === "kis") {
+    return buildKisCancelOrder(order);
+  }
+  throw BrokerError.unsupported(`Unsupported cancel order request broker: ${broker}`, { broker });
 }
 
 function buildKiwoomNewOrder(side, order) {
@@ -347,6 +398,84 @@ function buildLsCancelOrder(order) {
       IsuNo: lsIssueNumber(order.symbol),
       OrdQty: order.quantity,
     },
+  };
+}
+
+function buildDbNewOrder(side, order) {
+  return {
+    In: {
+      IsuNo: lsIssueNumber(order.symbol),
+      TrchNo: 0,
+      OrdQty: order.quantity,
+      OrdPrc: order.orderType === "market" ? 0 : order.price,
+      BnsTpCode: side === "buy" ? "2" : "1",
+      OrdprcPtnCode: lsOrderPriceType(order.orderType),
+      MgntrnCode: order.marginCode,
+      LoanDt: order.loanDate,
+      OrdCndiTpCode: order.conditionTypeCode,
+    },
+  };
+}
+
+function buildDbModifyOrder(order) {
+  return {
+    In: {
+      OrgOrdNo: numberOrString(order.originalOrderNumber),
+      IsuNo: lsIssueNumber(order.symbol),
+      OrdQty: order.quantity,
+      OrdprcPtnCode: lsOrderPriceType(order.orderType),
+      OrdCndiTpCode: order.conditionTypeCode,
+      OrdPrc: order.orderType === "market" ? 0 : order.price,
+    },
+  };
+}
+
+function buildDbCancelOrder(order) {
+  return {
+    In: {
+      OrgOrdNo: numberOrString(order.originalOrderNumber),
+      IsuNo: lsIssueNumber(order.symbol),
+      OrdQty: order.quantity,
+    },
+  };
+}
+
+function buildKisNewOrder(side, order) {
+  return {
+    CANO: "",
+    ACNT_PRDT_CD: "01",
+    PDNO: order.symbol,
+    ORD_DVSN: kisOrderDivision(order.orderType),
+    ORD_QTY: String(order.quantity),
+    ORD_UNPR: order.orderType === "market" ? "0" : String(order.price),
+  };
+}
+
+function buildKisModifyOrder(order) {
+  return {
+    CANO: "",
+    ACNT_PRDT_CD: "01",
+    KRX_FWDG_ORD_ORGNO: "",
+    ORGN_ODNO: order.originalOrderNumber,
+    ORD_DVSN: kisOrderDivision(order.orderType),
+    RVSE_CNCL_DVSN_CD: "01",
+    ORD_QTY: String(order.quantity),
+    ORD_UNPR: order.orderType === "market" ? "0" : String(order.price),
+    QTY_ALL_ORD_YN: "N",
+  };
+}
+
+function buildKisCancelOrder(order) {
+  return {
+    CANO: "",
+    ACNT_PRDT_CD: "01",
+    KRX_FWDG_ORD_ORGNO: "",
+    ORGN_ODNO: order.originalOrderNumber,
+    ORD_DVSN: "00",
+    RVSE_CNCL_DVSN_CD: "02",
+    ORD_QTY: String(order.quantity),
+    ORD_UNPR: "0",
+    QTY_ALL_ORD_YN: "N",
   };
 }
 
@@ -578,6 +707,10 @@ function lsOrderPriceType(orderType) {
   return orderType === "market" ? "03" : "00";
 }
 
+function kisOrderDivision(orderType) {
+  return orderType === "market" ? "01" : "00";
+}
+
 function lsIssueNumber(symbol) {
   return `A${symbol}`;
 }
@@ -628,6 +761,45 @@ function normalizeLsOrder(sourceId, side, payload) {
     message: nullableString(firstValue(payload, ["rsp_msg"])),
     source: {
       broker: "ls",
+      id: sourceId,
+      capabilityId: capabilityIdForSide(side),
+    },
+  };
+}
+
+function normalizeDbOrder(sourceId, side, payload) {
+  const block = payload?.Out ?? payload?.Out2 ?? {};
+
+  return {
+    broker: "db",
+    side,
+    orderNumber: nullableString(firstValue(block, ["OrdNo"])),
+    originalOrderNumber: nullableString(firstValue(block, ["PrntOrdNo", "OrgOrdNo"])),
+    symbol: stripLsIssueNumber(nullableString(firstValue(block, ["ShtnIsuNo", "IsuNo"]))),
+    symbolRaw: nullableString(firstValue(block, ["ShtnIsuNo", "IsuNo"])),
+    name: nullableString(firstValue(block, ["IsuNm"])),
+    orderAmount: parseNumber(firstValue(block, ["MnyOrdAmt", "OrdAmt"])),
+    orderTime: nullableString(firstValue(block, ["OrdTime"])),
+    message: nullableString(firstValue(payload, ["rsp_msg", "message"])),
+    source: {
+      broker: "db",
+      id: sourceId,
+      capabilityId: capabilityIdForSide(side),
+    },
+  };
+}
+
+function normalizeKisOrder(sourceId, side, payload) {
+  const block = payload?.output ?? payload;
+
+  return {
+    broker: "kis",
+    side,
+    orderNumber: nullableString(firstValue(block, ["ODNO", "odno"])),
+    originalOrderNumber: nullableString(firstValue(block, ["ORGN_ODNO", "orgn_odno"])),
+    message: nullableString(firstValue(payload, ["msg1", "message"])),
+    source: {
+      broker: "kis",
       id: sourceId,
       capabilityId: capabilityIdForSide(side),
     },

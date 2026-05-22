@@ -1,7 +1,7 @@
 ---
 broker: "LS증권"
 source_url: "https://openapi.ls-sec.co.kr/apiservice?group_id=2f1eea77-5606-4512-93c6-31b21d2ece90&api_id=a9b39b08-25c2-427d-848b-675c6228a92b"
-scraped_at: "2026-05-18T05:16:18.548Z"
+scraped_at: "2026-05-22T15:19:33.392Z"
 category: "선물/옵션"
 api_id: "a9b39b08-25c2-427d-848b-675c6228a92b"
 api_name: "[선물/옵션] 차트"

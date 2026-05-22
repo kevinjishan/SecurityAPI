@@ -346,21 +346,42 @@ function normalizeRealtimeDomainEvent(message) {
 }
 
 function isTradeMessage(message) {
-  return message.broker === "kiwoom"
-    ? message.id === "0B"
-    : ["S3_", "K3_", "US3"].includes(message.id);
+  if (message.broker === "kiwoom") {
+    return message.id === "0B";
+  }
+  if (message.broker === "db") {
+    return message.id === "S00";
+  }
+  if (message.broker === "kis") {
+    return ["H0STCNT0", "H0UNCNT0"].includes(message.id);
+  }
+  return ["S3_", "K3_", "US3"].includes(message.id);
 }
 
 function isOrderBookMessage(message) {
-  return message.broker === "kiwoom"
-    ? ["0D", "0C"].includes(message.id)
-    : ["H1_", "HA_", "UH1"].includes(message.id);
+  if (message.broker === "kiwoom") {
+    return ["0D", "0C"].includes(message.id);
+  }
+  if (message.broker === "db") {
+    return message.id === "S01";
+  }
+  if (message.broker === "kis") {
+    return ["H0STASP0", "H0UNASP0"].includes(message.id);
+  }
+  return ["H1_", "HA_", "UH1"].includes(message.id);
 }
 
 function isOrderEventMessage(message) {
-  return message.broker === "kiwoom"
-    ? message.id === "00"
-    : ["SC0", "SC1", "SC2", "SC3", "SC4"].includes(message.id);
+  if (message.broker === "kiwoom") {
+    return message.id === "00";
+  }
+  if (message.broker === "db") {
+    return ["IS0", "IS1"].includes(message.id);
+  }
+  if (message.broker === "kis") {
+    return message.id === "H0STCNI0";
+  }
+  return ["SC0", "SC1", "SC2", "SC3", "SC4"].includes(message.id);
 }
 
 function isMarketStatusMessage(message) {
@@ -398,6 +419,52 @@ function normalizeRealtimeTrade(message) {
       open: parsePrice(firstValue(body, ["16"])),
       high: parsePrice(firstValue(body, ["17"])),
       low: parsePrice(firstValue(body, ["18"])),
+      currency: "KRW",
+    };
+  }
+
+  if (message.broker === "db") {
+    return {
+      ...message,
+      kind: "trade",
+      symbol: normalizeSymbol(firstValue(body, ["ShrnIscd"]) ?? message.key),
+      tradeTime: nullableString(firstValue(body, ["StckCntghour", "BsopHour"])),
+      price: parsePrice(firstValue(body, ["StckPrpr", "Prpr"])),
+      priceRaw: nullableString(firstValue(body, ["StckPrpr", "Prpr"])),
+      change: parseNumber(firstValue(body, ["PrdyVrss"])),
+      changeRaw: nullableString(firstValue(body, ["PrdyVrss"])),
+      changeRate: parseNumber(firstValue(body, ["PrdyCtrt"])),
+      changeRateRaw: nullableString(firstValue(body, ["PrdyCtrt"])),
+      tradeQuantity: parseAbsNumber(firstValue(body, ["CntgVol", "Cvolume"])),
+      tradeQuantityRaw: nullableString(firstValue(body, ["CntgVol", "Cvolume"])),
+      tradeSide: null,
+      volume: parseNumber(firstValue(body, ["AcmlVol"])),
+      volumeRaw: nullableString(firstValue(body, ["AcmlVol"])),
+      value: parseNumber(firstValue(body, ["AcmlTrPbmn"])),
+      valueRaw: nullableString(firstValue(body, ["AcmlTrPbmn"])),
+      currency: "KRW",
+    };
+  }
+
+  if (message.broker === "kis") {
+    return {
+      ...message,
+      kind: "trade",
+      symbol: normalizeSymbol(firstValue(body, ["stck_shrn_iscd"]) ?? message.key),
+      tradeTime: nullableString(firstValue(body, ["stck_cntg_hour"])),
+      price: parsePrice(firstValue(body, ["stck_prpr"])),
+      priceRaw: nullableString(firstValue(body, ["stck_prpr"])),
+      change: parseNumber(firstValue(body, ["prdy_vrss"])),
+      changeRaw: nullableString(firstValue(body, ["prdy_vrss"])),
+      changeRate: parseNumber(firstValue(body, ["prdy_ctrt"])),
+      changeRateRaw: nullableString(firstValue(body, ["prdy_ctrt"])),
+      tradeQuantity: parseAbsNumber(firstValue(body, ["cntg_vol"])),
+      tradeQuantityRaw: nullableString(firstValue(body, ["cntg_vol"])),
+      tradeSide: null,
+      volume: parseNumber(firstValue(body, ["acml_vol"])),
+      volumeRaw: nullableString(firstValue(body, ["acml_vol"])),
+      value: parseNumber(firstValue(body, ["acml_tr_pbmn"])),
+      valueRaw: nullableString(firstValue(body, ["acml_tr_pbmn"])),
       currency: "KRW",
     };
   }
@@ -457,6 +524,56 @@ function normalizeRealtimeOrderBook(message) {
     };
   }
 
+  if (message.broker === "db") {
+    return {
+      ...message,
+      kind: "orderBook",
+      symbol: normalizeSymbol(firstValue(body, ["ShrnIscd"]) ?? message.key),
+      timestamp: nullableString(firstValue(body, ["BsopHour"])),
+      asks: Array.from({ length: 10 }, (_, index) => orderBookLevel(
+        index + 1,
+        firstValue(body, [`askp${index + 1}`, `Askp${index + 1}`]),
+        firstValue(body, [`AskpRsqn${index + 1}`, `askp_rsqn${index + 1}`]),
+      )),
+      bids: Array.from({ length: 10 }, (_, index) => orderBookLevel(
+        index + 1,
+        firstValue(body, [`bidp${index + 1}`, `Bidp${index + 1}`]),
+        firstValue(body, [`BidpRsqn${index + 1}`, `bidp_rsqn${index + 1}`]),
+      )),
+      totals: {
+        askQuantity: parseNumber(firstValue(body, ["TotalAskpRsqn", "AskpTtalRsqn"])),
+        askQuantityRaw: nullableString(firstValue(body, ["TotalAskpRsqn", "AskpTtalRsqn"])),
+        bidQuantity: parseNumber(firstValue(body, ["TotalBidpRsqn", "BidpTtalRsqn"])),
+        bidQuantityRaw: nullableString(firstValue(body, ["TotalBidpRsqn", "BidpTtalRsqn"])),
+      },
+    };
+  }
+
+  if (message.broker === "kis") {
+    return {
+      ...message,
+      kind: "orderBook",
+      symbol: normalizeSymbol(firstValue(body, ["stck_shrn_iscd"]) ?? message.key),
+      timestamp: nullableString(firstValue(body, ["aspr_acpt_hour"])),
+      asks: Array.from({ length: 10 }, (_, index) => orderBookLevel(
+        index + 1,
+        firstValue(body, [`askp${index + 1}`]),
+        firstValue(body, [`askp_rsqn${index + 1}`]),
+      )),
+      bids: Array.from({ length: 10 }, (_, index) => orderBookLevel(
+        index + 1,
+        firstValue(body, [`bidp${index + 1}`]),
+        firstValue(body, [`bidp_rsqn${index + 1}`]),
+      )),
+      totals: {
+        askQuantity: parseNumber(firstValue(body, ["total_askp_rsqn"])),
+        askQuantityRaw: nullableString(firstValue(body, ["total_askp_rsqn"])),
+        bidQuantity: parseNumber(firstValue(body, ["total_bidp_rsqn"])),
+        bidQuantityRaw: nullableString(firstValue(body, ["total_bidp_rsqn"])),
+      },
+    };
+  }
+
   return {
     ...message,
     kind: "orderBook",
@@ -508,6 +625,60 @@ function normalizeRealtimeOrderEvent(message) {
       remainingQuantity: parseNumber(firstValue(body, ["902"])),
       remainingQuantityRaw: nullableString(firstValue(body, ["902"])),
       eventTime: nullableString(firstValue(body, ["908"])),
+    };
+  }
+
+  if (message.broker === "db") {
+    return {
+      ...message,
+      kind: "orderEvent",
+      accountId: null,
+      orderId: nullableString(firstValue(body, ["Sordno"])),
+      originalOrderId: nullableString(firstValue(body, ["Sorgordno"])),
+      executionId: nullableString(firstValue(body, ["Sexecno"])),
+      symbol: normalizeSymbol(firstValue(body, ["Sshtnisuno", "Sisuno"]) ?? message.key),
+      name: nullableString(firstValue(body, ["Sisunm"])) ?? message.name,
+      side: sideFromBrokerCode(message.broker, firstValue(body, ["Strancode", "Sordptncode"])),
+      status: nullableString(firstValue(body, ["Sordxctptncode"])),
+      orderType: nullableString(firstValue(body, ["Sordprcptncode"])),
+      orderQuantity: parseNumber(firstValue(body, ["Sordqty"])),
+      orderQuantityRaw: nullableString(firstValue(body, ["Sordqty"])),
+      orderPrice: parsePrice(firstValue(body, ["Sordprc"])),
+      orderPriceRaw: nullableString(firstValue(body, ["Sordprc"])),
+      executedQuantity: parseNumber(firstValue(body, ["Sexecqty"])),
+      executedQuantityRaw: nullableString(firstValue(body, ["Sexecqty"])),
+      executedPrice: parsePrice(firstValue(body, ["Sexecprc"])),
+      executedPriceRaw: nullableString(firstValue(body, ["Sexecprc"])),
+      remainingQuantity: null,
+      remainingQuantityRaw: null,
+      eventTime: nullableString(firstValue(body, ["Sordtm", "Sexectime"])),
+    };
+  }
+
+  if (message.broker === "kis") {
+    return {
+      ...message,
+      kind: "orderEvent",
+      accountId: nullableString(firstValue(body, ["acnt_no"])),
+      orderId: nullableString(firstValue(body, ["odno"])),
+      originalOrderId: nullableString(firstValue(body, ["orgn_odno"])),
+      executionId: nullableString(firstValue(body, ["cntg_no"])),
+      symbol: normalizeSymbol(firstValue(body, ["stck_shrn_iscd", "pdno"]) ?? message.key),
+      name: nullableString(firstValue(body, ["prdt_name"])) ?? message.name,
+      side: sideFromBrokerCode(message.broker, firstValue(body, ["sll_buy_dvsn_cd"])),
+      status: nullableString(firstValue(body, ["oder_tmd", "ccld_dvsn"])),
+      orderType: nullableString(firstValue(body, ["ord_dvsn"])),
+      orderQuantity: parseNumber(firstValue(body, ["ord_qty"])),
+      orderQuantityRaw: nullableString(firstValue(body, ["ord_qty"])),
+      orderPrice: parsePrice(firstValue(body, ["ord_unpr"])),
+      orderPriceRaw: nullableString(firstValue(body, ["ord_unpr"])),
+      executedQuantity: parseNumber(firstValue(body, ["cntg_qty"])),
+      executedQuantityRaw: nullableString(firstValue(body, ["cntg_qty"])),
+      executedPrice: parsePrice(firstValue(body, ["cntg_unpr"])),
+      executedPriceRaw: nullableString(firstValue(body, ["cntg_unpr"])),
+      remainingQuantity: parseNumber(firstValue(body, ["rmn_qty"])),
+      remainingQuantityRaw: nullableString(firstValue(body, ["rmn_qty"])),
+      eventTime: nullableString(firstValue(body, ["cntg_hour", "oder_tmd"])),
     };
   }
 

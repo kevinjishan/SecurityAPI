@@ -1,6 +1,6 @@
 # 키움증권 오류코드
 
-생성 시각: 2026-05-18T05:16:18.548Z
+생성 시각: 2026-05-22T15:19:33.392Z
 
 공식 출처: https://openapi.kiwoom.com/guide/apiguide?dummyVal=0
 

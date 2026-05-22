@@ -120,7 +120,7 @@ type OrderAuditLog = {
   auditId: string;
   timestamp: string;
   sdkCommit?: string;
-  broker: "kiwoom" | "ls";
+  broker: "kiwoom" | "ls" | "db" | "kis";
   environment: "mock" | "dev" | "prod";
   capability: string;
   apiIdOrTrCode: string;

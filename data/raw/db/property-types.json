@@ -1,0 +1,31 @@
+{
+  "code": "property_type",
+  "description": "속성 타입",
+  "codes": [
+    {
+      "key": "A0001",
+      "value": "String",
+      "description": "String"
+    },
+    {
+      "key": "A0002",
+      "value": "Array",
+      "description": "Array"
+    },
+    {
+      "key": "A0003",
+      "value": "Object",
+      "description": "Object"
+    },
+    {
+      "key": "A0004",
+      "value": "Number",
+      "description": "Number"
+    },
+    {
+      "key": "A0005",
+      "value": "Object Array",
+      "description": "Object Array"
+    }
+  ]
+}
