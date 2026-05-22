@@ -21,7 +21,7 @@ import {
 export const LIVE_READONLY_FLAG = "SECURITY_API_LIVE_READONLY";
 export const LIVE_ORDER_FLAG = "SECURITY_API_ALLOW_LIVE_ORDER";
 
-const SENSITIVE_KEY_PATTERN = /(authorization|token|secret|password|pwd|appkey|app_secret|appsecret|account|acct|acnt|mac)/i;
+const SENSITIVE_KEY_PATTERN = /(authorization|token|secret|password|pwd|appkey|app_secret|appsecret|account|acct|acnt|mac_address|macaddress|^mac$)/i;
 
 export function parseCliOptions(argv = process.argv.slice(2)) {
   return {

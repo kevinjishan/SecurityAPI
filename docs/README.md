@@ -24,7 +24,7 @@ SDK 구현에서 직접 참조하기 쉬운 정규화 manifest는 `data/generate
 - 기술지표/상대강도/시장폭 설계: [Technical Indicators And Market Signals Design](technical-indicators-and-market-signals-design.md)
 - Live read-only 검증 계획: [Live Read-only Verification Plan](live-readonly-verification-plan.md)
 - Live read-only 검증 매트릭스: [Live Read-only Verification Matrix](live-readonly-verification-matrix.md)
-- Live read-only 감사 기록: [2026-05-19](audits/live-readonly-2026-05-19.md)
+- Live read-only 감사 기록: [2026-05-19](audits/live-readonly-2026-05-19.md), [2026-05-22](audits/live-readonly-2026-05-22.md)
 - SDK manifest 찾기: `jq '.apis.ka10001' data/generated/kiwoom-manifest.json`, `jq '.apis.t1101' data/generated/ls-manifest.json`
 
 ## 생성 규칙

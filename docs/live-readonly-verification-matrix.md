@@ -1,8 +1,8 @@
 # Live Read-only Verification Matrix
 
-Last updated: 2026-05-19
+Last updated: 2026-05-22
 
-이 문서는 SecurityAPI SDK의 live read-only 검증 현황을 한 장으로 정리한다. 상세 실행 기록은 [Live Read-only Verification Audit - 2026-05-19](audits/live-readonly-2026-05-19.md)를 기준으로 한다.
+이 문서는 SecurityAPI SDK의 live read-only 검증 현황을 한 장으로 정리한다. 상세 실행 기록은 [Live Read-only Verification Audit - 2026-05-19](audits/live-readonly-2026-05-19.md)와 [Live Read-only Verification Audit - 2026-05-22](audits/live-readonly-2026-05-22.md)를 기준으로 한다.
 
 ## Status Legend
 
@@ -52,8 +52,8 @@ Last updated: 2026-05-19
 | Overseas account balance | LS | `OverseasStockAccountService.getOverseasStockBalance` | `COSOQ00201` | `live-pass` | LS no-data message treated as successful empty account state. |
 | Overseas realtime trade | LS | `OverseasStockRealtimeService.subscribeOverseasStockTrades` | `GSC` | `live-pass` | Subscribe, message receive, unsubscribe verified. |
 | Overseas realtime order book | LS | `OverseasStockRealtimeService.subscribeOverseasStockOrderBook` | `GSH` | `live-pass` | Subscribe, message receive, unsubscribe verified. |
-| Technical indicators | Kiwoom/LS | `TechnicalIndicatorService.getDomesticStockIndicators` | `ka10081` or LS chart TR | `local-pass` | Live-readonly example added; validates guard/masking locally and can run against read-only candle APIs. |
-| Relative strength | Kiwoom/LS | `RelativeStrengthService.getDomesticStockRelativeStrength` | stock candle + index candle TRs | `local-pass` | Live-readonly example added; target stock and KOSPI/index candles remain read-only. |
+| Technical indicators | Kiwoom | `TechnicalIndicatorService.getDomesticStockIndicators` | `ka10081` | `live-pass` | Daily candles read-only run completed; indicators summarized in 2026-05-22 audit. |
+| Relative strength | Kiwoom | `RelativeStrengthService.getDomesticStockRelativeStrength` | `ka10081` + `ka20006` | `live-pass` | Stock and KOSPI daily candles aligned in 2026-05-22 audit. |
 | Market breadth snapshot | Local | `MarketBreadthService` calculators | snapshot | `local-pass` | Uses provided snapshot input only; no bulk universe collection in live-readonly example. |
 
 ## Local-only Coverage
@@ -95,4 +95,4 @@ Do not run live examples unless `SECURITY_API_LIVE_READONLY=true` and `SECURITY_
 
 ## Current Decision
 
-The SDK is live-verified for the implemented OAuth, public REST market data, account read-only REST, and LS overseas quote WebSocket paths listed above. Technical indicators, relative strength, and market breadth are wired into the live-readonly validation path but still need a real read-only run before their matrix status can move from `local-pass` to `live-pass`. It is not live-approved for order submission or order event subscriptions. External apps may use this matrix to decide which SDK paths are already proven against real broker servers and which paths still require separate validation.
+The SDK is live-verified for the implemented OAuth, public REST market data, account read-only REST, LS overseas quote WebSocket paths, Kiwoom technical indicators, and Kiwoom relative strength paths listed above. Market breadth is snapshot-verified and still needs a separate whole-market universe collection design before it can become a live broker-sourced breadth check. It is not live-approved for order submission or order event subscriptions. External apps may use this matrix to decide which SDK paths are already proven against real broker servers and which paths still require separate validation.
