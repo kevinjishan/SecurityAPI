@@ -22,6 +22,7 @@ SDK 구현에서 직접 참조하기 쉬운 정규화 manifest는 `data/generate
 - SDK 사용 가이드: [SDK Usage Guide](sdk-usage-guide.md)
 - SDK 배포/참조 가이드: [SDK Distribution Guide](sdk-distribution-guide.md)
 - 기술지표/상대강도/시장폭 설계: [Technical Indicators And Market Signals Design](technical-indicators-and-market-signals-design.md)
+- 시장 신호 입력 명세: [Market Signal Input Contract](market-signal-input-contract.md)
 - Live read-only 검증 계획: [Live Read-only Verification Plan](live-readonly-verification-plan.md)
 - Live read-only 검증 매트릭스: [Live Read-only Verification Matrix](live-readonly-verification-matrix.md)
 - Live read-only 감사 기록: [2026-05-19](audits/live-readonly-2026-05-19.md), [2026-05-22](audits/live-readonly-2026-05-22.md)

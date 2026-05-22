@@ -103,6 +103,7 @@ export {
 
 export {
   RelativeStrengthService,
+  buildBasketBenchmarkCandles,
   calculateRelativeStrength,
 } from "./RelativeStrengthService.mjs";
 

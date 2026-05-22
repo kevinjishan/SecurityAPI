@@ -206,6 +206,21 @@ const sectorRs = relativeStrength.calculateRelativeStrength({
 });
 ```
 
+섹터 지수가 없고 섹터 구성 종목 티커만 있다면 basket benchmark를 만들 수 있다. SDK는 각 종목을 첫 공통 날짜 기준 100으로 정규화한 뒤 동일가중 basket을 만든다.
+
+```js
+const basketRs = await relativeStrength.getDomesticStockRelativeStrengthVsBasket("kiwoom", "005930", {
+  basketCode: "semiconductor",
+  basketName: "반도체",
+  basketSymbols: ["000660", "042700", "039030"],
+  basketCandlesBySymbol, // optional cache; 없으면 basketSymbols를 read-only로 조회
+  periods: [20, 60],
+  excludeTargetFromBasket: true,
+});
+```
+
+입력 명세는 [Market Signal Input Contract](market-signal-input-contract.md)를 기준으로 한다.
+
 ## Market Breadth
 
 시장 폭 지표는 전체 종목 universe가 필요하므로 SDK가 기본으로 대량 live 호출을 수행하지 않는다. 외부 앱이 캐시한 시장 스냅샷이나 종목별 캔들을 넣어 계산한다.

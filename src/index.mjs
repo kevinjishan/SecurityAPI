@@ -66,6 +66,7 @@ export {
   calculateAboveMovingAverageRatio,
   calculateAdvanceDeclineLine,
   calculateBollingerBands,
+  buildBasketBenchmarkCandles,
   calculateHighLowRatio,
   calculateRelativeStrength,
   calculateTechnicalIndicators,

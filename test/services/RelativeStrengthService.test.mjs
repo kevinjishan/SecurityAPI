@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   RelativeStrengthService,
+  buildBasketBenchmarkCandles,
   calculateRelativeStrength,
 } from "../../src/index.mjs";
 import { RelativeStrengthService as RelativeStrengthServiceFromPackage } from "security-api-reference/services";
@@ -52,6 +53,32 @@ test("uses null ratio when benchmark return is too close to zero", () => {
   assert.equal(result.latest.p1.spread, 10);
 });
 
+test("builds an equal-weight basket benchmark from provided sector candles", () => {
+  const basket = buildBasketBenchmarkCandles({
+    "000660": [
+      candle("20260501", 100),
+      candle("20260502", 110),
+      candle("20260503", 120),
+    ],
+    "042700": [
+      candle("20260501", 200),
+      candle("20260502", 190),
+      candle("20260503", 210),
+    ],
+  }, {
+    basketCode: "semiconductor",
+    basketName: "반도체",
+  });
+
+  assert.equal(basket.benchmark.type, "basket");
+  assert.equal(basket.benchmark.code, "semiconductor");
+  assert.equal(basket.baseDate, "20260501");
+  assert.deepEqual(basket.symbols, ["000660", "042700"]);
+  assert.equal(basket.candles[0].close, 100);
+  assert.equal(basket.candles[1].close, 102.5);
+  assert.equal(basket.candles[2].close, 112.5);
+});
+
 test("gets domestic stock relative strength with provided benchmark candles", async () => {
   const fakeMarketData = {
     async getDomesticStockDailyCandles(broker, symbol, options) {
@@ -86,6 +113,46 @@ test("gets domestic stock relative strength with provided benchmark candles", as
   assert.equal(result.data.latest.p3.direction, "outperforming");
   assert.equal(result.data.sources.target.id, "ka10081");
   assert.equal(result.data.sources.benchmark.id, "provided");
+});
+
+test("gets domestic stock relative strength against a provided sector basket", async () => {
+  const fakeMarketData = {
+    async getDomesticStockDailyCandles(broker, symbol) {
+      assert.equal(broker, "kiwoom");
+      assert.equal(symbol, "005930");
+
+      return {
+        ok: true,
+        broker,
+        id: "ka10081",
+        data: {
+          candles: targetCandles(),
+          source: { broker, id: "ka10081", capabilityId: "marketData.domesticStock.dailyCandles" },
+        },
+        raw: null,
+        headers: {},
+        status: 200,
+      };
+    },
+  };
+  const service = new RelativeStrengthService({}, { marketData: fakeMarketData });
+  const result = await service.getDomesticStockRelativeStrengthVsBasket("kiwoom", "005930", {
+    basketCode: "semiconductor",
+    basketSymbols: ["000660", "042700"],
+    basketCandlesBySymbol: {
+      "000660": targetCandles(),
+      "042700": benchmarkCandles(),
+    },
+    periods: [3],
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.capability, "relativeStrength.domesticStock.benchmark");
+  assert.equal(result.data.benchmark.type, "basket");
+  assert.equal(result.data.benchmark.code, "semiconductor");
+  assert.deepEqual(result.data.basket.symbols, ["000660", "042700"]);
+  assert.equal(result.data.sources.benchmark.id, "basket");
+  assert.equal(result.data.latest.p3.direction, "outperforming");
 });
 
 test("returns validation error for non-index benchmark without benchmarkCandles", async () => {

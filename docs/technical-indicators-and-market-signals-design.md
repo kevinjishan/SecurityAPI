@@ -61,6 +61,7 @@ Last updated: 2026-05-22
 
 - `종목 수익률 / KOSPI 수익률`은 benchmark 수익률이 0에 가까울 때 왜곡된다. 따라서 `ratio`와 `spread`를 둘 다 제공한다.
 - 섹터 RS는 종목-섹터 매핑이 필요하다. 이 매핑은 SDK 내부에서 추측하지 않고 앱이 제공하거나 별도 universe/sector provider에서 주입한다.
+- 섹터 지수 캔들이 없으면 앱이 `basketSymbols` 또는 `basketCandlesBySymbol`을 제공해 동일가중 섹터 basket benchmark를 만들 수 있다. 입력 명세는 [Market Signal Input Contract](market-signal-input-contract.md)를 따른다.
 
 ### C. 시장 전체 유니버스 기반 지표
 
@@ -148,6 +149,12 @@ relativeStrength.calculateRelativeStrength({
 
 relativeStrength.getDomesticStockRelativeStrength("kiwoom", "005930", {
   benchmark: { type: "index", code: "kospi" },
+  periods: [20, 60],
+});
+
+relativeStrength.getDomesticStockRelativeStrengthVsBasket("kiwoom", "005930", {
+  basketCode: "semiconductor",
+  basketSymbols: ["000660", "042700", "039030"],
   periods: [20, 60],
 });
 ```

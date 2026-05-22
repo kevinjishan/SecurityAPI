@@ -71,7 +71,7 @@ Internal files under `src/**` are not contract unless exported through one of th
 - `OverseasStockAccountService`
 - `OverseasStockOrderService`
 - `OverseasStockRealtimeService`
-- indicator/relative strength/market breadth calculators: `DEFAULT_TECHNICAL_PROFILE`, `calculateTechnicalIndicators`, `calculateRelativeStrength`, `calculateAdvanceDeclineLine`, `calculateHighLowRatio`, `calculateAboveMovingAverageRatio`, `simpleMovingAverage`, `exponentialMovingAverage`, `movingAverageDisparity`, `movingAverageSlope`, `movingAverageAlignment`, `relativeStrengthIndex`, `movingAverageConvergenceDivergence`, `stochasticOscillator`, `ratioToMovingAverage`, `onBalanceVolume`, `moneyFlowIndex`, `averageTrueRange`, `calculateBollingerBands`, `rollingStandardDeviation`, `detectCandlePatterns`
+- indicator/relative strength/market breadth calculators: `DEFAULT_TECHNICAL_PROFILE`, `calculateTechnicalIndicators`, `calculateRelativeStrength`, `buildBasketBenchmarkCandles`, `calculateAdvanceDeclineLine`, `calculateHighLowRatio`, `calculateAboveMovingAverageRatio`, `simpleMovingAverage`, `exponentialMovingAverage`, `movingAverageDisparity`, `movingAverageSlope`, `movingAverageAlignment`, `relativeStrengthIndex`, `movingAverageConvergenceDivergence`, `stochasticOscillator`, `ratioToMovingAverage`, `onBalanceVolume`, `moneyFlowIndex`, `averageTrueRange`, `calculateBollingerBands`, `rollingStandardDeviation`, `detectCandlePatterns`
 
 ## Method Naming Rules
 

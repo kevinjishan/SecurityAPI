@@ -2,7 +2,7 @@
 
 이 문서는 현재의 API 문서/메타데이터 저장소를 재사용 가능한 증권사 API SDK로 확장하기 위한 종합 방향성과 레이어별 구현 계획을 정리한다.
 
-상품 확장 범위는 [Core Expansion Roadmap](core-expansion-roadmap.md)을 기준으로 관리한다. 현재 서비스 확장 목표는 국내주식 core 유지와 해외주식 레이어 추가까지이며, 선물옵션/ELW/해외선물 같은 파생상품 서비스화는 이번 범위에서 제외한다. 기술지표, 상대강도, 시장폭, 캔들 패턴의 판단 입력 설계는 [Technical Indicators And Market Signals Design](technical-indicators-and-market-signals-design.md)을 기준으로 한다. core 구현 이후의 설계형 후속 작업은 [SDK Stabilization Goal Plan](sdk-stabilization-goal-plan.md)의 단계별 Goal을 기준으로 진행한다.
+상품 확장 범위는 [Core Expansion Roadmap](core-expansion-roadmap.md)을 기준으로 관리한다. 현재 서비스 확장 목표는 국내주식 core 유지와 해외주식 레이어 추가까지이며, 선물옵션/ELW/해외선물 같은 파생상품 서비스화는 이번 범위에서 제외한다. 기술지표, 상대강도, 시장폭, 캔들 패턴의 판단 입력 설계는 [Technical Indicators And Market Signals Design](technical-indicators-and-market-signals-design.md)을 기준으로 하고, 자동 수집 대신 앱이 제공해야 하는 입력은 [Market Signal Input Contract](market-signal-input-contract.md)를 기준으로 한다. core 구현 이후의 설계형 후속 작업은 [SDK Stabilization Goal Plan](sdk-stabilization-goal-plan.md)의 단계별 Goal을 기준으로 진행한다.
 
 ## 1. 방향성
 

@@ -38,6 +38,7 @@
     "docs/sdk-usage-guide.md",
     "docs/public-sdk-contract.md",
     "docs/technical-indicators-and-market-signals-design.md",
+    "docs/market-signal-input-contract.md",
     "docs/live-readonly-verification-matrix.md",
     "docs/live-readonly-verification-plan.md",
     "docs/live-integration-readiness.md",
