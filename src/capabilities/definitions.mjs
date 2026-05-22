@@ -175,6 +175,10 @@ export const CAPABILITY_DEFINITIONS = Object.freeze({
     area: "overseasStock",
     label: "해외주식 기술적 지표",
   },
+  "overseasStock.relativeStrength.benchmark": {
+    area: "overseasStock",
+    label: "해외주식 벤치마크 상대강도",
+  },
   "overseasStock.account.cash": {
     area: "overseasStock",
     label: "해외주식 예수금",

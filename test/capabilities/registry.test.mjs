@@ -68,6 +68,7 @@ test("lists LS capabilities across domestic, overseas, and derivatives", () => {
   assert.equal(caps.supports("relativeStrength.domesticStock.benchmark"), true);
   assert.equal(caps.supports("marketBreadth.domesticMarket.indicators"), true);
   assert.equal(caps.supports("overseasStock.technical.indicators"), true);
+  assert.equal(caps.supports("overseasStock.relativeStrength.benchmark"), true);
   assert.equal(caps.hasMetadata("overseasStock.quote"), true);
   assert.equal(caps.hasMetadata("overseasStock.order"), true);
   assert.equal(caps.supports("futureOption.order"), false);
@@ -98,6 +99,7 @@ test("separates service-ready, metadata-only, and parked capability states", () 
     "g3104",
     "g3190",
     "g3204",
+    "g3203",
     "g3103",
     "g3102",
   ]);
@@ -168,6 +170,30 @@ test("finds LS API references for capabilities", () => {
     "AS2",
     "AS3",
     "AS4",
+  ]);
+});
+
+test("promotes DB and KIS overseas candle capabilities to service-ready", () => {
+  const db = getCapabilities("db");
+  const kis = getCapabilities("kis");
+
+  assert.equal(db.supports("overseasStock.marketData.candles"), true);
+  assert.equal(db.supports("overseasStock.technical.indicators"), true);
+  assert.equal(db.supports("overseasStock.relativeStrength.benchmark"), true);
+  assert.deepEqual(db.findApis("overseasStock.marketData.candles", { status: "serviceReady" }).map((api) => api.id), [
+    "FSTKCHARTDAY",
+    "FSTKCHARTWEEK",
+    "FSTKCHARTMONTH",
+    "FSTKCHARTMIN",
+    "FSTKCHARTTICK",
+  ]);
+
+  assert.equal(kis.supports("overseasStock.marketData.candles"), true);
+  assert.equal(kis.supports("overseasStock.technical.indicators"), true);
+  assert.equal(kis.supports("overseasStock.relativeStrength.benchmark"), true);
+  assert.deepEqual(kis.findApis("overseasStock.marketData.candles", { status: "serviceReady" }).map((api) => api.id), [
+    "/uapi/overseas-price/v1/quotations/inquire-daily-chartprice",
+    "/uapi/overseas-price/v1/quotations/inquire-time-itemchartprice",
   ]);
 });
 

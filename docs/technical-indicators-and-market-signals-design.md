@@ -128,7 +128,14 @@ technical.getOverseasStockIndicators("ls", {
   symbol: "TSLA",
   exchangeCode: "82",
 }, profile);
+
+technical.getUsStockIndicators("db", {
+  symbol: "TSLA",
+  exchangeCode: "NASDAQ",
+}, profile);
 ```
+
+미국주식 래퍼는 `countryCode: "US"`와 `currencyCode: "USD"`를 기본값으로 채우고, broker별 해외주식 캔들 API로 OHLCV를 조회한 뒤 같은 계산기를 사용한다. `latest` 외에 `summary.movingAverageRating`, `summary.oscillatorRating`, `summary.technicalRating`을 `strongPositive | positive | neutral | negative | strongNegative` 중 하나로 제공하지만, 매수/매도 결론 필드는 만들지 않는다.
 
 ### RelativeStrengthService
 
@@ -157,7 +164,17 @@ relativeStrength.getDomesticStockRelativeStrengthVsBasket("kiwoom", "005930", {
   basketSymbols: ["000660", "042700", "039030"],
   periods: [20, 60],
 });
+
+relativeStrength.getUsStockRelativeStrength("kis", {
+  symbol: "TSLA",
+  exchangeCode: "NASDAQ",
+}, {
+  benchmarkIdentity: { symbol: "SPY", exchangeCode: "AMEX" },
+  periods: [20, 60],
+});
 ```
+
+미국주식 상대강도는 계산형 v1이다. 앱이 `benchmarkCandles`를 직접 넘기거나 `benchmarkIdentity`를 지정하면 같은 `OverseasStockMarketDataService` 캔들 경로로 비교 대상을 조회한다. 기본 자동 벤치마크는 `SPY`이며, `QQQ`, `IWM`, sector ETF는 옵션으로 명시한다.
 
 ### MarketBreadthService
 
@@ -180,6 +197,8 @@ breadth.calculateAboveMovingAverageRatio(candlesBySymbol, {
   period: 20,
 });
 ```
+
+미국시장 시장폭도 동일하게 provider 주입만 지원한다. 브로커 API로 전체 universe를 순회하지 않고, 앱이 `advanceDeclineRows`, `highLowRows`, `candlesBySymbol` 같은 snapshot 입력을 제공하면 기존 계산기를 재사용한다.
 
 ### SignalInputService 통합
 

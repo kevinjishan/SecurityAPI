@@ -57,8 +57,6 @@ export const DEFAULT_TECHNICAL_PROFILE = Object.freeze({
   },
 });
 
-const DEFAULT_INDICATOR_OPTIONS = DEFAULT_TECHNICAL_PROFILE;
-
 export class TechnicalIndicatorService {
   constructor(clients = {}, dependencies = {}) {
     this.clients = clients;
@@ -112,6 +110,17 @@ export class TechnicalIndicatorService {
       options,
       capabilityId: OVERSEAS_CAPABILITY_ID,
       requestCandles: () => this.overseasMarketData.getOverseasStockCandles(broker, identity, options),
+    });
+  }
+
+  async getUsStockIndicators(broker, identity, options = {}) {
+    const usIdentity = normalizeUsStockIdentity(identity, options);
+
+    return this.getOverseasStockIndicators(broker, usIdentity, {
+      adjusted: true,
+      ...options,
+      countryCode: usIdentity.countryCode,
+      currencyCode: usIdentity.currencyCode,
     });
   }
 
@@ -311,6 +320,7 @@ export function calculateTechnicalIndicators(candles, options = {}) {
       standardDeviation,
     },
     latest,
+    summary: technicalRatingSummary(latest),
     source: options.source ?? null,
     meta: {
       inputCount: Array.isArray(candles) ? candles.length : 0,
@@ -382,7 +392,7 @@ export function exponentialMovingAverage(values, period) {
   return output;
 }
 
-export function relativeStrengthIndex(values, period = DEFAULT_INDICATOR_OPTIONS.rsiPeriod) {
+export function relativeStrengthIndex(values, period = DEFAULT_TECHNICAL_PROFILE.momentum.rsiPeriod) {
   const normalizedPeriod = normalizePeriod(period, "period");
   const normalizedValues = normalizeNumberSeries(values);
   const output = Array(normalizedValues.length).fill(null);
@@ -428,9 +438,9 @@ export function relativeStrengthIndex(values, period = DEFAULT_INDICATOR_OPTIONS
 }
 
 export function movingAverageConvergenceDivergence(values, options = {}) {
-  const fastPeriod = normalizePeriod(options.fastPeriod ?? DEFAULT_INDICATOR_OPTIONS.macd.fastPeriod, "fastPeriod");
-  const slowPeriod = normalizePeriod(options.slowPeriod ?? DEFAULT_INDICATOR_OPTIONS.macd.slowPeriod, "slowPeriod");
-  const signalPeriod = normalizePeriod(options.signalPeriod ?? DEFAULT_INDICATOR_OPTIONS.macd.signalPeriod, "signalPeriod");
+  const fastPeriod = normalizePeriod(options.fastPeriod ?? DEFAULT_TECHNICAL_PROFILE.momentum.macd.fastPeriod, "fastPeriod");
+  const slowPeriod = normalizePeriod(options.slowPeriod ?? DEFAULT_TECHNICAL_PROFILE.momentum.macd.slowPeriod, "slowPeriod");
+  const signalPeriod = normalizePeriod(options.signalPeriod ?? DEFAULT_TECHNICAL_PROFILE.momentum.macd.signalPeriod, "signalPeriod");
 
   if (fastPeriod >= slowPeriod) {
     throw BrokerError.validation("MACD fastPeriod must be lower than slowPeriod", {
@@ -465,9 +475,9 @@ export function movingAverageConvergenceDivergence(values, options = {}) {
 }
 
 export function calculateBollingerBands(values, options = {}) {
-  const period = normalizePeriod(options.period ?? DEFAULT_INDICATOR_OPTIONS.bollingerBands.period, "period");
+  const period = normalizePeriod(options.period ?? DEFAULT_TECHNICAL_PROFILE.volatility.bollingerBands.period, "period");
   const standardDeviations = normalizePositiveNumber(
-    options.standardDeviations ?? DEFAULT_INDICATOR_OPTIONS.bollingerBands.standardDeviations,
+    options.standardDeviations ?? DEFAULT_TECHNICAL_PROFILE.volatility.bollingerBands.standardDeviations,
     "standardDeviations",
   );
   const normalizedValues = normalizeNumberSeries(values);
@@ -792,7 +802,7 @@ function normalizeCandles(candles, options = {}) {
       low: parseNumber(candle?.low),
       close: parseNumber(candle?.close),
       volume: parseNumber(candle?.volume),
-      value: parseNumber(candle?.value),
+      value: parseNumber(candle?.value ?? candle?.amount),
       raw: candle,
     }))
     .filter((candle) => Number.isFinite(candle.close));
@@ -1086,6 +1096,101 @@ function latestIndicatorSnapshot({
   };
 }
 
+function technicalRatingSummary(latest) {
+  if (!latest) {
+    return {
+      movingAverageRating: null,
+      oscillatorRating: null,
+      technicalRating: null,
+    };
+  }
+
+  const movingAverageSignals = movingAverageRatingSignals(latest);
+  const oscillatorSignals = oscillatorRatingSignals(latest);
+  const allSignals = [...movingAverageSignals, ...oscillatorSignals];
+
+  return {
+    movingAverageRating: ratingFromSignals(movingAverageSignals),
+    oscillatorRating: ratingFromSignals(oscillatorSignals),
+    technicalRating: ratingFromSignals(allSignals),
+    signalCounts: {
+      movingAverage: movingAverageSignals.length,
+      oscillator: oscillatorSignals.length,
+      total: allSignals.length,
+    },
+  };
+}
+
+function movingAverageRatingSignals(latest) {
+  const close = latest.candle?.close;
+  if (!Number.isFinite(close)) {
+    return [];
+  }
+
+  return [
+    ...Object.values(latest.trend?.sma ?? {}),
+    ...Object.values(latest.trend?.ema ?? {}),
+  ]
+    .filter(Number.isFinite)
+    .map((value) => close > value ? 1 : close < value ? -1 : 0);
+}
+
+function oscillatorRatingSignals(latest) {
+  const signals = [];
+  const rsi = latest.momentum?.rsi;
+  const macdHistogram = latest.momentum?.macd?.histogram;
+  const slowK = latest.momentum?.stochastic?.slowK;
+  const stochasticD = latest.momentum?.stochastic?.d;
+  const mfi = latest.volume?.mfi;
+
+  if (Number.isFinite(rsi)) {
+    signals.push(rsi <= 30 ? 1 : rsi >= 70 ? -1 : 0);
+  }
+
+  if (Number.isFinite(macdHistogram)) {
+    signals.push(macdHistogram > 0 ? 1 : macdHistogram < 0 ? -1 : 0);
+  }
+
+  if (Number.isFinite(slowK)) {
+    signals.push(slowK <= 20 ? 1 : slowK >= 80 ? -1 : 0);
+  }
+
+  if (Number.isFinite(slowK) && Number.isFinite(stochasticD)) {
+    signals.push(slowK > stochasticD ? 1 : slowK < stochasticD ? -1 : 0);
+  }
+
+  if (Number.isFinite(mfi)) {
+    signals.push(mfi <= 20 ? 1 : mfi >= 80 ? -1 : 0);
+  }
+
+  return signals;
+}
+
+function ratingFromSignals(signals) {
+  if (!signals.length) {
+    return "neutral";
+  }
+
+  const average = signals.reduce((sum, value) => sum + value, 0) / signals.length;
+  if (average >= 0.6) {
+    return "strongPositive";
+  }
+
+  if (average >= 0.2) {
+    return "positive";
+  }
+
+  if (average <= -0.6) {
+    return "strongNegative";
+  }
+
+  if (average <= -0.2) {
+    return "negative";
+  }
+
+  return "neutral";
+}
+
 function indicatorFlags(snapshot, thresholds) {
   const disparity20 = snapshot.trend.disparity.p20 ?? null;
   const rsi = snapshot.momentum.rsi;
@@ -1182,13 +1287,24 @@ function normalizeOverseasSymbol(identity) {
   return identity?.symbol ?? identity?.keySymbol ?? null;
 }
 
+function normalizeUsStockIdentity(identity, options = {}) {
+  const value = typeof identity === "string" ? { symbol: identity } : { ...(identity ?? {}) };
+
+  return {
+    ...value,
+    countryCode: value.countryCode ?? value.country ?? options.countryCode ?? options.country ?? "US",
+    currencyCode: value.currencyCode ?? value.currency ?? options.currencyCode ?? options.currency ?? "USD",
+    exchangeCode: value.exchangeCode ?? value.exchange ?? options.exchangeCode ?? options.exchange,
+  };
+}
+
 function parseNumber(value) {
   if (value === undefined || value === null || value === "") {
     return null;
   }
 
   const parsed = Number(String(value).replaceAll(",", "").replace(/^\+/, ""));
-  return Number.isFinite(parsed) ? Math.abs(parsed) : null;
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function nullableString(value) {

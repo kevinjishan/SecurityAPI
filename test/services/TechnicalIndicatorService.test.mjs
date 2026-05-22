@@ -80,6 +80,7 @@ test("calculates common technical indicators from normalized candles", () => {
   assert.equal(result.latest.flags.rsiZone, "overbought");
   assert.equal(result.latest.flags.candleColor, "bullish");
   assert.equal(result.latest.bollingerBands.middle, 18);
+  assert.equal(isTechnicalRating(result.summary.technicalRating), true);
   assert.equal(result.meta.outputCount, 10);
   assert.equal(result.meta.requiredWarmup, 9);
 });
@@ -186,6 +187,109 @@ test("gets overseas stock indicators from OverseasStockMarketDataService candles
   assert.equal(result.data.latest.sma.p3, 18);
 });
 
+test("gets US stock indicators through overseas candle wrappers for service-ready brokers", async () => {
+  const calls = [];
+  const fakeOverseasMarketData = {
+    async getOverseasStockCandles(broker, identity, options) {
+      calls.push({ broker, identity, options });
+
+      return candleResult({
+        broker,
+        symbol: identity.symbol,
+        interval: "1d",
+        source: { broker, id: `${broker}-candles`, capabilityId: "overseasStock.marketData.candles" },
+      });
+    },
+  };
+  const service = new TechnicalIndicatorService({}, { overseasMarketData: fakeOverseasMarketData });
+
+  for (const broker of ["ls", "db", "kis"]) {
+    const result = await service.getUsStockIndicators(broker, {
+      symbol: "TSLA",
+      exchangeCode: "NASDAQ",
+    }, {
+      smaPeriods: [3],
+      emaPeriods: [3],
+      rsiPeriod: 3,
+      macd: { fastPeriod: 3, slowPeriod: 6, signalPeriod: 3 },
+      bollingerBands: { period: 3, standardDeviations: 2 },
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(result.capability, "overseasStock.technical.indicators");
+    assert.equal(result.data.symbol, "TSLA");
+    assert.equal(result.data.latest.sma.p3, 18);
+    assert.equal(isTechnicalRating(result.data.summary.movingAverageRating), true);
+  }
+
+  assert.deepEqual(calls.map((call) => [call.broker, call.identity.countryCode, call.identity.currencyCode]), [
+    ["ls", "US", "USD"],
+    ["db", "US", "USD"],
+    ["kis", "US", "USD"],
+  ]);
+});
+
+test("US stock indicator wrapper returns unsupported for Kiwoom", async () => {
+  const service = new TechnicalIndicatorService({}, {
+    overseasMarketData: {
+      async getOverseasStockCandles() {
+        throw new Error("should not request candles");
+      },
+    },
+  });
+
+  const result = await service.getUsStockIndicators("kiwoom", {
+    symbol: "TSLA",
+    exchangeCode: "NASDAQ",
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "UNSUPPORTED_CAPABILITY");
+});
+
+test("US stock indicator wrapper matches direct calculation latest values", async () => {
+  const candles = sampleCandles();
+  const fakeOverseasMarketData = {
+    async getOverseasStockCandles(broker, identity) {
+      return {
+        ok: true,
+        broker,
+        id: "FSTKCHARTDAY",
+        symbol: identity.symbol,
+        data: {
+          broker,
+          symbol: identity.symbol,
+          interval: "1d",
+          candles,
+          source: { broker, id: "FSTKCHARTDAY", capabilityId: "overseasStock.marketData.candles" },
+        },
+        raw: null,
+        headers: {},
+        status: 200,
+      };
+    },
+  };
+  const service = new TechnicalIndicatorService({}, { overseasMarketData: fakeOverseasMarketData });
+  const options = {
+    smaPeriods: [3],
+    emaPeriods: [3],
+    rsiPeriod: 3,
+    macd: { fastPeriod: 3, slowPeriod: 6, signalPeriod: 3 },
+    bollingerBands: { period: 3, standardDeviations: 2 },
+  };
+
+  const direct = service.calculateFromCandles(candles, options);
+  const wrapped = await service.getUsStockIndicators("db", {
+    symbol: "TSLA",
+    exchangeCode: "NASDAQ",
+  }, options);
+
+  assert.equal(direct.ok, true);
+  assert.equal(wrapped.ok, true);
+  assert.deepEqual(wrapped.data.latest.sma, direct.data.latest.sma);
+  assert.deepEqual(wrapped.data.latest.momentum.macd, direct.data.latest.momentum.macd);
+});
+
 test("returns validation errors for invalid indicator input", () => {
   const service = new TechnicalIndicatorService();
   const result = service.calculateFromCandles("not-candles");
@@ -238,4 +342,14 @@ function candle(date, close, volume) {
     close,
     volume,
   };
+}
+
+function isTechnicalRating(value) {
+  return [
+    "strongPositive",
+    "positive",
+    "neutral",
+    "negative",
+    "strongNegative",
+  ].includes(value);
 }

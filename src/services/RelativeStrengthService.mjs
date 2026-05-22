@@ -2,8 +2,10 @@ import { getCapabilities } from "../capabilities/index.mjs";
 import { BrokerError, assertBroker } from "../core/index.mjs";
 import { MarketContextService } from "./MarketContextService.mjs";
 import { MarketDataService } from "./MarketDataService.mjs";
+import { OverseasStockMarketDataService } from "./OverseasStockMarketDataService.mjs";
 
 const DOMESTIC_CAPABILITY_ID = "relativeStrength.domesticStock.benchmark";
+const OVERSEAS_CAPABILITY_ID = "overseasStock.relativeStrength.benchmark";
 
 const DEFAULT_RELATIVE_STRENGTH_OPTIONS = Object.freeze({
   periods: [20, 60],
@@ -15,6 +17,7 @@ export class RelativeStrengthService {
     this.clients = clients;
     this.marketData = dependencies.marketData ?? new MarketDataService(clients);
     this.marketContext = dependencies.marketContext ?? new MarketContextService(clients);
+    this.overseasMarketData = dependencies.overseasMarketData ?? new OverseasStockMarketDataService(clients);
   }
 
   calculateRelativeStrength(input = {}, options = {}) {
@@ -211,6 +214,100 @@ export class RelativeStrengthService {
       });
     }
   }
+
+  async getUsStockRelativeStrength(broker, identity, options = {}) {
+    let normalizedBroker = String(broker ?? "").trim().toLowerCase();
+    let normalizedIdentity = typeof identity === "string" ? { symbol: identity } : { ...(identity ?? {}) };
+    let symbol = normalizedIdentity.symbol ?? null;
+
+    try {
+      normalizedIdentity = normalizeUsStockIdentity(identity, options);
+      symbol = normalizedIdentity.symbol;
+      normalizedBroker = assertBroker(normalizedBroker);
+      const capabilities = getCapabilities(normalizedBroker);
+
+      if (!capabilities.supports(OVERSEAS_CAPABILITY_ID)) {
+        return failureResponse({
+          broker: normalizedBroker,
+          symbol,
+          benchmark: options.benchmark ?? options.benchmarkIdentity ?? null,
+          capabilityId: OVERSEAS_CAPABILITY_ID,
+          error: BrokerError.unsupported(`${normalizedBroker} does not support ${OVERSEAS_CAPABILITY_ID}`, {
+            broker: normalizedBroker,
+            details: { capabilityId: OVERSEAS_CAPABILITY_ID },
+          }),
+        });
+      }
+
+      const candleOptions = {
+        adjusted: true,
+        ...options,
+        countryCode: normalizedIdentity.countryCode,
+        currencyCode: normalizedIdentity.currencyCode,
+      };
+      const targetResult = await this.overseasMarketData.getOverseasStockCandles(normalizedBroker, normalizedIdentity, candleOptions);
+      if (!targetResult.ok) {
+        return failureResponse({
+          broker: normalizedBroker,
+          symbol,
+          benchmark: options.benchmark ?? options.benchmarkIdentity ?? null,
+          capabilityId: OVERSEAS_CAPABILITY_ID,
+          result: targetResult,
+          error: targetResult.error,
+        });
+      }
+
+      const benchmarkResult = await resolveUsBenchmarkCandles({
+        broker: normalizedBroker,
+        options,
+        overseasMarketData: this.overseasMarketData,
+      });
+      if (!benchmarkResult.ok) {
+        return failureResponse({
+          broker: normalizedBroker,
+          symbol,
+          benchmark: options.benchmark ?? options.benchmarkIdentity ?? null,
+          capabilityId: OVERSEAS_CAPABILITY_ID,
+          result: benchmarkResult,
+          error: benchmarkResult.error,
+        });
+      }
+
+      const benchmark = normalizeUsBenchmark(options, benchmarkResult.data?.identity);
+      const data = calculateRelativeStrength({
+        targetCandles: targetResult.data?.candles ?? [],
+        benchmarkCandles: benchmarkResult.data?.candles ?? [],
+        benchmark,
+      }, {
+        ...options,
+        broker: normalizedBroker,
+        symbol,
+      });
+
+      return successResponse({
+        broker: normalizedBroker,
+        symbol,
+        benchmark: data.benchmark,
+        capabilityId: OVERSEAS_CAPABILITY_ID,
+        result: targetResult,
+        data: {
+          ...data,
+          sources: {
+            target: targetResult.data?.source ?? null,
+            benchmark: benchmarkResult.data?.source ?? null,
+          },
+        },
+      });
+    } catch (error) {
+      return failureResponse({
+        broker: normalizedBroker || "unknown",
+        symbol,
+        benchmark: options.benchmark ?? options.benchmarkIdentity ?? null,
+        capabilityId: OVERSEAS_CAPABILITY_ID,
+        error,
+      });
+    }
+  }
 }
 
 export function calculateRelativeStrength(input = {}, options = {}) {
@@ -369,6 +466,51 @@ async function resolveBenchmarkCandles({ broker, options, marketContext }) {
   }
 
   return marketContext.getDomesticIndexDailyCandles(broker, benchmark.code, options);
+}
+
+async function resolveUsBenchmarkCandles({ broker, options, overseasMarketData }) {
+  if (Array.isArray(options.benchmarkCandles)) {
+    return {
+      ok: true,
+      broker,
+      id: null,
+      data: {
+        candles: options.benchmarkCandles,
+        identity: options.benchmarkIdentity ?? normalizeUsBenchmarkIdentity(options),
+        source: {
+          broker,
+          id: "provided",
+          capabilityId: OVERSEAS_CAPABILITY_ID,
+        },
+      },
+      raw: null,
+      headers: {},
+      status: 0,
+    };
+  }
+
+  const benchmarkIdentity = normalizeUsBenchmarkIdentity(options);
+  const result = await overseasMarketData.getOverseasStockCandles(broker, benchmarkIdentity, {
+    adjusted: true,
+    ...options,
+    ...(options.benchmarkCandleOptions ?? {}),
+    benchmarkCandles: undefined,
+    benchmarkIdentity: undefined,
+    countryCode: benchmarkIdentity.countryCode,
+    currencyCode: benchmarkIdentity.currencyCode,
+  });
+
+  if (!result.ok) {
+    return result;
+  }
+
+  return {
+    ...result,
+    data: {
+      ...result.data,
+      identity: benchmarkIdentity,
+    },
+  };
 }
 
 async function resolveBasketCandles({ broker, targetSymbol, options, marketData }) {
@@ -596,6 +738,62 @@ function normalizeBenchmark(value) {
   };
 }
 
+function normalizeUsStockIdentity(identity, options = {}) {
+  const value = typeof identity === "string" ? { symbol: identity } : { ...(identity ?? {}) };
+  const symbol = normalizeSymbol(value.symbol, "identity.symbol");
+
+  return {
+    ...value,
+    symbol,
+    countryCode: value.countryCode ?? value.country ?? options.countryCode ?? options.country ?? "US",
+    currencyCode: value.currencyCode ?? value.currency ?? options.currencyCode ?? options.currency ?? "USD",
+    exchangeCode: value.exchangeCode ?? value.exchange ?? options.exchangeCode ?? options.exchange,
+  };
+}
+
+function normalizeUsBenchmarkIdentity(options = {}) {
+  const explicit = options.benchmarkIdentity
+    ? (typeof options.benchmarkIdentity === "string" ? { symbol: options.benchmarkIdentity } : options.benchmarkIdentity)
+    : null;
+  const benchmark = options.benchmark;
+  const benchmarkSymbol = typeof benchmark === "string"
+    ? benchmark
+    : benchmark?.symbol ?? benchmark?.code;
+  const symbol = normalizeSymbol(
+    explicit?.symbol ?? options.benchmarkSymbol ?? benchmarkSymbol ?? "SPY",
+    "benchmarkIdentity.symbol",
+  );
+
+  return {
+    ...explicit,
+    symbol,
+    countryCode: explicit?.countryCode ?? explicit?.country ?? options.benchmarkCountryCode ?? "US",
+    currencyCode: explicit?.currencyCode ?? explicit?.currency ?? options.benchmarkCurrencyCode ?? "USD",
+    exchangeCode: explicit?.exchangeCode
+      ?? explicit?.exchange
+      ?? options.benchmarkExchangeCode
+      ?? options.benchmarkExchange
+      ?? "AMEX",
+  };
+}
+
+function normalizeUsBenchmark(options = {}, identity = null) {
+  const explicit = options.benchmark;
+  if (explicit && typeof explicit === "object") {
+    return {
+      type: explicit.type ?? "etf",
+      code: explicit.code ?? explicit.symbol ?? identity?.symbol ?? "SPY",
+      label: explicit.label ?? null,
+    };
+  }
+
+  const symbol = typeof explicit === "string" ? explicit : identity?.symbol ?? "SPY";
+  return {
+    type: "etf",
+    code: symbol,
+  };
+}
+
 function returnPct(current, previous) {
   if (!Number.isFinite(current) || !Number.isFinite(previous) || previous === 0) {
     return null;
@@ -638,7 +836,7 @@ function parseNumber(value) {
   }
 
   const parsed = Number(String(value).replaceAll(",", "").replace(/^\+/, ""));
-  return Number.isFinite(parsed) ? Math.abs(parsed) : null;
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function nullableString(value) {

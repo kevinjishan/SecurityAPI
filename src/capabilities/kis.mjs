@@ -128,6 +128,26 @@ export const KIS_CAPABILITIES = [
     apis: [{ id: "/uapi/overseas-price/v1/quotations/inquire-asking-price", role: "orderBook", transport: "rest" }],
   },
   {
+    id: "overseasStock.marketData.candles",
+    status: "serviceReady",
+    apis: [
+      { id: "/uapi/overseas-price/v1/quotations/inquire-daily-chartprice", role: "periodCandles", transport: "rest" },
+      { id: "/uapi/overseas-price/v1/quotations/inquire-time-itemchartprice", role: "minuteCandles", transport: "rest" },
+    ],
+  },
+  {
+    id: "overseasStock.technical.indicators",
+    status: "composed",
+    apis: [],
+    caution: "해외주식 기술적 지표는 표준화된 해외주식 캔들 위에서 SDK가 계산한다. 매수/매도 판단은 포함하지 않는다.",
+  },
+  {
+    id: "overseasStock.relativeStrength.benchmark",
+    status: "composed",
+    apis: [],
+    caution: "해외주식 상대강도는 종목 캔들과 명시된 ETF/벤치마크 캔들을 조합한 SDK 계산값이다.",
+  },
+  {
     id: "overseasStock.account.balance",
     status: "metadataOnly",
     apis: [{ id: "/uapi/overseas-stock/v1/trading/inquire-balance", role: "balance", transport: "rest" }],

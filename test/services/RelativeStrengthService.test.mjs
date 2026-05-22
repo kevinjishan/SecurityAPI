@@ -155,6 +155,84 @@ test("gets domestic stock relative strength against a provided sector basket", a
   assert.equal(result.data.latest.p3.direction, "outperforming");
 });
 
+test("gets US stock relative strength with provided benchmark candles", async () => {
+  const fakeOverseasMarketData = {
+    async getOverseasStockCandles(broker, identity, options) {
+      assert.equal(broker, "db");
+      assert.equal(identity.symbol, "TSLA");
+      assert.equal(identity.countryCode, "US");
+      assert.equal(options.count, 8);
+
+      return {
+        ok: true,
+        broker,
+        id: "FSTKCHARTDAY",
+        data: {
+          candles: targetCandles(),
+          source: { broker, id: "FSTKCHARTDAY", capabilityId: "overseasStock.marketData.candles" },
+        },
+        raw: null,
+        headers: {},
+        status: 200,
+      };
+    },
+  };
+  const service = new RelativeStrengthService({}, { overseasMarketData: fakeOverseasMarketData });
+  const result = await service.getUsStockRelativeStrength("db", {
+    symbol: "TSLA",
+    exchangeCode: "NASDAQ",
+  }, {
+    count: 8,
+    benchmark: { type: "etf", code: "SPY" },
+    benchmarkCandles: benchmarkCandles(),
+    periods: [3],
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.capability, "overseasStock.relativeStrength.benchmark");
+  assert.equal(result.data.benchmark.type, "etf");
+  assert.equal(result.data.latest.p3.direction, "outperforming");
+  assert.equal(result.data.sources.target.id, "FSTKCHARTDAY");
+  assert.equal(result.data.sources.benchmark.id, "provided");
+});
+
+test("gets US stock relative strength by fetching benchmark identity", async () => {
+  const calls = [];
+  const fakeOverseasMarketData = {
+    async getOverseasStockCandles(broker, identity) {
+      calls.push({ broker, identity });
+      const candles = identity.symbol === "SPY" ? benchmarkCandles() : targetCandles();
+
+      return {
+        ok: true,
+        broker,
+        id: "g3204",
+        data: {
+          candles,
+          source: { broker, id: "g3204", capabilityId: "overseasStock.marketData.candles" },
+        },
+        raw: null,
+        headers: {},
+        status: 200,
+      };
+    },
+  };
+  const service = new RelativeStrengthService({}, { overseasMarketData: fakeOverseasMarketData });
+  const result = await service.getUsStockRelativeStrength("ls", {
+    symbol: "TSLA",
+    exchangeCode: "NASDAQ",
+  }, {
+    benchmarkIdentity: { symbol: "SPY", exchangeCode: "AMEX" },
+    periods: [3],
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(calls.map((call) => call.identity.symbol), ["TSLA", "SPY"]);
+  assert.deepEqual(calls.map((call) => call.identity.countryCode), ["US", "US"]);
+  assert.equal(result.data.benchmark.code, "SPY");
+  assert.equal(result.data.latest.p3.ratio, 3.22222222);
+});
+
 test("returns validation error for non-index benchmark without benchmarkCandles", async () => {
   const fakeMarketData = {
     async getDomesticStockDailyCandles() {
