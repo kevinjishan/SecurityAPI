@@ -126,14 +126,15 @@ caps.findApis("quote.domesticStock.currentPrice");
 스캐너 서비스는 거래량/거래대금/등락률 랭킹과 저장 조건검색으로 종목 탐색을 돕습니다.
 시장 컨텍스트 서비스는 KOSPI/KOSDAQ 같은 주요 지수 현재가, 일봉 추이, 시장 폭 스냅샷을 제공합니다. LS는 장전/장후 예상지수도 제공합니다.
 시장 수급 서비스는 개인/외국인/기관 순매수와 프로그램 매매 흐름을 공통 형태로 제공합니다.
+기술지표 서비스는 국내/해외/미국주식 OHLCV 캔들 위에서 SMA, EMA, RSI, MACD, Stochastic, MFI, ATR, Bollinger Bands, 캔들 패턴과 요약 rating을 계산합니다. 상대강도 서비스는 국내 지수 benchmark, 제공된 benchmark 캔들, 미국 ETF benchmark를 대상으로 종목 대비 성과를 계산합니다. 시장폭 서비스는 전체 universe를 자동 live loop로 수집하지 않고 앱이 제공한 snapshot/candle 입력으로 계산합니다.
 시그널 입력 서비스는 현재가, 호가, OHLCV, 랭킹, 조건검색 매칭 여부를 조합해 전략 앱이 바로 읽을 수 있는 판단 입력값을 만듭니다. 옵션을 켜면 시장 스냅샷, 지수 일봉, 투자자 수급, 프로그램 매매 흐름도 같은 입력값에 포함합니다. 초기 스냅샷에 실시간 체결/호가/장운영 상태/조건검색 이벤트를 누적해 갱신형 입력값으로 사용할 수도 있습니다.
 계좌 조회 도메인 서비스는 4개 증권사의 예수금/주문가능금액, 잔고/평가손익, 주문/체결 내역 조회를 제공합니다.
 주문 서비스는 기본값으로 dry-run 요청만 생성합니다. 실주문은 `dryRun: false`, `confirm: true`가 모두 필요하고, 시장가 실주문은 `confirmMarketOrder: true`도 필요합니다.
 실시간 서비스는 4개 증권사의 WebSocket 구독 요청, 수신 메시지 정규화, 자동 재연결과 구독 복구를 제공합니다. 체결/호가/주문 이벤트뿐 아니라 장시작, 장마감, 시간외, 서킷브레이크 같은 장운영 상태도 공통 형태로 제공합니다.
-LS 해외주식 서비스는 현재가/호가, 종목정보/마스터/차트/시간대별, 계좌, 주문, 실시간 체결/호가/주문 이벤트를 제공합니다. DB/KIS 해외주식 API는 metadata discovery로 먼저 연결되어 있으며 serviceReady 승격은 별도 검증 범위입니다.
+LS 해외주식 서비스는 현재가/호가, 종목정보/마스터/차트/분봉/시간대별, 계좌, 주문, 실시간 체결/호가/주문 이벤트를 제공합니다. DB/KIS 해외주식은 캔들 조회를 service-ready로 제공하며, 기술지표와 미국주식 상대강도는 이 표준 캔들 위에서 SDK가 계산합니다. DB/KIS 해외주식 quote/account/order API는 아직 metadata discovery 범위입니다.
 
 ```js
-import { AccountService, DbClient, KiwoomClient, KisClient, LsClient, MarketContextService, MarketFlowService, MarketDataService, OrderService, OverseasStockRealtimeService, QuoteService, RealtimeService, ScannerService, SignalInputService } from "security-api-reference";
+import { AccountService, DbClient, KiwoomClient, KisClient, LsClient, MarketBreadthService, MarketContextService, MarketFlowService, MarketDataService, OrderService, OverseasStockMarketDataService, OverseasStockRealtimeService, QuoteService, RealtimeService, RelativeStrengthService, ScannerService, SignalInputService, TechnicalIndicatorService } from "security-api-reference";
 
 const clients = {
   kiwoom: new KiwoomClient({
@@ -166,9 +167,13 @@ const scanner = new ScannerService(clients);
 const marketContext = new MarketContextService(clients);
 const marketFlow = new MarketFlowService(clients);
 const signals = new SignalInputService(clients);
+const technical = new TechnicalIndicatorService(clients);
+const relativeStrength = new RelativeStrengthService(clients);
+const marketBreadth = new MarketBreadthService();
 const account = new AccountService(clients);
 const order = new OrderService(clients);
 const realtime = new RealtimeService(clients);
+const overseasMarketData = new OverseasStockMarketDataService(clients);
 const overseasRealtime = new OverseasStockRealtimeService(clients);
 
 const price = await quote.getDomesticStockCurrentPrice("kiwoom", "005930");
@@ -207,6 +212,29 @@ const investorFlow = await marketFlow.getDomesticInvestorFlow("kiwoom", "kospi",
 const programTrading = await marketFlow.getProgramTradingTrend("kiwoom", "kospi", {
   unit: "amount",
   date: "20260519"
+});
+const technicalIndicators = await technical.getDomesticStockIndicators("kiwoom", "005930", {
+  count: 220
+});
+const usTechnicalIndicators = await technical.getUsStockIndicators("db", {
+  symbol: "TSLA",
+  exchangeCode: "NASDAQ"
+}, {
+  count: 260
+});
+const usRelativeStrength = await relativeStrength.getUsStockRelativeStrength("kis", {
+  symbol: "TSLA",
+  exchangeCode: "NASDAQ"
+}, {
+  benchmarkIdentity: { symbol: "SPY", exchangeCode: "AMEX" },
+  periods: [20, 60]
+});
+const usDailyCandles = await overseasMarketData.getOverseasStockCandles("kis", {
+  symbol: "TSLA",
+  exchangeCode: "NASDAQ"
+}, {
+  period: "daily",
+  count: 260
 });
 const signalInputs = await signals.getDomesticStockSignalInputs("kiwoom", "005930", {
   includeRankings: true,

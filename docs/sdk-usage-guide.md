@@ -1,6 +1,6 @@
 # SDK Usage Guide
 
-Last updated: 2026-05-19
+Last updated: 2026-05-23
 
 이 문서는 외부 서버나 앱이 SecurityAPI를 SDK처럼 참조해 인증, 조회, 실시간 구독, dry-run 주문을 사용하는 기본 흐름을 정리한다. 안정적으로 의존해도 되는 public API의 범위는 [Public SDK Contract](public-sdk-contract.md)를 기준으로 한다.
 
@@ -91,6 +91,7 @@ import {
   MarketBreadthService,
   MarketDataService,
   OrderService,
+  OverseasStockMarketDataService,
   OverseasStockQuoteService,
   OverseasStockRealtimeService,
   QuoteService,
@@ -135,6 +136,7 @@ export function createSecurityApiServices(clients = createSecurityApiClients()) 
     relativeStrength: new RelativeStrengthService(clients),
     account: new AccountService(clients),
     order: new OrderService(clients),
+    overseasMarketData: new OverseasStockMarketDataService(clients),
     overseasQuote: new OverseasStockQuoteService(clients),
     overseasRealtime: new OverseasStockRealtimeService(clients),
   };
@@ -146,7 +148,7 @@ export function createSecurityApiServices(clients = createSecurityApiClients()) 
 Read-only 서비스는 `get*` 메서드를 사용한다. 응답은 항상 `ok`를 먼저 확인한다.
 
 ```js
-const { quote, overseasQuote, account } = createSecurityApiServices();
+const { quote, overseasMarketData, overseasQuote, account } = createSecurityApiServices();
 
 const domestic = await quote.getDomesticStockCurrentPrice("ls", "005930");
 if (!domestic.ok) {
@@ -166,6 +168,18 @@ if (!overseas.ok) {
   throw overseas.error;
 }
 console.log(overseas.data.symbol, overseas.data.price, overseas.data.currency);
+
+const usDailyCandles = await overseasMarketData.getOverseasStockCandles("db", {
+  symbol: "TSLA",
+  exchangeCode: "NASDAQ",
+}, {
+  period: "daily",
+  count: 260,
+});
+if (!usDailyCandles.ok) {
+  throw usDailyCandles.error;
+}
+console.log(usDailyCandles.data.interval, usDailyCandles.data.candles.at(-1)?.close);
 
 const balance = await account.getDomesticStockBalance("kiwoom");
 if (!balance.ok) {
@@ -213,9 +227,22 @@ console.log(indicators.data.latest.flags.maAlignment, indicators.data.latest.fla
 const calculated = technical.calculateFromCandles(indicators.data.candles, {
   smaPeriods: [10],
 });
+
+const usIndicators = await technical.getUsStockIndicators("kis", {
+  symbol: "TSLA",
+  exchangeCode: "NASDAQ",
+}, {
+  count: 260,
+  period: "daily",
+});
+if (!usIndicators.ok) {
+  throw usIndicators.error;
+}
+
+console.log(usIndicators.data.summary.technicalRating);
 ```
 
-이 레이어는 매수/매도 추천을 반환하지 않는다. 전략 앱은 `latest`, `indicators`, `candles`를 입력값으로 받아 별도의 전략/알림/주문 승인 로직을 구성한다.
+미국주식 래퍼는 `countryCode: "US"`, `currencyCode: "USD"`, `adjusted: true`를 기본값으로 채우고 LS/DB/KIS 해외주식 캔들 API를 사용한다. Kiwoom은 현재 manifest에 미국주식 캔들 API가 없으므로 `UNSUPPORTED_CAPABILITY`를 반환한다. 이 레이어는 매수/매도 추천을 반환하지 않는다. 전략 앱은 `latest`, `summary`, `indicators`, `candles`를 입력값으로 받아 별도의 전략/알림/주문 승인 로직을 구성한다.
 
 ## Relative Strength
 
@@ -233,6 +260,24 @@ if (!rs.ok) {
 }
 
 console.log(rs.data.latest.p20.direction, rs.data.latest.p20.spread);
+```
+
+미국주식 상대강도는 `benchmarkCandles`를 직접 제공하거나 `benchmarkIdentity`를 지정해 같은 해외주식 캔들 경로로 비교 대상을 조회한다. 기본 자동 benchmark는 `SPY`이며, `QQQ`, `IWM`, sector ETF는 앱이 옵션으로 명시한다.
+
+```js
+const usRs = await relativeStrength.getUsStockRelativeStrength("db", {
+  symbol: "TSLA",
+  exchangeCode: "NASDAQ",
+}, {
+  benchmarkIdentity: { symbol: "SPY", exchangeCode: "AMEX" },
+  periods: [20, 60],
+  count: 260,
+});
+if (!usRs.ok) {
+  throw usRs.error;
+}
+
+console.log(usRs.data.latest.p20.spread, usRs.data.benchmark.code);
 ```
 
 섹터 대비 상대강도는 `benchmarkCandles`를 명시한다.
@@ -351,6 +396,14 @@ if (lsCaps.supports("overseasStock.quote.currentPrice")) {
 
 if (kisCaps.hasMetadata("overseasStock.quote.currentPrice")) {
   // KIS overseas quote docs are discoverable, but not serviceReady yet.
+}
+
+if (kisCaps.supports("overseasStock.marketData.candles")) {
+  // KIS overseas daily/minute candles are callable through OverseasStockMarketDataService.
+}
+
+if (kisCaps.supports("overseasStock.technical.indicators")) {
+  // KIS US stock indicators are SDK-computed from service-ready overseas candles.
 }
 
 const allowAccountEventStreams = process.env.SECURITY_API_ALLOW_ACCOUNT_EVENTS === "true";

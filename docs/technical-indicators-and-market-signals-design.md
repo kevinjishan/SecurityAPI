@@ -1,6 +1,6 @@
 # Technical Indicators And Market Signals Design
 
-Last updated: 2026-05-22
+Last updated: 2026-05-23
 
 이 문서는 SecurityAPI SDK가 기술적 지표, 상대강도, 시장 폭, 캔들 패턴을 외부 서버/앱에서 활용하기 좋은 형태로 제공하기 위한 설계 기준을 정리한다.
 
@@ -342,6 +342,8 @@ Flags 예시:
 
 ## 6. 구현 순서
 
+현재 구현 상태: T1~T5의 국내주식 계산 레이어는 구현 완료이며, 미국주식은 LS/DB/KIS 해외주식 캔들 기반 `getUsStockIndicators()`와 `getUsStockRelativeStrength()`까지 구현되어 있다. Kiwoom 미국주식은 공식 manifest에 캔들 API가 없으므로 service 호출 시 unsupported로 남긴다.
+
 ### T1. TechnicalIndicatorService 확장
 
 목표:
@@ -434,14 +436,16 @@ Flags 예시:
 SecurityAPI SDK
   TechnicalIndicatorService
     - one symbol/index OHLCV indicators
+    - domestic/overseas/US stock wrappers
     - configurable periods and thresholds
-    - latest snapshot and series
+    - latest snapshot, summary ratings, and series
 
   RelativeStrengthService
     - target vs benchmark
     - stock vs KOSPI
     - stock vs sector
     - sector vs KOSPI
+    - US stock vs ETF benchmark
 
   MarketBreadthService
     - market universe health

@@ -10,15 +10,15 @@
 - generated manifest: `data/generated/db-manifest.json`, `data/generated/kis-manifest.json`
 - raw/docs snapshot: `data/raw/db`, `data/raw/kis`, `docs/db`, `docs/kis`
 - clients: `DbClient`, `KisClient`
-- capabilities: DB/KIS auth, 국내주식 quote/candle/account/order dry-run/realtime
-- services: `QuoteService`, `MarketDataService`, `AccountService`, `OrderService`, `RealtimeService`
+- capabilities: DB/KIS auth, 국내주식 quote/candle/account/order dry-run/realtime, 해외주식 candle, 해외주식 technical/relative strength composed
+- services: `QuoteService`, `MarketDataService`, `OverseasStockMarketDataService`, `TechnicalIndicatorService`, `RelativeStrengthService`, `AccountService`, `OrderService`, `RealtimeService`
 - order guard: dry-run default, live request confirmation, market-order confirmation, retry disabled
 
 제외:
 
 - live 주문 전송 검증
 - 실제 계좌 조회 또는 live read-only 호출 실행
-- DB/KIS 해외주식 serviceReady 승격
+- DB/KIS 해외주식 quote/account/order serviceReady 승격
 - 자동매매 판단 또는 주문 승인 UI
 
 ## Official Sources
@@ -53,6 +53,11 @@ KIS는 REST path 기반 구조로 수집한다. `KisClient`는 운영/모의 dom
 - 국내주식 계좌 예수금/잔고/주문체결내역 read-only
 - 국내주식 주문 preview/dry-run 및 guarded live request path
 - 국내주식 WebSocket 체결/호가/주문 이벤트 normalize
+- 해외주식 캔들 read-only
+  - DB: `FSTKCHARTDAY`, `FSTKCHARTWEEK`, `FSTKCHARTMONTH`, `FSTKCHARTMIN`, `FSTKCHARTTICK`
+  - KIS: `/uapi/overseas-price/v1/quotations/inquire-daily-chartprice`, `/uapi/overseas-price/v1/quotations/inquire-time-itemchartprice`
+- 해외주식 기술지표 composed 계산
+- 미국주식 상대강도 composed 계산
 
 `metadataOnly`로 남긴 범위:
 
@@ -90,5 +95,6 @@ npm pack --dry-run
 - DB token/revoke, TR request headers/body, continuation, business error
 - KIS token/revoke-adjacent auth flow, GET query/header, mock/prod domain, hashkey, approval key, business error
 - DB/KIS quote, candles, account read-only normalize
+- DB/KIS overseas candles normalize and US technical indicator wrappers
 - DB/KIS order dry-run request preview
 - DB/KIS realtime subscription IDs and message normalize

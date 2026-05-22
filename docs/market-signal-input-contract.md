@@ -1,6 +1,6 @@
 # Market Signal Input Contract
 
-Last updated: 2026-05-22
+Last updated: 2026-05-23
 
 이 문서는 기술지표, 상대강도, 섹터 비교, 시장폭 계산에서 외부 앱이 SDK에 제공할 수 있는 입력 명세를 고정한다.
 
@@ -74,6 +74,18 @@ technical.getDomesticStockIndicators("kiwoom", "005930", {
 });
 ```
 
+미국주식은 같은 캔들 기반 계산기를 `getUsStockIndicators()`로 호출한다. 래퍼는 `countryCode: "US"`, `currencyCode: "USD"`, `adjusted: true`를 기본값으로 채우며, LS/DB/KIS 해외주식 캔들 capability가 있는 broker에서 동작한다.
+
+```js
+technical.getUsStockIndicators("db", {
+  symbol: "TSLA",
+  exchangeCode: "NASDAQ",
+}, {
+  count: 260,
+  period: "daily",
+});
+```
+
 ## Relative Strength
 
 ### Index Benchmark
@@ -86,6 +98,19 @@ relativeStrength.getDomesticStockRelativeStrength("kiwoom", "005930", {
   periods: [20, 60],
   baseDate: "20260519",
   count: 120,
+});
+```
+
+미국주식 benchmark는 ETF 캔들로 계산한다. 앱이 `benchmarkCandles`를 직접 넣거나 `benchmarkIdentity`를 명시하면 SDK가 같은 해외주식 캔들 경로로 조회한다. 자동 기본값은 `SPY`다.
+
+```js
+relativeStrength.getUsStockRelativeStrength("kis", {
+  symbol: "TSLA",
+  exchangeCode: "NASDAQ",
+}, {
+  benchmarkIdentity: { symbol: "SPY", exchangeCode: "AMEX" },
+  periods: [20, 60],
+  count: 260,
 });
 ```
 

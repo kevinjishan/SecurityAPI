@@ -88,9 +88,12 @@ Examples:
 - `getDomesticStockCurrentPrice`
 - `getDomesticStockIndicators`
 - `getDomesticStockRelativeStrength`
+- `getUsStockIndicators`
+- `getUsStockRelativeStrength`
 - `getDomesticStockOrderBook`
 - `getDomesticIndexCurrent`
 - `getOverseasStockCurrentPrice`
+- `getOverseasStockCandles`
 - `buyDomesticStock`
 - `cancelOverseasStockOrder`
 - `subscribeOverseasStockTrades`
@@ -133,6 +136,39 @@ Contract:
 - `id` is API ID or TR code.
 - `capability` is the service capability id.
 - Apps should not parse `raw` unless they need broker-specific fields.
+
+## Market Signal Contract
+
+`TechnicalIndicatorService`, `RelativeStrengthService`, and `MarketBreadthService` are read-only or calculation-only layers. They do not return order instructions, `buy`, `sell`, or recommendation fields.
+
+Public technical indicator methods:
+
+- `calculateFromCandles(candles, options?)`
+- `getDomesticStockIndicators(broker, symbol, options?)`
+- `getOverseasStockIndicators(broker, identity, options?)`
+- `getUsStockIndicators(broker, identity, options?)`
+
+`getUsStockIndicators` is a semantic wrapper over overseas candles. It defaults `countryCode` to `US`, `currencyCode` to `USD`, and `adjusted` to `true`. Supported callable brokers are those with `overseasStock.technical.indicators`; Kiwoom currently returns `UNSUPPORTED_CAPABILITY`.
+
+Technical indicator results include:
+
+- `data.candles`: normalized input candles used for calculation
+- `data.indicators`: full time series by indicator family
+- `data.latest`: latest indicator snapshot
+- `data.summary.movingAverageRating`
+- `data.summary.oscillatorRating`
+- `data.summary.technicalRating`
+
+Rating values are `strongPositive`, `positive`, `neutral`, `negative`, or `strongNegative`.
+
+Public relative strength methods:
+
+- `calculateRelativeStrength(input, options?)`
+- `getDomesticStockRelativeStrength(broker, symbol, options?)`
+- `getDomesticStockRelativeStrengthVsBasket(broker, symbol, options?)`
+- `getUsStockRelativeStrength(broker, identity, options?)`
+
+`getUsStockRelativeStrength` accepts `benchmarkCandles` or `benchmarkIdentity`; when neither is supplied, the default benchmark identity is `SPY`. If benchmark return is effectively zero, `ratio` remains `null` and `spread` is preserved.
 
 ## Dry-run Order Response Contract
 

@@ -2,7 +2,7 @@
 
 이 문서는 [Core Expansion Roadmap](core-expansion-roadmap.md)의 해외주식 범위를 실제 구현 단위로 나눈 상세 설계다.
 
-해외주식 1차 구현은 LS증권 OPEN API 기준으로 진행한다. Kiwoom은 현재 저장소의 공식 metadata에서 해외주식 REST/WebSocket 명세가 확인되지 않으므로, 해외주식 service 호출 시 명확한 unsupported 응답을 반환한다.
+해외주식 1차 구현은 LS증권 OPEN API 기준으로 시작했고, 현재는 DB증권과 한국투자증권의 해외주식 캔들 조회까지 service-ready로 확장했다. Kiwoom은 현재 저장소의 공식 metadata에서 해외주식 REST/WebSocket 명세가 확인되지 않으므로, 해외주식 service 호출 시 명확한 unsupported 응답을 반환한다.
 
 ## 1. 설계 원칙
 
@@ -36,6 +36,11 @@ type CapabilityStatus = "serviceReady" | "metadataOnly" | "parked" | "composed";
 - LS 해외주식 account capability: `serviceReady`
 - LS 해외주식 order capability: `serviceReady`
 - LS 해외주식 realtime capability: `serviceReady`
+- DB 해외주식 candle capability: `serviceReady`
+- KIS 해외주식 candle capability: `serviceReady`
+- LS/DB/KIS 해외주식 technical indicators: `composed`
+- LS/DB/KIS 미국주식 relative strength: `composed`
+- DB/KIS 해외주식 quote/account/order capability: `metadataOnly`
 - 선물옵션/파생상품: `parked`
 
 ## 3. 공통 입력 타입
@@ -65,6 +70,14 @@ LS 주요 필드 대응:
 | `countryCode` | `CntryCode`, `natcode` | 국가 코드 |
 | `currencyCode` | `CrcyCode` | 통화 코드 |
 | `delayType` | `delaygb` | 지연구분. 문서 예: `R` |
+
+미국주식 거래소 alias는 caller 편의를 위해 기본 3개만 broker별 코드로 변환한다.
+
+| Alias | LS | DB | KIS |
+| --- | --- | --- | --- |
+| `NYSE` | `81` | `FY` | `NYS` |
+| `NASDAQ` | `82` | `FN` | `NAS` |
+| `AMEX` | `81` | `FA` | `AMS` |
 
 기본 규칙:
 
@@ -150,7 +163,7 @@ getOverseasStockCandles(broker, identity, options?)
 getOverseasStockTimeSeries(broker, identity, options?)
 ```
 
-LS 대상 TR:
+LS 대상 TR/API:
 
 | 기능 | TR | Path | 필수 request |
 | --- | --- | --- | --- |
@@ -158,21 +171,32 @@ LS 대상 TR:
 | 마스터 | `g3190` | `/overseas-stock/market-data` | `delaygb`, `natcode`, `exgubun`, `readcnt`, `cts_value` |
 | 일/주/월 | `g3103` | `/overseas-stock/chart` | `delaygb`, `keysymbol`, `exchcd`, `symbol`, `gubun`, `date` |
 | 일/주/월/년 | `g3204` | `/overseas-stock/chart` | `sujung`, `delaygb`, `keysymbol`, `exchcd`, `symbol`, `gubun`, `qrycnt`, `comp_yn`, `sdate`, `edate`, `cts_date`, `cts_info` |
+| 분봉 | `g3203` | `/overseas-stock/chart` | `delaygb`, `keysymbol`, `exchcd`, `symbol`, `ncnt`, `qrycnt`, `comp_yn` |
 | 시간대별 | `g3102` | `/overseas-stock/market-data` | `delaygb`, `keysymbol`, `exchcd`, `readcnt`, `cts_seq` |
 | N틱 | `g3202` | `/overseas-stock/chart` | `delaygb`, `keysymbol`, `exchcd`, `symbol`, `ncnt`, `qrycnt`, `comp_yn`, `sdate`, `edate`, `cts_seq` |
 
-구현 순서:
+DB/KIS service-ready 해외주식 캔들:
 
-1. `g3104` 종목정보
-2. `g3103` 또는 `g3204` 일봉
-3. `g3190` 마스터
-4. `g3102`/`g3202` 시간/틱 계열
+| Broker | 기능 | API |
+| --- | --- | --- |
+| DB | 일/주/月/분/틱 | `FSTKCHARTDAY`, `FSTKCHARTWEEK`, `FSTKCHARTMONTH`, `FSTKCHARTMIN`, `FSTKCHARTTICK` |
+| KIS | 일/주/月/년 | `/uapi/overseas-price/v1/quotations/inquire-daily-chartprice` |
+| KIS | 분봉 | `/uapi/overseas-price/v1/quotations/inquire-time-itemchartprice` |
+
+구현 상태:
+
+- LS `g3104`, `g3190`, `g3103`, `g3204`, `g3203`, `g3102` service-ready
+- DB `FSTKCHARTDAY/WEEK/MONTH/MIN/TICK` service-ready
+- KIS daily/minute chart service-ready
+- DB/KIS 해외주식 quote/account/order는 metadataOnly 유지
 
 완료 기준:
 
-- candle normalizer가 `date`, `open`, `high`, `low`, `close`, `volume`을 반환한다.
+- candle normalizer가 `date`, `time?`, `localDate`, `localTime?`, `timestamp?`, `open`, `high`, `low`, `close`, `volume`, `amount?`, `raw`를 반환한다.
 - 압축 여부, 수정주가 여부, 연속조회 키는 options에 남긴다.
 - 필수 입력값이 없으면 broker 호출 전 validation error로 실패한다.
+
+미국주식 기술지표는 `TechnicalIndicatorService.getUsStockIndicators()`에서 같은 캔들 normalizer를 사용해 계산한다. 미국주식 상대강도는 `RelativeStrengthService.getUsStockRelativeStrength()`에서 `benchmarkCandles` 또는 `benchmarkIdentity`를 사용하며, 기본 benchmark identity는 `SPY`다.
 
 ## 6. Account Service
 
