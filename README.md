@@ -258,6 +258,10 @@ const realtimeSignalInputs = await signals.subscribeDomesticStockSignalInputs("k
 });
 const cash = await account.getDomesticStockCash("kiwoom");
 const balance = await account.getDomesticStockBalance("kiwoom");
+const kisBalance = await account.getDomesticStockBalance("kis", {
+  accountNumber: process.env.KIS_ACCOUNT_NO,
+  accountProductCode: process.env.KIS_ACCOUNT_PRODUCT_CODE ?? "01"
+});
 const orderHistory = await account.getDomesticStockOrderHistory("kiwoom", {
   orderDate: "20260518",
   symbol: "005930"
@@ -269,6 +273,13 @@ const buyDryRun = await order.buyDomesticStock("kiwoom", {
 }, {
   maxOrderAmount: 100000,
   allowedSymbols: ["005930"]
+});
+const kisBuyDryRun = await order.buyDomesticStock("kis", {
+  symbol: "005930",
+  quantity: 1,
+  estimatedPrice: 70000,
+  accountNumber: process.env.KIS_ACCOUNT_NO,
+  accountProductCode: process.env.KIS_ACCOUNT_PRODUCT_CODE ?? "01"
 });
 const tradeStream = await realtime.subscribeDomesticStockTrades("kiwoom", "005930", {
   onMessage: (message) => console.log(message.symbol, message.price, message.tradeQuantity)

@@ -442,8 +442,7 @@ function buildDbCancelOrder(order) {
 
 function buildKisNewOrder(side, order) {
   return {
-    CANO: "",
-    ACNT_PRDT_CD: "01",
+    ...kisAccountParams(order),
     PDNO: order.symbol,
     ORD_DVSN: kisOrderDivision(order.orderType),
     ORD_QTY: String(order.quantity),
@@ -453,8 +452,7 @@ function buildKisNewOrder(side, order) {
 
 function buildKisModifyOrder(order) {
   return {
-    CANO: "",
-    ACNT_PRDT_CD: "01",
+    ...kisAccountParams(order),
     KRX_FWDG_ORD_ORGNO: "",
     ORGN_ODNO: order.originalOrderNumber,
     ORD_DVSN: kisOrderDivision(order.orderType),
@@ -467,8 +465,7 @@ function buildKisModifyOrder(order) {
 
 function buildKisCancelOrder(order) {
   return {
-    CANO: "",
-    ACNT_PRDT_CD: "01",
+    ...kisAccountParams(order),
     KRX_FWDG_ORD_ORGNO: "",
     ORGN_ODNO: order.originalOrderNumber,
     ORD_DVSN: "00",
@@ -500,6 +497,8 @@ function normalizeCancelOrder(order) {
     side: "cancel",
     exchange: normalizeExchange(order.exchange),
     originalOrderNumber: normalizeRequiredString(order.originalOrderNumber, "originalOrderNumber"),
+    accountNumber: normalizeOptionalString(order.accountNumber, ""),
+    accountProductCode: normalizeOptionalString(order.accountProductCode, "01"),
   };
 }
 
@@ -518,6 +517,15 @@ function normalizeBaseOrder(order) {
     conditionTypeCode: normalizeOptionalString(order.conditionTypeCode, "0"),
     marginCode: normalizeOptionalString(order.marginCode, "000"),
     loanDate: normalizeOptionalString(order.loanDate, ""),
+    accountNumber: normalizeOptionalString(order.accountNumber, ""),
+    accountProductCode: normalizeOptionalString(order.accountProductCode, "01"),
+  };
+}
+
+function kisAccountParams(input = {}) {
+  return {
+    CANO: input.accountNumber,
+    ACNT_PRDT_CD: input.accountProductCode,
   };
 }
 

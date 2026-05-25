@@ -188,15 +188,15 @@ if (!balance.ok) {
 console.log(balance.data.positions.length);
 
 const kisBalance = await account.getDomesticStockBalance("kis", {
-  params: {
-    CANO: process.env.KIS_ACCOUNT_NO,
-    ACNT_PRDT_CD: process.env.KIS_ACCOUNT_PRODUCT_CODE ?? "01",
-  },
+  accountNumber: process.env.KIS_ACCOUNT_NO,
+  accountProductCode: process.env.KIS_ACCOUNT_PRODUCT_CODE ?? "01",
 });
 if (!kisBalance.ok) {
   throw kisBalance.error;
 }
 ```
+
+KIS 국내주식 계좌/주문 서비스는 `accountNumber`를 KIS `CANO`로, `accountProductCode`를 `ACNT_PRDT_CD`로 매핑한다. 기존 호환성을 위해 `params: { CANO, ACNT_PRDT_CD }` raw override도 계속 지원하며, raw `params`가 지정되면 최종 요청에서 우선한다.
 
 계좌 조회 결과를 로그에 남길 때는 계좌번호, 금액, 토큰, 원문 `raw`를 그대로 출력하지 않는다. 앱 로그에는 position count, 성공/실패, broker code 같은 요약만 남긴다.
 
@@ -428,6 +428,8 @@ const preview = await order.buyDomesticStock("kis", {
   symbol: "005930",
   quantity: 1,
   estimatedPrice: 70000,
+  accountNumber: process.env.KIS_ACCOUNT_NO,
+  accountProductCode: process.env.KIS_ACCOUNT_PRODUCT_CODE ?? "01",
 }, {
   maxOrderAmount: 100000,
   allowedSymbols: ["005930"],

@@ -336,6 +336,84 @@ test("builds LS modify and cancel dry runs", async () => {
   });
 });
 
+test("builds KIS domestic order dry runs with first-class account fields", async () => {
+  const service = new OrderService({});
+
+  const buy = await service.buyDomesticStock("kis", {
+    symbol: "005930",
+    quantity: 1,
+    price: 70000,
+    orderType: "limit",
+    accountNumber: "12345678",
+    accountProductCode: "01",
+  });
+  const sell = await service.sellDomesticStock("kis", {
+    symbol: "005930",
+    quantity: 2,
+    price: 71000,
+    orderType: "limit",
+    accountNumber: "12345678",
+    accountProductCode: "02",
+  });
+  const modify = await service.modifyDomesticStock("kis", {
+    originalOrderNumber: "0000000010",
+    symbol: "005930",
+    quantity: 1,
+    price: 70500,
+    orderType: "limit",
+    accountNumber: "12345678",
+    accountProductCode: "03",
+  });
+  const cancel = await service.cancelDomesticStock("kis", {
+    originalOrderNumber: "0000000011",
+    symbol: "005930",
+    quantity: 1,
+    accountNumber: "12345678",
+    accountProductCode: "04",
+  });
+
+  assert.equal(buy.id, "/uapi/domestic-stock/v1/trading/order-cash");
+  assert.deepEqual(buy.data.request, {
+    CANO: "12345678",
+    ACNT_PRDT_CD: "01",
+    PDNO: "005930",
+    ORD_DVSN: "00",
+    ORD_QTY: "1",
+    ORD_UNPR: "70000",
+  });
+  assert.equal(sell.data.request.CANO, "12345678");
+  assert.equal(sell.data.request.ACNT_PRDT_CD, "02");
+  assert.equal(sell.data.request.PDNO, "005930");
+  assert.equal(modify.data.request.CANO, "12345678");
+  assert.equal(modify.data.request.ACNT_PRDT_CD, "03");
+  assert.equal(modify.data.request.ORGN_ODNO, "0000000010");
+  assert.equal(modify.data.request.RVSE_CNCL_DVSN_CD, "01");
+  assert.equal(cancel.data.request.CANO, "12345678");
+  assert.equal(cancel.data.request.ACNT_PRDT_CD, "04");
+  assert.equal(cancel.data.request.ORGN_ODNO, "0000000011");
+  assert.equal(cancel.data.request.RVSE_CNCL_DVSN_CD, "02");
+});
+
+test("preserves raw KIS order params override compatibility", async () => {
+  const service = new OrderService({});
+
+  const result = await service.buyDomesticStock("kis", {
+    symbol: "005930",
+    quantity: 1,
+    estimatedPrice: 70000,
+    accountNumber: "12345678",
+    accountProductCode: "01",
+    params: {
+      CANO: "87654321",
+      ACNT_PRDT_CD: "99",
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.request.CANO, "87654321");
+  assert.equal(result.data.request.ACNT_PRDT_CD, "99");
+});
+
 test("validates required order fields", async () => {
   const service = new OrderService({});
 

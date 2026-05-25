@@ -233,12 +233,12 @@ function defaultSourceId(broker, capabilityId) {
 }
 
 async function requestCash(client, broker, sourceId, options) {
-  const params = mergeParams(defaultCashParams(broker, sourceId), options.params);
+  const params = mergeParams(defaultCashParams(broker, sourceId, options), options.params);
   return client.request(sourceId, params, options.requestOptions ?? {});
 }
 
 async function requestBalance(client, broker, sourceId, options) {
-  const params = mergeParams(defaultBalanceParams(broker, sourceId), options.params);
+  const params = mergeParams(defaultBalanceParams(broker, sourceId, options), options.params);
   return client.request(sourceId, params, options.requestOptions ?? {});
 }
 
@@ -247,7 +247,7 @@ async function requestOrderHistory(client, broker, sourceId, options) {
   return client.request(sourceId, params, options.requestOptions ?? {});
 }
 
-function defaultCashParams(broker, sourceId) {
+function defaultCashParams(broker, sourceId, options = {}) {
   if (broker === "kiwoom") {
     return { qry_tp: "3" };
   }
@@ -266,8 +266,7 @@ function defaultCashParams(broker, sourceId) {
 
   if (broker === "kis") {
     return {
-      CANO: "",
-      ACNT_PRDT_CD: "01",
+      ...kisAccountParams(options),
       PDNO: "",
       ORD_UNPR: "",
       ORD_DVSN: "00",
@@ -279,7 +278,7 @@ function defaultCashParams(broker, sourceId) {
   return {};
 }
 
-function defaultBalanceParams(broker, sourceId) {
+function defaultBalanceParams(broker, sourceId, options = {}) {
   if (broker === "kiwoom") {
     return {
       qry_tp: "1",
@@ -313,8 +312,7 @@ function defaultBalanceParams(broker, sourceId) {
 
   if (broker === "kis") {
     return {
-      CANO: "",
-      ACNT_PRDT_CD: "01",
+      ...kisAccountParams(options),
       AFHR_FLPR_YN: "N",
       OFL_YN: "",
       INQR_DVSN: "02",
@@ -380,8 +378,7 @@ function defaultOrderHistoryParams(broker, sourceId, options) {
 
   if (broker === "kis") {
     return {
-      CANO: "",
-      ACNT_PRDT_CD: "01",
+      ...kisAccountParams(options),
       INQR_STRT_DT: orderDate ?? formatYmd(new Date()),
       INQR_END_DT: orderDate ?? formatYmd(new Date()),
       SLL_BUY_DVSN_CD: "00",
@@ -398,6 +395,13 @@ function defaultOrderHistoryParams(broker, sourceId, options) {
   }
 
   return {};
+}
+
+function kisAccountParams(input = {}) {
+  return {
+    CANO: normalizeOptionalRequestString(input.accountNumber, ""),
+    ACNT_PRDT_CD: normalizeOptionalRequestString(input.accountProductCode, "01"),
+  };
 }
 
 function normalizeKiwoomCash(sourceId, payload) {
@@ -1079,6 +1083,10 @@ function normalizeOptionalOrderDate(orderDate, now) {
 
   const normalized = String(orderDate).replace(/-/g, "").trim();
   return normalized || null;
+}
+
+function normalizeOptionalRequestString(value, fallback) {
+  return String(value ?? fallback).trim();
 }
 
 function formatYmd(date) {

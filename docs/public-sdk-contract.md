@@ -105,6 +105,7 @@ Rules:
 - `subscribe*` methods return a subscription wrapper with `unsubscribe`.
 - First argument is always `broker` for domain services.
 - Broker-specific ids may be passed through `options.apiId` or `options.trCode` only when the capability exposes that source.
+- KIS domestic account/order services accept `accountNumber` and `accountProductCode`; these map to `CANO` and `ACNT_PRDT_CD`. Broker raw `params` remain available for compatibility and take precedence in the final request.
 
 ## Response Wrapper Contract
 

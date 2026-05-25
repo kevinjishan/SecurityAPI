@@ -566,6 +566,74 @@ test("supports nested parameter overrides for account order history", async () =
   });
 });
 
+test("maps KIS accountNumber and accountProductCode to account requests", async () => {
+  const calls = [];
+  const service = new AccountService({
+    kis: {
+      request: async (id, params) => {
+        calls.push({ id, params });
+        return brokerSuccess("kis", id, {
+          rt_cd: "0",
+          output1: [],
+          output2: [{}],
+        });
+      },
+    },
+  });
+
+  await service.getDomesticStockCash("kis", {
+    accountNumber: "12345678",
+    accountProductCode: "01",
+  });
+  await service.getDomesticStockBalance("kis", {
+    accountNumber: "12345678",
+    accountProductCode: "02",
+  });
+  await service.getDomesticStockOrderHistory("kis", {
+    accountNumber: "12345678",
+    accountProductCode: "03",
+    orderDate: "2026-05-18",
+    symbol: "005930",
+  });
+
+  assert.equal(calls[0].params.CANO, "12345678");
+  assert.equal(calls[0].params.ACNT_PRDT_CD, "01");
+  assert.equal(calls[1].params.CANO, "12345678");
+  assert.equal(calls[1].params.ACNT_PRDT_CD, "02");
+  assert.equal(calls[2].params.CANO, "12345678");
+  assert.equal(calls[2].params.ACNT_PRDT_CD, "03");
+  assert.equal(calls[2].params.INQR_STRT_DT, "20260518");
+  assert.equal(calls[2].params.PDNO, "005930");
+});
+
+test("preserves raw KIS account params override compatibility", async () => {
+  const calls = [];
+  const service = new AccountService({
+    kis: {
+      request: async (id, params) => {
+        calls.push({ id, params });
+        return brokerSuccess("kis", id, {
+          rt_cd: "0",
+          output1: [],
+          output2: [{}],
+        });
+      },
+    },
+  });
+
+  await service.getDomesticStockBalance("kis", {
+    accountNumber: "12345678",
+    accountProductCode: "01",
+    params: {
+      CANO: "87654321",
+      ACNT_PRDT_CD: "99",
+    },
+  });
+
+  assert.equal(calls[0].params.CANO, "87654321");
+  assert.equal(calls[0].params.ACNT_PRDT_CD, "99");
+});
+
 test("returns config errors when an account broker client is missing", async () => {
   const service = new AccountService({});
 
