@@ -3,7 +3,9 @@ import path from "node:path";
 
 const DEFAULT_MANIFEST_DIR = new URL("../../data/generated/", import.meta.url);
 const BROKERS = ["kiwoom", "ls", "db", "kis"];
-const BROKER_SET = new Set(BROKERS);
+const CRYPTO_EXCHANGES = ["binance", "bingx", "bybit", "upbit", "bithumb", "coinone"];
+const SOURCES = [...BROKERS, ...CRYPTO_EXCHANGES];
+const SOURCE_SET = new Set(SOURCES);
 const FIELD_LOCATIONS = new Set(["header", "body"]);
 const FIELD_DIRECTIONS = new Set(["request", "response"]);
 
@@ -32,6 +34,7 @@ export async function loadGeneratedManifests(options = {}) {
     ls: await readManifest(manifestDir, "ls-manifest.json"),
     db: await readManifest(manifestDir, "db-manifest.json"),
     kis: await readManifest(manifestDir, "kis-manifest.json"),
+    ...createCryptoMetadataSeed(),
   };
 }
 
@@ -43,7 +46,7 @@ export class MetadataRegistry {
   }
 
   listBrokers() {
-    return BROKERS.filter((broker) => this.#manifests[broker]);
+    return SOURCES.filter((broker) => this.#manifests[broker]);
   }
 
   getManifest(broker) {
@@ -170,7 +173,7 @@ export class MetadataRegistry {
   }
 
   #requireManifest(broker) {
-    const normalizedBroker = assertBroker(broker);
+    const normalizedBroker = assertSource(broker);
     const manifest = this.#manifests[normalizedBroker];
 
     if (!manifest) {
@@ -188,7 +191,7 @@ export class MetadataRegistry {
 function normalizeManifests(manifests) {
   const normalized = {};
 
-  for (const broker of BROKERS) {
+  for (const broker of SOURCES) {
     if (!manifests?.[broker]) {
       continue;
     }
@@ -216,18 +219,105 @@ function normalizeManifests(manifests) {
   return normalized;
 }
 
-function assertBroker(broker) {
-  const normalized = String(broker ?? "").trim().toLowerCase();
+function assertSource(source) {
+  const normalized = String(source ?? "").trim().toLowerCase();
 
-  if (!BROKER_SET.has(normalized)) {
+  if (!SOURCE_SET.has(normalized)) {
     throw new MetadataLookupError(
       "INVALID_BROKER",
-      `Unsupported broker: ${String(broker)}`,
-      { broker: String(broker) },
+      `Unsupported broker: ${String(source)}`,
+      { broker: String(source) },
     );
   }
 
   return normalized;
+}
+
+function createCryptoMetadataSeed() {
+  const docs = {
+    binance: "https://www.binance.com/en/binance-api",
+    bingx: "https://bingx-api.github.io/docs-v3/#/en/info",
+    bybit: "https://bybit-exchange.github.io/docs/",
+    upbit: "https://docs.upbit.com/kr",
+    bithumb: "https://apidocs.bithumb.com/",
+    coinone: "https://docs.coinone.co.kr/docs/about-public-api",
+  };
+  const manifests = {};
+
+  for (const exchange of CRYPTO_EXCHANGES) {
+    const apis = {};
+    for (const product of ["spot", "futures"]) {
+      const hasFutures = ["binance", "bingx", "bybit"].includes(exchange);
+      if (product === "futures" && !hasFutures) continue;
+
+      for (const id of cryptoIds(exchange, product)) {
+        apis[id] = cryptoEntry(exchange, id, product, docs[exchange]);
+      }
+    }
+
+    manifests[exchange] = {
+      broker: exchange,
+      generatedAt: "static-seed",
+      source: {
+        docsUrl: docs[exchange],
+        rawFiles: [],
+      },
+      counts: {
+        APIs: Object.keys(apis).length,
+      },
+      apis,
+    };
+  }
+
+  return manifests;
+}
+
+function cryptoIds(exchange, product) {
+  const prefix = `${exchange}.${product}`;
+  return [
+    `${prefix}.ticker`,
+    `${prefix}.orderbook`,
+    `${prefix}.candles`,
+    `${prefix}.balance`,
+    ...(product === "futures" ? [`${prefix}.positions`] : []),
+    `${prefix}.order.preview`,
+    `${prefix}.cancel.preview`,
+    `${prefix}.ws.trade`,
+    `${prefix}.ws.orderbook`,
+  ];
+}
+
+function cryptoEntry(exchange, id, product, docsUrl) {
+  const isWebSocket = id.includes(".ws.");
+  const isPrivate = id.includes(".balance") || id.includes(".positions");
+  const isOrderPreview = id.includes(".order.preview") || id.includes(".cancel.preview");
+
+  return {
+    broker: exchange,
+    id,
+    name: id,
+    category: product === "spot" ? "cryptoSpot" : "cryptoFutures",
+    method: isWebSocket ? "WEBSOCKET" : isOrderPreview ? "DRY_RUN" : "GET",
+    domains: {
+      prod: docsUrl,
+      mock: docsUrl,
+    },
+    path: `/${id.replaceAll(".", "/")}`,
+    contentType: "application/json",
+    requestFormat: "json",
+    authRequired: isPrivate,
+    rateLimit: { perSecond: null, raw: null },
+    headers: { request: [], response: [] },
+    body: {
+      request: [],
+      response: [],
+    },
+    sourceRef: {
+      rawFile: "static crypto metadata seed",
+      rawId: id,
+      url: docsUrl,
+    },
+  };
 }
 
 function findEntry(manifest, id) {

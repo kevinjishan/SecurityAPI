@@ -223,6 +223,70 @@ export const CAPABILITY_DEFINITIONS = Object.freeze({
     area: "overseasStock",
     label: "해외주식 실시간 주문 이벤트",
   },
+  "cryptoSpot.quote.currentPrice": {
+    area: "cryptoSpot",
+    label: "크립토 현물 현재가",
+  },
+  "cryptoSpot.quote.orderBook": {
+    area: "cryptoSpot",
+    label: "크립토 현물 호가",
+  },
+  "cryptoSpot.marketData.candles": {
+    area: "cryptoSpot",
+    label: "크립토 현물 OHLCV",
+  },
+  "cryptoSpot.account.balance": {
+    area: "cryptoSpot",
+    label: "크립토 현물 잔고",
+  },
+  "cryptoSpot.order.new": {
+    area: "cryptoSpot",
+    label: "크립토 현물 주문 preview",
+  },
+  "cryptoSpot.order.cancel": {
+    area: "cryptoSpot",
+    label: "크립토 현물 주문 취소 preview",
+  },
+  "cryptoSpot.realtime.trade": {
+    area: "cryptoSpot",
+    label: "크립토 현물 실시간 체결",
+  },
+  "cryptoSpot.realtime.orderBook": {
+    area: "cryptoSpot",
+    label: "크립토 현물 실시간 호가",
+  },
+  "cryptoFutures.quote.currentPrice": {
+    area: "cryptoFutures",
+    label: "크립토 선물 현재가",
+  },
+  "cryptoFutures.marketData.candles": {
+    area: "cryptoFutures",
+    label: "크립토 선물 OHLCV",
+  },
+  "cryptoFutures.account.balance": {
+    area: "cryptoFutures",
+    label: "크립토 선물 잔고",
+  },
+  "cryptoFutures.account.positions": {
+    area: "cryptoFutures",
+    label: "크립토 선물 포지션",
+  },
+  "cryptoFutures.order.new": {
+    area: "cryptoFutures",
+    label: "크립토 선물 주문 preview",
+  },
+  "cryptoFutures.order.cancel": {
+    area: "cryptoFutures",
+    label: "크립토 선물 주문 취소 preview",
+  },
+  "cryptoFutures.realtime.trade": {
+    area: "cryptoFutures",
+    label: "크립토 선물 실시간 체결",
+  },
+  "cryptoFutures.realtime.orderBook": {
+    area: "cryptoFutures",
+    label: "크립토 선물 실시간 호가",
+  },
   "futureOption.quote.currentPrice": {
     area: "futureOption",
     label: "선물/옵션 현재가",

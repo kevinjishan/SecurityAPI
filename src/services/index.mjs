@@ -135,3 +135,24 @@ export {
   normalizeDomesticStockRealtimeMessage,
   normalizeMarketStatusRealtimeMessage,
 } from "./RealtimeService.mjs";
+
+export {
+  CryptoFuturesAccountService,
+  CryptoFuturesMarketDataService,
+  CryptoFuturesOrderService,
+  CryptoFuturesQuoteService,
+  CryptoFuturesRealtimeService,
+  CryptoSpotAccountService,
+  CryptoSpotMarketDataService,
+  CryptoSpotOrderService,
+  CryptoSpotQuoteService,
+  CryptoSpotRealtimeService,
+  normalizeCryptoFuturesBalance,
+  normalizeCryptoFuturesCandles,
+  normalizeCryptoFuturesCurrentPrice,
+  normalizeCryptoFuturesPositions,
+  normalizeCryptoSpotBalance,
+  normalizeCryptoSpotCandles,
+  normalizeCryptoSpotCurrentPrice,
+  normalizeCryptoSpotOrderBook,
+} from "./CryptoServices.mjs";

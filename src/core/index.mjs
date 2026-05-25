@@ -5,11 +5,14 @@ export { FixedRetryPolicy, NoRetryPolicy, noRetryPolicy } from "./RetryPolicy.mj
 export {
   BROKERS,
   BROKER_ENVIRONMENTS,
+  CRYPTO_EXCHANGES,
   REQUEST_OPERATIONS,
   assertBroker,
   assertBrokerEnvironment,
+  assertCryptoExchange,
   assertRequestOperation,
   isBroker,
   isBrokerEnvironment,
+  isCryptoExchange,
   isRequestOperation,
 } from "./types.mjs";

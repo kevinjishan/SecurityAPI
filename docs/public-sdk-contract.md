@@ -106,6 +106,7 @@ Rules:
 - First argument is always `broker` for domain services.
 - Broker-specific ids may be passed through `options.apiId` or `options.trCode` only when the capability exposes that source.
 - KIS domestic account/order services accept `accountNumber` and `accountProductCode`; these map to `CANO` and `ACNT_PRDT_CD`. Broker raw `params` remain available for compatibility and take precedence in the final request.
+- Crypto services use `exchange` as the first argument and accept only `CRYPTO_EXCHANGES`. Crypto v1 supports read-only calls and order dry-run previews; live order submission, withdrawals, deposits, transfers, and leverage mutation are outside the public contract.
 
 ## Response Wrapper Contract
 
@@ -115,6 +116,7 @@ Most service methods return a wrapper with this shape.
 type ServiceResult<T> = {
   ok: boolean;
   broker: "kiwoom" | "ls" | "db" | "kis";
+  exchange?: "binance" | "bingx" | "bybit" | "upbit" | "bithumb" | "coinone";
   capability?: string;
   id?: string | null;
   data: T | null;
@@ -210,6 +212,7 @@ Realtime services return:
 type RealtimeSubscription = {
   ok: boolean;
   broker: "kiwoom" | "ls" | "db" | "kis";
+  exchange?: "binance" | "bingx" | "bybit" | "upbit" | "bithumb" | "coinone";
   capability: string;
   id: string | null;
   ids?: string[];

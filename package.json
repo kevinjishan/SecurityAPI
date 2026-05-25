@@ -22,8 +22,13 @@
     "examples:live-readonly:preflight": "node examples/live-readonly/preflight.mjs",
     "examples:live-readonly:validate": "node examples/live-readonly/validate.mjs",
     "examples:live-readonly:signals": "node examples/live-readonly/technical-market-signals.mjs",
+    "examples:crypto-readonly:preflight": "node examples/crypto-readonly/preflight.mjs",
+    "examples:crypto-readonly:public-market": "node examples/crypto-readonly/public-market-readonly.mjs",
+    "examples:crypto-readonly:public-realtime": "node examples/crypto-readonly/public-realtime-readonly.mjs",
+    "examples:crypto-readonly:private-account": "node examples/crypto-readonly/private-account-readonly.mjs",
+    "examples:crypto-readonly:validate": "node examples/crypto-readonly/validate.mjs",
     "test": "node --test",
-    "validate:all": "npm run validate:docs && npm run validate:manifest && npm test && npm run examples:mock && npm run examples:live-readonly:validate"
+    "validate:all": "npm run validate:docs && npm run validate:manifest && npm test && npm run examples:mock && npm run examples:live-readonly:validate && npm run examples:crypto-readonly:validate"
   },
   "engines": {
     "node": ">=20"
@@ -32,11 +37,13 @@
     "src/",
     "examples/README.md",
     "examples/live-readonly/",
+    "examples/crypto-readonly/",
     "data/generated/",
     "docs/README.md",
     "docs/sdk-distribution-guide.md",
     "docs/sdk-usage-guide.md",
     "docs/public-sdk-contract.md",
+    "docs/crypto-exchange-layer-plan.md",
     "docs/technical-indicators-and-market-signals-design.md",
     "docs/market-signal-input-contract.md",
     "docs/live-readonly-verification-matrix.md",

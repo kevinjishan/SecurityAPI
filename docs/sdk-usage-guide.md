@@ -445,6 +445,61 @@ console.log(preview.data.normalized);
 
 Live order submission is outside this usage guide. A production app must require a separate approval flow before setting `dryRun: false`, `confirm: true`, and `expectedRequest`.
 
+## Crypto Exchange V1
+
+Crypto services are separate from securities brokers. Use `exchange` values from `CRYPTO_EXCHANGES`: `binance`, `bingx`, `bybit`, `upbit`, `bithumb`, `coinone`.
+
+```js
+import {
+  CryptoExchangeClient,
+  CryptoWebSocketClient,
+  CryptoSpotQuoteService,
+  CryptoSpotRealtimeService,
+  CryptoSpotOrderService,
+  CryptoFuturesAccountService,
+} from "security-api-reference";
+
+const binanceClient = new CryptoExchangeClient("binance");
+const binanceWs = new CryptoWebSocketClient("binance");
+const bybitClient = new CryptoExchangeClient("bybit", {
+  apiKey: process.env.BYBIT_API_KEY,
+  apiSecret: process.env.BYBIT_API_SECRET,
+});
+
+const spotQuote = new CryptoSpotQuoteService({
+  binance: binanceClient,
+});
+const spotRealtime = new CryptoSpotRealtimeService({
+  binance: binanceWs,
+});
+const spotOrder = new CryptoSpotOrderService();
+const futuresAccount = new CryptoFuturesAccountService({
+  bybit: bybitClient,
+});
+
+const ticker = await spotQuote.getCryptoSpotCurrentPrice("binance", {
+  symbol: "BTCUSDT",
+});
+
+const preview = await spotOrder.buyCryptoSpot("upbit", {
+  symbol: "KRW-BTC",
+  quoteQuantity: 10000,
+}, {
+  maxNotional: 50000,
+  allowedSymbols: ["KRW-BTC"],
+});
+
+const positions = await futuresAccount.getCryptoFuturesPositions("bybit", {
+  symbol: "BTCUSDT",
+});
+
+const tradeStream = await spotRealtime.subscribeCryptoSpotTrades("binance", {
+  symbol: "BTCUSDT",
+});
+```
+
+Crypto v1 does not submit live orders and does not expose withdrawals, deposits, transfers, or leverage mutation APIs. Order methods return dry-run request previews only.
+
 ## Error Handling
 
 All service calls use the wrapper shape described in [Public SDK Contract](public-sdk-contract.md).

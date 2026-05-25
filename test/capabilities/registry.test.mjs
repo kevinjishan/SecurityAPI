@@ -197,6 +197,19 @@ test("promotes DB and KIS overseas candle capabilities to service-ready", () => 
   ]);
 });
 
+test("lists crypto exchange capabilities and parked domestic futures", () => {
+  const binance = getCapabilities("binance");
+  const upbit = getCapabilities("upbit");
+
+  assert.equal(binance.supports("cryptoSpot.quote.currentPrice"), true);
+  assert.equal(binance.supports("cryptoFutures.account.positions"), true);
+  assert.equal(upbit.supports("cryptoSpot.quote.currentPrice"), true);
+  assert.equal(upbit.supports("cryptoFutures.account.positions"), false);
+  assert.equal(upbit.get("cryptoFutures.account.positions").status, "parked");
+  assert.deepEqual(binance.findApis("cryptoSpot.quote.currentPrice").map((api) => api.id), ["binance.spot.ticker"]);
+  assert.deepEqual(binance.findApis("cryptoFutures.realtime.trade").map((api) => api.id), ["binance.futures.ws.trade"]);
+});
+
 test("throws unsupported errors when requiring unknown capabilities", () => {
   const caps = getCapabilities("kiwoom");
 
@@ -228,6 +241,8 @@ test("returns capability definitions", () => {
   assert.equal(definitions["relativeStrength.domesticStock.benchmark"].label, "국내주식 벤치마크 상대강도");
   assert.equal(definitions["marketBreadth.domesticMarket.indicators"].label, "국내 시장 폭 지표");
   assert.equal(definitions["overseasStock.realtime.trade"].label, "해외주식 실시간 체결");
+  assert.equal(definitions["cryptoSpot.quote.currentPrice"].label, "크립토 현물 현재가");
+  assert.equal(definitions["cryptoFutures.account.positions"].label, "크립토 선물 포지션");
 });
 
 test("lists capability ids by broker", () => {

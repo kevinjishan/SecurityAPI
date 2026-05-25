@@ -1,16 +1,18 @@
-import { BrokerError, assertBroker } from "../core/index.mjs";
+import { BrokerError, assertBroker, assertCryptoExchange, isBroker, isCryptoExchange } from "../core/index.mjs";
 import { createMetadataRegistry } from "../metadata/index.mjs";
 import { CAPABILITY_DEFINITIONS, getCapabilityDefinition } from "./definitions.mjs";
 import { KIWOOM_CAPABILITIES } from "./kiwoom.mjs";
 import { LS_CAPABILITIES } from "./ls.mjs";
 import { DB_CAPABILITIES } from "./db.mjs";
 import { KIS_CAPABILITIES } from "./kis.mjs";
+import { CRYPTO_CAPABILITIES } from "./crypto.mjs";
 
 const BROKER_CAPABILITIES = Object.freeze({
   kiwoom: KIWOOM_CAPABILITIES,
   ls: LS_CAPABILITIES,
   db: DB_CAPABILITIES,
   kis: KIS_CAPABILITIES,
+  ...CRYPTO_CAPABILITIES,
 });
 
 export const CAPABILITY_STATUSES = Object.freeze({
@@ -33,7 +35,7 @@ const METADATA_STATUSES = new Set([
 
 export class BrokerCapabilities {
   constructor(broker, capabilities) {
-    this.broker = assertBroker(broker);
+    this.broker = assertCapabilitySource(broker);
     this.capabilities = capabilities.map((capability) => enrichCapability(this.broker, capability));
     this.byId = new Map(this.capabilities.map((capability) => [capability.id, capability]));
   }
@@ -107,7 +109,7 @@ export class BrokerCapabilities {
 }
 
 export function getCapabilities(broker) {
-  const normalizedBroker = assertBroker(broker);
+  const normalizedBroker = assertCapabilitySource(broker);
   return new BrokerCapabilities(normalizedBroker, BROKER_CAPABILITIES[normalizedBroker] ?? []);
 }
 
@@ -121,7 +123,7 @@ export function listCapabilityIds(broker, options = {}) {
 
 export async function validateCapabilityReferences(options = {}) {
   const metadataRegistry = options.metadataRegistry ?? (await createMetadataRegistry(options));
-  const brokers = options.broker ? [assertBroker(options.broker)] : Object.keys(BROKER_CAPABILITIES);
+  const brokers = options.broker ? [assertCapabilitySource(options.broker)] : Object.keys(BROKER_CAPABILITIES);
   const missing = [];
   let checked = 0;
 
@@ -145,6 +147,17 @@ export async function validateCapabilityReferences(options = {}) {
     checked,
     missing,
   };
+}
+
+function assertCapabilitySource(value) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if (isBroker(normalized)) {
+    return assertBroker(normalized);
+  }
+  if (isCryptoExchange(normalized)) {
+    return assertCryptoExchange(normalized);
+  }
+  throw BrokerError.validation(`Unsupported capability source: ${String(value)}`);
 }
 
 export async function assertCapabilityReferences(options = {}) {

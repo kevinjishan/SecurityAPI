@@ -11,11 +11,21 @@ const registry = await createMetadataRegistry();
 
 test("loads generated broker manifests", () => {
   assert.equal(createMetadataRegistryFromPackage, createMetadataRegistry);
-  assert.deepEqual(registry.listBrokers(), ["kiwoom", "ls", "db", "kis"]);
+  assert.deepEqual(registry.listBrokers(), ["kiwoom", "ls", "db", "kis", "binance", "bingx", "bybit", "upbit", "bithumb", "coinone"]);
   assert.equal(registry.listApiIds("kiwoom").length, 207);
   assert.equal(registry.listApiIds("ls").length, 365);
   assert.equal(registry.listApiIds("db").length, 165);
   assert.equal(registry.listApiIds("kis").length, 339);
+});
+
+test("looks up crypto metadata seed entries", () => {
+  const endpoint = registry.getEndpoint("binance", "binance.spot.ticker");
+
+  assert.equal(endpoint.broker, "binance");
+  assert.equal(endpoint.id, "binance.spot.ticker");
+  assert.equal(endpoint.method, "GET");
+  assert.equal(endpoint.authRequired, false);
+  assert.equal(registry.getEndpoint("bybit", "bybit.futures.positions").authRequired, true);
 });
 
 test("looks up Kiwoom endpoint metadata", () => {

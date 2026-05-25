@@ -2,6 +2,16 @@ import { execFileSync } from "node:child_process";
 
 import {
   AccountService,
+  CryptoExchangeClient,
+  CryptoFuturesAccountService,
+  CryptoFuturesMarketDataService,
+  CryptoFuturesQuoteService,
+  CryptoFuturesRealtimeService,
+  CryptoSpotAccountService,
+  CryptoSpotMarketDataService,
+  CryptoSpotQuoteService,
+  CryptoSpotRealtimeService,
+  CryptoWebSocketClient,
   KiwoomClient,
   MarketBreadthService,
   LsClient,
@@ -175,6 +185,48 @@ export function buildOverseasServices(clients) {
     account: new OverseasStockAccountService(clients),
     realtime: new OverseasStockRealtimeService(clients),
   };
+}
+
+export function buildCryptoRestClient(exchange) {
+  const prefix = cryptoEnvPrefix(exchange);
+  return new CryptoExchangeClient(exchange, {
+    apiKey: process.env[`${prefix}_API_KEY`] ?? process.env[`${prefix}_ACCESS_KEY`],
+    apiSecret: process.env[`${prefix}_API_SECRET`] ?? process.env[`${prefix}_SECRET_KEY`],
+    env: process.env[`${prefix}_ENV`] ?? "prod",
+  });
+}
+
+export function buildCryptoWebSocketClient(exchange) {
+  const prefix = cryptoEnvPrefix(exchange);
+  return new CryptoWebSocketClient(exchange, {
+    env: process.env[`${prefix}_ENV`] ?? "prod",
+  });
+}
+
+export function buildCryptoServices(clients) {
+  return {
+    spotQuote: new CryptoSpotQuoteService(clients.rest),
+    spotMarketData: new CryptoSpotMarketDataService(clients.rest),
+    spotAccount: new CryptoSpotAccountService(clients.rest),
+    spotRealtime: new CryptoSpotRealtimeService(clients.ws),
+    futuresQuote: new CryptoFuturesQuoteService(clients.rest),
+    futuresMarketData: new CryptoFuturesMarketDataService(clients.rest),
+    futuresAccount: new CryptoFuturesAccountService(clients.rest),
+    futuresRealtime: new CryptoFuturesRealtimeService(clients.ws),
+  };
+}
+
+export function cryptoEnvPrefix(exchange) {
+  return String(exchange ?? "").trim().toUpperCase();
+}
+
+export function cryptoPublicRequiredEnv() {
+  return [];
+}
+
+export function cryptoPrivateRequiredEnv(exchange) {
+  const prefix = cryptoEnvPrefix(exchange);
+  return [`${prefix}_API_KEY`, `${prefix}_API_SECRET`];
 }
 
 export function brokerEnv(broker) {

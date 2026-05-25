@@ -297,6 +297,47 @@ const overseasTradeStream = await overseasRealtime.subscribeOverseasStockTrades(
 
 실제 API 키 없이 호출 흐름을 확인하려면 [examples](examples/README.md)를 사용합니다.
 
+## Crypto Exchange V1
+
+Crypto exchange support is an SDK product extension, separate from securities brokers. V1 covers read-only calls and order dry-run previews for Binance, BingX, Bybit, Upbit, Bithumb, and Coinone.
+
+```js
+import {
+  CryptoExchangeClient,
+  CryptoWebSocketClient,
+  CryptoSpotQuoteService,
+  CryptoSpotRealtimeService,
+  CryptoSpotOrderService,
+  CryptoFuturesAccountService
+} from "security-api-reference";
+
+const binanceClient = new CryptoExchangeClient("binance");
+const binanceWs = new CryptoWebSocketClient("binance");
+const bybitClient = new CryptoExchangeClient("bybit", {
+  apiKey: process.env.BYBIT_API_KEY,
+  apiSecret: process.env.BYBIT_API_SECRET,
+});
+
+const cryptoSpotQuote = new CryptoSpotQuoteService({ binance: binanceClient });
+const cryptoSpotRealtime = new CryptoSpotRealtimeService({ binance: binanceWs });
+const cryptoSpotOrder = new CryptoSpotOrderService();
+const cryptoFuturesAccount = new CryptoFuturesAccountService({ bybit: bybitClient });
+
+const btc = await cryptoSpotQuote.getCryptoSpotCurrentPrice("binance", { symbol: "BTCUSDT" });
+const spotPreview = await cryptoSpotOrder.buyCryptoSpot("upbit", {
+  symbol: "KRW-BTC",
+  quoteQuantity: 10000
+});
+const positions = await cryptoFuturesAccount.getCryptoFuturesPositions("bybit", {
+  symbol: "BTCUSDT"
+});
+const tradeStream = await cryptoSpotRealtime.subscribeCryptoSpotTrades("binance", {
+  symbol: "BTCUSDT"
+});
+```
+
+Crypto v1 does not submit live orders and does not expose withdrawals, deposits, transfers, or leverage mutation APIs.
+
 ## 공식 출처
 
 - 키움 REST API: https://openapi.kiwoom.com/guide/apiguide?dummyVal=0
@@ -304,3 +345,9 @@ const overseasTradeStream = await overseasRealtime.subscribeOverseasStockTrades(
 - DB증권 OPEN API: https://openapi.db-fi.com/apiservice?group_id=cc55b867-e049-421b-a798-be016370ff44&api_id=9e3097ab-7d39-4433-8002-00649604f0de
 - 한국투자증권 Open API: https://apiportal.koreainvestment.com/apiservice-summary
 - 한국투자증권 공식 샘플: https://github.com/koreainvestment/open-trading-api
+- Upbit Developer Center: https://docs.upbit.com/kr
+- Bithumb Developer Docs: https://apidocs.bithumb.com/
+- Coinone Developer Center: https://docs.coinone.co.kr/docs/about-public-api
+- Binance API: https://www.binance.com/en/binance-api
+- BingX API Docs V3: https://bingx-api.github.io/docs-v3/#/en/info
+- Bybit API Docs: https://bybit-exchange.github.io/docs/
