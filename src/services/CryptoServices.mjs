@@ -576,21 +576,22 @@ function normalizeCryptoCurrentPrice(exchange, sourceId, product, payload) {
 }
 
 export function normalizeCryptoSpotOrderBook(exchange, sourceId, payload) {
-  const units = payload?.orderbook_units ?? payload?.bids ?? payload?.asks ?? payload?.data ?? [];
-  const bids = Array.isArray(payload?.bids)
-    ? payload.bids
+  const block = Array.isArray(payload) ? payload[0] ?? {} : payload ?? {};
+  const units = block?.orderbook_units ?? block?.bids ?? block?.asks ?? block?.data ?? [];
+  const bids = Array.isArray(block?.bids)
+    ? block.bids
     : Array.isArray(units)
       ? units.map((unit) => ({ price: firstValue(unit, ["bid_price", "price"]), quantity: firstValue(unit, ["bid_size", "quantity", "size"]) }))
       : [];
-  const asks = Array.isArray(payload?.asks)
-    ? payload.asks
+  const asks = Array.isArray(block?.asks)
+    ? block.asks
     : Array.isArray(units)
       ? units.map((unit) => ({ price: firstValue(unit, ["ask_price", "price"]), quantity: firstValue(unit, ["ask_size", "quantity", "size"]) }))
       : [];
   return {
     exchange,
     product: "spot",
-    symbol: nullableString(firstValue(payload, ["symbol", "market", "code"])),
+    symbol: nullableString(firstValue(block, ["symbol", "market", "code"])),
     bids: bids.map(normalizeBookLevel),
     asks: asks.map(normalizeBookLevel),
     raw: payload,

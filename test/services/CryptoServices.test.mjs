@@ -159,6 +159,10 @@ test("normalizes crypto payloads directly", () => {
     market: "KRW-BTC",
     orderbook_units: [{ bid_price: "69900", bid_size: "1", ask_price: "70100", ask_size: "2" }],
   });
+  const arrayBook = normalizeCryptoSpotOrderBook("upbit", "upbit.spot.orderbook", [{
+    market: "KRW-BTC",
+    orderbook_units: [{ bid_price: "69950", bid_size: "3", ask_price: "70050", ask_size: "4" }],
+  }]);
   const balance = normalizeCryptoSpotBalance("bithumb", "bithumb.spot.balance", {
     balances: [{ currency: "BTC", balance: "1.5", locked: "0.1" }],
   });
@@ -168,6 +172,9 @@ test("normalizes crypto payloads directly", () => {
 
   assert.equal(price.price, 70000);
   assert.equal(book.asks[0].price, 70100);
+  assert.equal(arrayBook.symbol, "KRW-BTC");
+  assert.equal(arrayBook.bids[0].quantity, 3);
+  assert.equal(arrayBook.asks[0].price, 70050);
   assert.equal(balance.balances[0].total, 1.5);
   assert.equal(positions.positions[0].leverage, 2);
 });

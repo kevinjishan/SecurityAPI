@@ -11,30 +11,35 @@ const services = buildCryptoServices({
   ws: { binance: binanceWs, bybit: bybitWs },
 });
 
-await runReadOnlyScenario({
-  scenario: "binance crypto spot trade realtime subscribe",
-  broker: "binance",
-  environment: process.env.BINANCE_ENV ?? "prod",
-  api: "binance.spot.ws.trade",
-  serviceMethod: "CryptoSpotRealtimeService.subscribeCryptoSpotTrades",
-  inputSummary: { symbol: "BTCUSDT" },
-  run: () => services.spotRealtime.subscribeCryptoSpotTrades("binance", { symbol: "BTCUSDT" }),
-  summarize: summarizeRealtimeResult,
-});
+try {
+  await runReadOnlyScenario({
+    scenario: "binance crypto spot trade realtime subscribe",
+    broker: "binance",
+    environment: process.env.BINANCE_ENV ?? "prod",
+    api: "binance.spot.ws.trade",
+    serviceMethod: "CryptoSpotRealtimeService.subscribeCryptoSpotTrades",
+    inputSummary: { symbol: "BTCUSDT" },
+    run: () => services.spotRealtime.subscribeCryptoSpotTrades("binance", { symbol: "BTCUSDT" }),
+    summarize: summarizeRealtimeResult,
+  });
 
-await runReadOnlyScenario({
-  scenario: "bybit crypto futures order book realtime subscribe",
-  broker: "bybit",
-  environment: process.env.BYBIT_ENV ?? "prod",
-  api: "bybit.futures.ws.orderbook",
-  serviceMethod: "CryptoFuturesRealtimeService.subscribeCryptoFuturesOrderBook",
-  inputSummary: { symbol: "BTCUSDT", depth: 50 },
-  run: () => services.futuresRealtime.subscribeCryptoFuturesOrderBook("bybit", { symbol: "BTCUSDT" }, {}, { depth: 50 }),
-  summarize: summarizeRealtimeResult,
-});
+  await runReadOnlyScenario({
+    scenario: "bybit crypto futures order book realtime subscribe",
+    broker: "bybit",
+    environment: process.env.BYBIT_ENV ?? "prod",
+    api: "bybit.futures.ws.orderbook",
+    serviceMethod: "CryptoFuturesRealtimeService.subscribeCryptoFuturesOrderBook",
+    inputSummary: { symbol: "BTCUSDT", depth: 50 },
+    run: () => services.futuresRealtime.subscribeCryptoFuturesOrderBook("bybit", { symbol: "BTCUSDT" }, {}, { depth: 50 }),
+    summarize: summarizeRealtimeResult,
+  });
+} finally {
+  binanceWs.close();
+  bybitWs.close();
+}
 
-function summarizeRealtimeResult(response) {
-  response?.unsubscribe?.();
+async function summarizeRealtimeResult(response) {
+  await response?.unsubscribe?.();
   return {
     brokerResponseCode: null,
     notes: response?.ok ? "crypto public realtime subscription created; no private stream used" : response?.error?.message,

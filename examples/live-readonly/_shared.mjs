@@ -107,7 +107,7 @@ export async function runReadOnlyScenario({
   const startedAt = Date.now();
   try {
     const response = await run();
-    const summary = summarize(response);
+    const summary = await summarize(response);
     const record = buildResultRecord({
       scenario,
       broker,
