@@ -1030,6 +1030,10 @@ function failureResponse({ broker, source, result, error, capabilityId }) {
 }
 
 function kiwoomMarket(market) {
+  if (market === "all") {
+    return "000";
+  }
+
   if (market === "kospi") {
     return "001";
   }
@@ -1042,6 +1046,10 @@ function kiwoomMarket(market) {
 }
 
 function lsMarket(market) {
+  if (market === "all") {
+    return "0";
+  }
+
   if (market === "kospi") {
     return "1";
   }

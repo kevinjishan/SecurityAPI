@@ -77,6 +77,18 @@ test("gets and normalizes LS domestic stock value rankings", async () => {
   assert.equal(result.data.items[0].marketCap, 417000000);
 });
 
+test("maps explicit all market aliases to broker whole-market codes", async () => {
+  const kiwoomClient = new FakeClient("kiwoom");
+  const lsClient = new FakeClient("ls");
+  const service = new ScannerService({ kiwoom: kiwoomClient, ls: lsClient });
+
+  await service.getDomesticStockVolumeRankings("kiwoom", { market: "all" });
+  await service.getDomesticStockValueRankings("ls", { market: "all" });
+
+  assert.equal(kiwoomClient.calls[0].params.mrkt_tp, "000");
+  assert.equal(lsClient.calls[0].params.t1463InBlock.gubun, "0");
+});
+
 test("gets and normalizes domestic stock change rate rankings", async () => {
   const client = new FakeClient("ls");
   const service = new ScannerService({ ls: client });
