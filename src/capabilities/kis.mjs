@@ -65,7 +65,10 @@ export const KIS_CAPABILITIES = [
   {
     id: "account.domesticStock.cash",
     status: "serviceReady",
-    apis: [{ id: "/uapi/domestic-stock/v1/trading/inquire-psbl-order", role: "orderableCash", transport: "rest" }],
+    apis: [
+      { id: "/uapi/domestic-stock/v1/trading/inquire-psbl-order", role: "orderableCash", transport: "rest" },
+      { id: "/uapi/domestic-stock/v1/trading/pension/inquire-psbl-order", role: "pensionOrderableCash", transport: "rest" },
+    ],
   },
   {
     id: "account.domesticStock.balance",

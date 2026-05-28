@@ -584,6 +584,8 @@ test("maps KIS accountNumber and accountProductCode to account requests", async 
   await service.getDomesticStockCash("kis", {
     accountNumber: "12345678",
     accountProductCode: "01",
+    symbol: "005930",
+    price: 70000,
   });
   await service.getDomesticStockBalance("kis", {
     accountNumber: "12345678",
@@ -598,12 +600,101 @@ test("maps KIS accountNumber and accountProductCode to account requests", async 
 
   assert.equal(calls[0].params.CANO, "12345678");
   assert.equal(calls[0].params.ACNT_PRDT_CD, "01");
+  assert.equal(calls[0].params.PDNO, "005930");
+  assert.equal(calls[0].params.ORD_UNPR, "70000");
+  assert.equal(calls[0].params.ORD_DVSN, "00");
+  assert.equal(calls[0].params.OVRS_ICLD_YN, "N");
   assert.equal(calls[1].params.CANO, "12345678");
   assert.equal(calls[1].params.ACNT_PRDT_CD, "02");
   assert.equal(calls[2].params.CANO, "12345678");
   assert.equal(calls[2].params.ACNT_PRDT_CD, "03");
   assert.equal(calls[2].params.INQR_STRT_DT, "20260518");
   assert.equal(calls[2].params.PDNO, "005930");
+});
+
+test("routes KIS pension cash lookups to pension orderable cash endpoint", async () => {
+  const calls = [];
+  const service = new AccountService({
+    kis: {
+      request: async (id, params) => {
+        calls.push({ id, params });
+        return brokerSuccess("kis", id, {
+          rt_cd: "0",
+          output: {
+            dnca_tot_amt: "1000000",
+            ord_psbl_cash: "750000",
+          },
+        });
+      },
+    },
+  });
+
+  const result = await service.getDomesticStockCash("kis", {
+    accountNumber: "12345678-22",
+    symbol: "132030",
+    price: 25000,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(calls[0].id, "/uapi/domestic-stock/v1/trading/pension/inquire-psbl-order");
+  assert.equal(calls[0].params.CANO, "12345678");
+  assert.equal(calls[0].params.ACNT_PRDT_CD, "22");
+  assert.equal(calls[0].params.PDNO, "132030");
+  assert.equal(calls[0].params.ORD_UNPR, "25000");
+  assert.equal(calls[0].params.ORD_DVSN, "00");
+  assert.equal(calls[0].params.CMA_EVLU_AMT_ICLD_YN, "Y");
+  assert.equal(calls[0].params.ACCA_DVSN_CD, "00");
+  assert.equal(calls[0].params.OVRS_ICLD_YN, undefined);
+});
+
+test("returns validation errors for incomplete KIS orderable cash lookup params", async () => {
+  let called = false;
+  const service = new AccountService({
+    kis: {
+      request: async () => {
+        called = true;
+      },
+    },
+  });
+
+  const result = await service.getDomesticStockCash("kis", {
+    accountNumber: "12345678",
+    accountProductCode: "01",
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.id, "/uapi/domestic-stock/v1/trading/inquire-psbl-order");
+  assert.equal(result.error.code, "VALIDATION_ERROR");
+  assert.equal(called, false);
+});
+
+test("allows raw KIS orderable cash params to satisfy lookup requirements", async () => {
+  const calls = [];
+  const service = new AccountService({
+    kis: {
+      request: async (id, params) => {
+        calls.push({ id, params });
+        return brokerSuccess("kis", id, {
+          rt_cd: "0",
+          output: {},
+        });
+      },
+    },
+  });
+
+  const result = await service.getDomesticStockCash("kis", {
+    accountNumber: "12345678",
+    params: {
+      PDNO: "005930",
+      ORD_UNPR: "70000",
+      ORD_DVSN: "01",
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(calls[0].params.PDNO, "005930");
+  assert.equal(calls[0].params.ORD_UNPR, "70000");
+  assert.equal(calls[0].params.ORD_DVSN, "01");
 });
 
 test("preserves raw KIS account params override compatibility", async () => {
