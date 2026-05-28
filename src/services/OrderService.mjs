@@ -447,6 +447,7 @@ function buildKisNewOrder(side, order) {
     ORD_DVSN: kisOrderDivision(order.orderType),
     ORD_QTY: String(order.quantity),
     ORD_UNPR: order.orderType === "market" ? "0" : String(order.price),
+    EXCG_ID_DVSN_CD: order.exchange,
   };
 }
 
@@ -460,6 +461,7 @@ function buildKisModifyOrder(order) {
     ORD_QTY: String(order.quantity),
     ORD_UNPR: order.orderType === "market" ? "0" : String(order.price),
     QTY_ALL_ORD_YN: "N",
+    EXCG_ID_DVSN_CD: order.exchange,
   };
 }
 
@@ -473,6 +475,7 @@ function buildKisCancelOrder(order) {
     ORD_QTY: String(order.quantity),
     ORD_UNPR: "0",
     QTY_ALL_ORD_YN: "N",
+    EXCG_ID_DVSN_CD: order.exchange,
   };
 }
 
@@ -498,7 +501,7 @@ function normalizeCancelOrder(order) {
     exchange: normalizeExchange(order.exchange),
     originalOrderNumber: normalizeRequiredString(order.originalOrderNumber, "originalOrderNumber"),
     accountNumber: normalizeOptionalString(order.accountNumber, ""),
-    accountProductCode: normalizeOptionalString(order.accountProductCode, "01"),
+    accountProductCode: normalizeOptionalString(order.accountProductCode, ""),
   };
 }
 
@@ -518,14 +521,33 @@ function normalizeBaseOrder(order) {
     marginCode: normalizeOptionalString(order.marginCode, "000"),
     loanDate: normalizeOptionalString(order.loanDate, ""),
     accountNumber: normalizeOptionalString(order.accountNumber, ""),
-    accountProductCode: normalizeOptionalString(order.accountProductCode, "01"),
+    accountProductCode: normalizeOptionalString(order.accountProductCode, ""),
   };
 }
 
 function kisAccountParams(input = {}) {
+  const account = normalizeKisAccount(input.accountNumber, input.accountProductCode);
   return {
-    CANO: input.accountNumber,
-    ACNT_PRDT_CD: input.accountProductCode,
+    CANO: account.accountNumber,
+    ACNT_PRDT_CD: account.accountProductCode,
+  };
+}
+
+function normalizeKisAccount(accountNumber, accountProductCode) {
+  const rawAccountNumber = normalizeOptionalString(accountNumber, "");
+  const rawProductCode = normalizeOptionalString(accountProductCode, "");
+  const accountMatch = rawAccountNumber.match(/^([^-]+)-(\d+)$/);
+
+  if (accountMatch) {
+    return {
+      accountNumber: accountMatch[1],
+      accountProductCode: rawProductCode || accountMatch[2],
+    };
+  }
+
+  return {
+    accountNumber: rawAccountNumber,
+    accountProductCode: rawProductCode || "01",
   };
 }
 

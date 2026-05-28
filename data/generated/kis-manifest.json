@@ -44765,6 +44765,22 @@
               "id": "ORD_UNPR",
               "name": "ORD_UNPR"
             }
+          },
+          {
+            "id": "EXCG_ID_DVSN_CD",
+            "name": "EXCG_ID_DVSN_CD",
+            "type": "String",
+            "required": true,
+            "length": null,
+            "location": "body",
+            "direction": "request",
+            "order": 7,
+            "sample": null,
+            "description": null,
+            "raw": {
+              "id": "EXCG_ID_DVSN_CD",
+              "name": "EXCG_ID_DVSN_CD"
+            }
           }
         ],
         "response": []
@@ -46949,6 +46965,22 @@
             "raw": {
               "id": "QTY_ALL_ORD_YN",
               "name": "QTY_ALL_ORD_YN"
+            }
+          },
+          {
+            "id": "EXCG_ID_DVSN_CD",
+            "name": "EXCG_ID_DVSN_CD",
+            "type": "String",
+            "required": true,
+            "length": null,
+            "location": "body",
+            "direction": "request",
+            "order": 10,
+            "sample": null,
+            "description": null,
+            "raw": {
+              "id": "EXCG_ID_DVSN_CD",
+              "name": "EXCG_ID_DVSN_CD"
             }
           }
         ],

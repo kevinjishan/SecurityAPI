@@ -234,6 +234,7 @@ test("builds DB and KIS domestic order dry runs without live submission", async 
     ORD_DVSN: "01",
     ORD_QTY: "1",
     ORD_UNPR: "0",
+    EXCG_ID_DVSN_CD: "KRX",
   });
   assert.equal(called, false);
 });

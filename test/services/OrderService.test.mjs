@@ -380,18 +380,36 @@ test("builds KIS domestic order dry runs with first-class account fields", async
     ORD_DVSN: "00",
     ORD_QTY: "1",
     ORD_UNPR: "70000",
+    EXCG_ID_DVSN_CD: "KRX",
   });
   assert.equal(sell.data.request.CANO, "12345678");
   assert.equal(sell.data.request.ACNT_PRDT_CD, "02");
   assert.equal(sell.data.request.PDNO, "005930");
+  assert.equal(sell.data.request.EXCG_ID_DVSN_CD, "KRX");
   assert.equal(modify.data.request.CANO, "12345678");
   assert.equal(modify.data.request.ACNT_PRDT_CD, "03");
   assert.equal(modify.data.request.ORGN_ODNO, "0000000010");
   assert.equal(modify.data.request.RVSE_CNCL_DVSN_CD, "01");
+  assert.equal(modify.data.request.EXCG_ID_DVSN_CD, "KRX");
   assert.equal(cancel.data.request.CANO, "12345678");
   assert.equal(cancel.data.request.ACNT_PRDT_CD, "04");
   assert.equal(cancel.data.request.ORGN_ODNO, "0000000011");
   assert.equal(cancel.data.request.RVSE_CNCL_DVSN_CD, "02");
+  assert.equal(cancel.data.request.EXCG_ID_DVSN_CD, "KRX");
+});
+
+test("splits KIS hyphenated account numbers for domestic orders", async () => {
+  const service = new OrderService({});
+
+  const result = await service.buyDomesticStock("kis", {
+    symbol: "005930",
+    quantity: 1,
+    price: 70000,
+    accountNumber: "12345678-22",
+  });
+
+  assert.equal(result.data.request.CANO, "12345678");
+  assert.equal(result.data.request.ACNT_PRDT_CD, "22");
 });
 
 test("preserves raw KIS order params override compatibility", async () => {

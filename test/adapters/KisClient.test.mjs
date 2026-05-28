@@ -121,18 +121,25 @@ test("uses KIS mock domains, hashkey, and side-specific mock order TR IDs", asyn
     hashKey: true,
     side: "sell",
   });
+  const buyResult = await client.request("/uapi/domestic-stock/v1/trading/order-cash", body, {
+    hashKey: true,
+    side: "buy",
+  });
 
   assert.equal(result.ok, true);
-  assert.equal(calls.length, 3);
+  assert.equal(buyResult.ok, true);
+  assert.equal(calls.length, 5);
   assert.equal(calls[0].url, "https://openapivts.koreainvestment.com:29443/oauth2/tokenP");
   assert.equal(calls[1].url, "https://openapivts.koreainvestment.com:29443/uapi/hashkey");
   assert.equal(calls[1].headers.appkey, "app-key");
   assert.equal(calls[1].headers.appsecret, "secret-key");
   assert.deepEqual(JSON.parse(calls[1].body), body);
   assert.equal(calls[2].url, "https://openapivts.koreainvestment.com:29443/uapi/domestic-stock/v1/trading/order-cash");
-  assert.equal(calls[2].headers.tr_id, "VTTC0012U");
+  assert.equal(calls[2].headers.tr_id, "VTTC0011U");
   assert.equal(calls[2].headers.hashkey, "hash-1");
   assert.deepEqual(JSON.parse(calls[2].body), body);
+  assert.equal(calls[3].url, "https://openapivts.koreainvestment.com:29443/uapi/hashkey");
+  assert.equal(calls[4].headers.tr_id, "VTTC0012U");
 });
 
 test("caches KIS WebSocket approval keys separately from access tokens", async () => {

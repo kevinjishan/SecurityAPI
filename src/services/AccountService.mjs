@@ -4,6 +4,9 @@ import { BrokerError, assertBroker } from "../core/index.mjs";
 const CASH_CAPABILITY_ID = "account.domesticStock.cash";
 const BALANCE_CAPABILITY_ID = "account.domesticStock.balance";
 const ORDER_HISTORY_CAPABILITY_ID = "account.domesticStock.orderHistory";
+const KIS_ORDERABLE_CASH_ID = "/uapi/domestic-stock/v1/trading/inquire-psbl-order";
+const KIS_PENSION_ORDERABLE_CASH_ID = "/uapi/domestic-stock/v1/trading/pension/inquire-psbl-order";
+const KIS_PENSION_ACCOUNT_PRODUCT_CODES = new Set(["22"]);
 
 export class AccountService {
   constructor(clients = {}) {
@@ -175,7 +178,7 @@ function resolveClient(clients, broker) {
   };
 }
 
-function selectAccountSource(broker, capabilities, capabilityId, options) {
+function selectAccountSource(broker, capabilities, capabilityId, options = {}) {
   const preferredId = options.apiId ?? options.trCode;
   const sources = capabilities.findApis(capabilityId).filter((api) => api.transport === "rest");
 
@@ -194,7 +197,7 @@ function selectAccountSource(broker, capabilities, capabilityId, options) {
     return source;
   }
 
-  const defaultId = defaultSourceId(broker, capabilityId);
+  const defaultId = defaultSourceId(broker, capabilityId, options);
   const source = sources.find((api) => api.id === defaultId) ?? sources[0];
 
   if (!source) {
@@ -207,12 +210,14 @@ function selectAccountSource(broker, capabilities, capabilityId, options) {
   return source;
 }
 
-function defaultSourceId(broker, capabilityId) {
+function defaultSourceId(broker, capabilityId, options = {}) {
   if (capabilityId === CASH_CAPABILITY_ID) {
     if (broker === "kiwoom") return "kt00001";
     if (broker === "ls") return "CSPAQ12200";
     if (broker === "db") return "CDPCQ00100";
-    if (broker === "kis") return "/uapi/domestic-stock/v1/trading/inquire-psbl-order";
+    if (broker === "kis") {
+      return isKisPensionAccount(options) ? KIS_PENSION_ORDERABLE_CASH_ID : KIS_ORDERABLE_CASH_ID;
+    }
   }
 
   if (capabilityId === BALANCE_CAPABILITY_ID) {
@@ -265,14 +270,7 @@ function defaultCashParams(broker, sourceId, options = {}) {
   }
 
   if (broker === "kis") {
-    return {
-      ...kisAccountParams(options),
-      PDNO: "",
-      ORD_UNPR: "",
-      ORD_DVSN: "00",
-      CMA_EVLU_AMT_ICLD_YN: "N",
-      OVRS_ICLD_YN: "N",
-    };
+    return kisOrderableCashParams(sourceId, options);
   }
 
   return {};
@@ -397,11 +395,112 @@ function defaultOrderHistoryParams(broker, sourceId, options) {
   return {};
 }
 
-function kisAccountParams(input = {}) {
-  return {
-    CANO: normalizeOptionalRequestString(input.accountNumber, ""),
-    ACNT_PRDT_CD: normalizeOptionalRequestString(input.accountProductCode, "01"),
+function kisOrderableCashParams(sourceId, options = {}) {
+  const rawParams = options.params ?? {};
+  const isPension = isKisPensionCashSource(sourceId) || isKisPensionAccount(options);
+  const orderType = normalizeOptionalRequestString(firstValue(options, ["orderType"]), "limit").toLowerCase();
+  const symbol = normalizeOptionalSymbol(
+    firstValue(options, ["symbol", "issueNumber", "PDNO"]) ?? firstValue(rawParams, ["PDNO"]),
+  );
+  const orderPrice = normalizeOptionalRequestString(
+    firstValue(options, ["orderPrice", "price", "ORD_UNPR"]) ?? firstValue(rawParams, ["ORD_UNPR"]),
+    orderType === "market" ? "0" : "",
+  );
+  const orderDivision = normalizeOptionalRequestString(
+    firstValue(options, ["orderDivision", "ORD_DVSN"]) ?? firstValue(rawParams, ["ORD_DVSN"]),
+    orderType === "market" ? "01" : "00",
+  );
+
+  if (!symbol || !orderPrice) {
+    throw BrokerError.validation("KIS orderable cash lookup requires symbol and price", {
+      broker: "kis",
+      id: sourceId,
+      details: {
+        required: ["symbol", "price"],
+        sourceId,
+      },
+    });
+  }
+
+  const params = {
+    ...kisAccountParams(options),
+    PDNO: symbol,
+    ORD_UNPR: orderPrice,
+    ORD_DVSN: orderDivision,
+    CMA_EVLU_AMT_ICLD_YN: normalizeKisYnOption(
+      firstValue(options, ["includeCmaEvaluationAmount", "CMA_EVLU_AMT_ICLD_YN"])
+        ?? firstValue(rawParams, ["CMA_EVLU_AMT_ICLD_YN"]),
+      isPension ? "Y" : "N",
+    ),
   };
+
+  if (isPension) {
+    params.ACCA_DVSN_CD = normalizeOptionalRequestString(
+      firstValue(options, ["accaDivisionCode", "ACCA_DVSN_CD"]) ?? firstValue(rawParams, ["ACCA_DVSN_CD"]),
+      "00",
+    );
+  } else {
+    params.OVRS_ICLD_YN = normalizeKisYnOption(
+      firstValue(options, ["includeOverseas", "OVRS_ICLD_YN"]) ?? firstValue(rawParams, ["OVRS_ICLD_YN"]),
+      "N",
+    );
+  }
+
+  return params;
+}
+
+function kisAccountParams(input = {}) {
+  const account = normalizeKisAccount(input);
+  return {
+    CANO: account.accountNumber,
+    ACNT_PRDT_CD: account.accountProductCode,
+  };
+}
+
+function normalizeKisAccount(input = {}) {
+  const rawAccountNumber = normalizeOptionalRequestString(input.accountNumber ?? input.CANO ?? input.params?.CANO, "");
+  const rawProductCode = normalizeOptionalRequestString(
+    input.accountProductCode ?? input.ACNT_PRDT_CD ?? input.params?.ACNT_PRDT_CD,
+    "",
+  );
+  const accountMatch = rawAccountNumber.match(/^([^-]+)-(\d+)$/);
+
+  if (accountMatch) {
+    return {
+      accountNumber: accountMatch[1],
+      accountProductCode: rawProductCode || accountMatch[2],
+    };
+  }
+
+  return {
+    accountNumber: rawAccountNumber,
+    accountProductCode: rawProductCode || "01",
+  };
+}
+
+function isKisPensionAccount(options = {}) {
+  const account = normalizeKisAccount(options);
+  const accountType = normalizeOptionalRequestString(options.accountType, "").toLowerCase();
+
+  return options.pension === true
+    || accountType === "pension"
+    || KIS_PENSION_ACCOUNT_PRODUCT_CODES.has(account.accountProductCode);
+}
+
+function isKisPensionCashSource(sourceId) {
+  return sourceId === KIS_PENSION_ORDERABLE_CASH_ID;
+}
+
+function normalizeKisYnOption(value, fallback) {
+  if (value === true) {
+    return "Y";
+  }
+
+  if (value === false) {
+    return "N";
+  }
+
+  return normalizeOptionalRequestString(value, fallback);
 }
 
 function normalizeKiwoomCash(sourceId, payload) {

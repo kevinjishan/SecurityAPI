@@ -381,13 +381,24 @@ function defaultKisTrId(entry, options = {}) {
 
   const side = options.side;
   if (side === "buy") {
-    return scoped.find((id) => id.endsWith("0011U") || id.endsWith("1002U")) ?? scoped[0];
+    return findTrId(scoped, ["0012U", "0802U", "1002U"]) ?? scoped[0];
   }
   if (side === "sell") {
-    return scoped.find((id) => id.endsWith("0012U") || id.endsWith("1006U")) ?? scoped[0];
+    return findTrId(scoped, ["0011U", "0801U", "1001U", "1006U"]) ?? scoped[0];
   }
 
   return scoped[0];
+}
+
+function findTrId(trIds, suffixes) {
+  for (const suffix of suffixes) {
+    const trId = trIds.find((id) => id.endsWith(suffix));
+    if (trId) {
+      return trId;
+    }
+  }
+
+  return null;
 }
 
 function extractKisContinuation(headers) {

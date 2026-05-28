@@ -66,12 +66,12 @@ const KIS_SERVICE_OVERRIDES = Object.freeze({
   "/uapi/domestic-stock/v1/trading/order-cash": {
     method: "POST",
     trIds: ["TTTC0011U", "TTTC0012U", "VTTC0011U", "VTTC0012U"],
-    params: ["CANO", "ACNT_PRDT_CD", "PDNO", "ORD_DVSN", "ORD_QTY", "ORD_UNPR"],
+    params: ["CANO", "ACNT_PRDT_CD", "PDNO", "ORD_DVSN", "ORD_QTY", "ORD_UNPR", "EXCG_ID_DVSN_CD"],
   },
   "/uapi/domestic-stock/v1/trading/order-rvsecncl": {
     method: "POST",
     trIds: ["TTTC0013U", "VTTC0013U"],
-    params: ["CANO", "ACNT_PRDT_CD", "KRX_FWDG_ORD_ORGNO", "ORGN_ODNO", "ORD_DVSN", "RVSE_CNCL_DVSN_CD", "ORD_QTY", "ORD_UNPR", "QTY_ALL_ORD_YN"],
+    params: ["CANO", "ACNT_PRDT_CD", "KRX_FWDG_ORD_ORGNO", "ORGN_ODNO", "ORD_DVSN", "RVSE_CNCL_DVSN_CD", "ORD_QTY", "ORD_UNPR", "QTY_ALL_ORD_YN", "EXCG_ID_DVSN_CD"],
   },
   H0STCNT0: { method: "POST", trIds: ["H0STCNT0"], params: ["tr_id", "tr_key"] },
   H0STASP0: { method: "POST", trIds: ["H0STASP0"], params: ["tr_id", "tr_key"] },
