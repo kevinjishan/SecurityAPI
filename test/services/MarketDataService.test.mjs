@@ -200,6 +200,29 @@ test("normalizes monthly candle payloads directly", () => {
   assert.equal(data.candles[0].close, 70500);
 });
 
+test("getDomesticStockCandles routes daily interval like the daily facade", async () => {
+  const core = new MarketDataService({ ls: new FakeClient("ls") });
+  const facade = new MarketDataService({ ls: new FakeClient("ls") });
+
+  const viaCore = await core.getDomesticStockCandles("ls", "005930", { interval: "1d", count: 3, endDate: "2026-05-31" });
+  const viaFacade = await facade.getDomesticStockDailyCandles("ls", "005930", { count: 3, endDate: "2026-05-31" });
+
+  assert.equal(viaCore.ok, true);
+  assert.equal(viaCore.capability, "marketData.domesticStock.dailyCandles");
+  assert.equal(viaCore.data.interval, "1d");
+  assert.deepEqual(viaCore.data, viaFacade.data);
+});
+
+test("getDomesticStockCandles rejects unsupported intervals with a structured error", async () => {
+  const service = new MarketDataService({ ls: new FakeClient("ls") });
+
+  const result = await service.getDomesticStockCandles("ls", "005930", { interval: "1y" });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "UNSUPPORTED_CAPABILITY");
+  assert.match(result.error.message, /1y/);
+});
+
 class FakeClient {
   constructor(broker) {
     this.broker = broker;

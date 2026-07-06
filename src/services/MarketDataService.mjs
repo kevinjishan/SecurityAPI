@@ -1,10 +1,24 @@
 import { getCapabilities } from "../capabilities/index.mjs";
 import { BrokerError, assertBroker } from "../core/index.mjs";
+import { classifyCandleInterval } from "./candleSupport.mjs";
 
 const BASIC_INFO_CAPABILITY_ID = "marketData.domesticStock.basicInfo";
 const DAILY_CANDLES_CAPABILITY_ID = "marketData.domesticStock.dailyCandles";
 const MONTHLY_CANDLES_CAPABILITY_ID = "marketData.domesticStock.monthlyCandles";
 const MINUTE_CANDLES_CAPABILITY_ID = "marketData.domesticStock.minuteCandles";
+
+const PERIOD_CANDLE_ROUTES = {
+  "1d": {
+    capabilityId: DAILY_CANDLES_CAPABILITY_ID,
+    request: requestDailyCandles,
+    normalize: normalizeDomesticStockDailyCandles,
+  },
+  "1mo": {
+    capabilityId: MONTHLY_CANDLES_CAPABILITY_ID,
+    request: requestMonthlyCandles,
+    normalize: normalizeDomesticStockMonthlyCandles,
+  },
+};
 
 export class MarketDataService {
   constructor(clients = {}) {
@@ -23,25 +37,11 @@ export class MarketDataService {
   }
 
   async getDomesticStockDailyCandles(broker, symbol, options = {}) {
-    return this.requestMarketData({
-      broker,
-      symbol,
-      options,
-      capabilityId: DAILY_CANDLES_CAPABILITY_ID,
-      request: requestDailyCandles,
-      normalize: normalizeDomesticStockDailyCandles,
-    });
+    return this.getDomesticStockCandles(broker, symbol, { ...options, interval: "1d" });
   }
 
   async getDomesticStockMonthlyCandles(broker, symbol, options = {}) {
-    return this.requestMarketData({
-      broker,
-      symbol,
-      options,
-      capabilityId: MONTHLY_CANDLES_CAPABILITY_ID,
-      request: requestMonthlyCandles,
-      normalize: normalizeDomesticStockMonthlyCandles,
-    });
+    return this.getDomesticStockCandles(broker, symbol, { ...options, interval: "1mo" });
   }
 
   async getDomesticStockMinuteCandles(broker, symbol, options = {}) {
@@ -52,6 +52,44 @@ export class MarketDataService {
       capabilityId: MINUTE_CANDLES_CAPABILITY_ID,
       request: requestMinuteCandles,
       normalize: normalizeDomesticStockMinuteCandles,
+    });
+  }
+
+  async getDomesticStockCandles(broker, symbol, options = {}) {
+    const classification = classifyCandleInterval(options.interval);
+
+    if (classification.kind === "minute") {
+      return this.requestMarketData({
+        broker,
+        symbol,
+        options: { ...options, intervalMinutes: options.intervalMinutes ?? classification.minutes },
+        capabilityId: MINUTE_CANDLES_CAPABILITY_ID,
+        request: requestMinuteCandles,
+        normalize: normalizeDomesticStockMinuteCandles,
+      });
+    }
+
+    const route = PERIOD_CANDLE_ROUTES[classification.interval];
+    if (classification.kind !== "period" || !route) {
+      return failureResponse({
+        broker: String(broker ?? "").trim().toLowerCase(),
+        symbol: String(symbol ?? "").trim(),
+        source: null,
+        capabilityId: null,
+        error: BrokerError.unsupported(
+          `Unsupported domestic stock candle interval: ${options.interval}`,
+          { broker, details: { interval: options.interval ?? null } },
+        ),
+      });
+    }
+
+    return this.requestMarketData({
+      broker,
+      symbol,
+      options: { ...options, interval: classification.interval },
+      capabilityId: route.capabilityId,
+      request: route.request,
+      normalize: route.normalize,
     });
   }
 
