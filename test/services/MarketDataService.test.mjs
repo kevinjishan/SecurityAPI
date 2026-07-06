@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   MarketDataService,
   normalizeDomesticStockDailyCandles,
+  normalizeDomesticStockMonthlyCandles,
 } from "../../src/index.mjs";
 import { MarketDataService as MarketDataServiceFromPackage } from "security-api-reference/services";
 
@@ -35,6 +36,62 @@ test("gets and normalizes Kiwoom domestic stock daily candles", async () => {
   assert.equal(result.data.candles[0].close, 70100);
   assert.equal(result.data.candles[0].volume, 9263135);
   assert.equal(result.data.source.id, "ka10081");
+});
+
+test("gets and normalizes LS domestic stock monthly candles", async () => {
+  const client = new FakeClient("ls");
+  const service = new MarketDataService({ ls: client });
+
+  const result = await service.getDomesticStockMonthlyCandles("ls", "005930", {
+    count: 3,
+    endDate: "2026-05-31",
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(client.calls[0], {
+    id: "t8410",
+    params: {
+      t8410InBlock: {
+        shcode: "005930",
+        gubun: "4",
+        qrycnt: 3,
+        sdate: "",
+        edate: "20260531",
+        cts_date: "",
+        comp_yn: "N",
+        sujung: "Y",
+      },
+    },
+    options: {},
+  });
+  assert.equal(result.capability, "marketData.domesticStock.monthlyCandles");
+  assert.equal(result.data.interval, "1mo");
+  assert.equal(result.data.candles[0].date, "20260501");
+  assert.equal(result.data.candles[0].close, 70100);
+  assert.equal(result.data.source.capabilityId, "marketData.domesticStock.monthlyCandles");
+});
+
+test("gets and normalizes Kiwoom domestic stock monthly candles", async () => {
+  const client = new FakeClient("kiwoom");
+  const service = new MarketDataService({ kiwoom: client });
+
+  const result = await service.getDomesticStockMonthlyCandles("kiwoom", "005930", {
+    baseDate: "2026-05-31",
+  });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(client.calls[0], {
+    id: "ka10083",
+    params: {
+      stk_cd: "005930",
+      base_dt: "20260531",
+      upd_stkpc_tp: "1",
+    },
+    options: {},
+  });
+  assert.equal(result.data.interval, "1mo");
+  assert.equal(result.data.candles[0].date, "20260501");
+  assert.equal(result.data.candles[0].value, 6485250000);
 });
 
 test("gets and normalizes LS domestic stock minute candles", async () => {
@@ -123,6 +180,26 @@ test("normalizes daily candle payloads directly", () => {
   assert.equal(data.candles[0].close, 70500);
 });
 
+test("normalizes monthly candle payloads directly", () => {
+  const data = normalizeDomesticStockMonthlyCandles("kiwoom", "005930", "ka10083", {
+    stk_mth_pole_chart_qry: [
+      {
+        dt: "20260501",
+        open_pric: "70000",
+        high_pric: "+71000",
+        low_pric: "-69000",
+        cur_prc: "-70500",
+        trde_qty: "100",
+      },
+    ],
+  });
+
+  assert.equal(data.interval, "1mo");
+  assert.equal(data.source.capabilityId, "marketData.domesticStock.monthlyCandles");
+  assert.equal(data.candles[0].date, "20260501");
+  assert.equal(data.candles[0].close, 70500);
+});
+
 class FakeClient {
   constructor(broker) {
     this.broker = broker;
@@ -157,6 +234,48 @@ function fakePayload(id) {
           trde_qty: "9263135",
           trde_prica: "648525",
           pred_pre: "+600",
+        },
+      ],
+    };
+  }
+
+  if (id === "ka10083") {
+    return {
+      stk_cd: "005930",
+      stk_mth_pole_chart_qry: [
+        {
+          dt: "20260501",
+          open_pric: "69800",
+          high_pric: "70500",
+          low_pric: "69600",
+          cur_prc: "70100",
+          trde_qty: "926313500",
+          trde_prica: "6485250000",
+          pred_pre: "+600",
+        },
+      ],
+    };
+  }
+
+  if (id === "t8410") {
+    return {
+      t8410OutBlock: {
+        shcode: "005930",
+        jiclose: 69000,
+        highend: 89700,
+        lowend: 48300,
+        cts_date: "",
+        rec_count: 1,
+      },
+      t8410OutBlock1: [
+        {
+          date: "20260501",
+          open: 69800,
+          high: 70500,
+          low: 69600,
+          close: 70100,
+          jdiff_vol: 926313500,
+          value: 6485250000,
         },
       ],
     };

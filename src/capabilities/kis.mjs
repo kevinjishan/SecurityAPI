@@ -40,6 +40,11 @@ export const KIS_CAPABILITIES = [
     apis: [{ id: "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice", role: "dailyChart", transport: "rest" }],
   },
   {
+    id: "marketData.domesticStock.monthlyCandles",
+    status: "serviceReady",
+    apis: [{ id: "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice", role: "monthlyChart", transport: "rest" }],
+  },
+  {
     id: "marketData.domesticStock.minuteCandles",
     status: "serviceReady",
     apis: [{ id: "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice", role: "minuteChart", transport: "rest" }],

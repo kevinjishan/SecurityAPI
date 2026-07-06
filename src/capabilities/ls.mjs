@@ -42,6 +42,11 @@ export const LS_CAPABILITIES = [
     apis: [{ id: "t8410", role: "dailyChart", transport: "rest" }],
   },
   {
+    id: "marketData.domesticStock.monthlyCandles",
+    status: "serviceReady",
+    apis: [{ id: "t8410", role: "monthlyChart", transport: "rest" }],
+  },
+  {
     id: "marketData.domesticStock.minuteCandles",
     status: "serviceReady",
     apis: [{ id: "t8412", role: "minuteChart", transport: "rest" }],
