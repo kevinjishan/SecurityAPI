@@ -40,6 +40,11 @@ export const KIWOOM_CAPABILITIES = [
     apis: [{ id: "ka10083", role: "monthlyChart", transport: "rest" }],
   },
   {
+    id: "marketData.domesticStock.weeklyCandles",
+    status: "serviceReady",
+    apis: [{ id: "ka10082", role: "weeklyChart", transport: "rest" }],
+  },
+  {
     id: "marketData.domesticStock.minuteCandles",
     status: "serviceReady",
     apis: [{ id: "ka10080", role: "minuteChart", transport: "rest" }],

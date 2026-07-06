@@ -31,6 +31,10 @@ export const CAPABILITY_DEFINITIONS = Object.freeze({
     area: "marketData",
     label: "국내주식 월봉 OHLCV",
   },
+  "marketData.domesticStock.weeklyCandles": {
+    area: "marketData",
+    label: "국내주식 주봉 OHLCV",
+  },
   "marketData.domesticStock.minuteCandles": {
     area: "marketData",
     label: "국내주식 분봉 OHLCV",
