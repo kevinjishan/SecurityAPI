@@ -248,6 +248,8 @@ test("gets and normalizes LS domestic stock weekly candles", async () => {
   });
   assert.equal(result.capability, "marketData.domesticStock.weeklyCandles");
   assert.equal(result.data.interval, "1w");
+  assert.equal(result.data.candles[0].date, "20260501");
+  assert.equal(result.data.candles[0].close, 70100);
   assert.equal(result.data.source.capabilityId, "marketData.domesticStock.weeklyCandles");
 });
 
@@ -265,6 +267,9 @@ test("requests Kiwoom weekly candles via ka10082", async () => {
     upd_stkpc_tp: "1",
   });
   assert.equal(result.data.interval, "1w");
+  assert.equal(result.data.candles[0].date, "20260518");
+  assert.equal(result.data.candles[0].close, 70100);
+  assert.equal(result.data.candles[0].volume, 185262700);
 });
 
 test("requests DB weekly candles via CHARTWEEK with period div code", async () => {
@@ -286,6 +291,9 @@ test("requests DB weekly candles via CHARTWEEK with period div code", async () =
     },
   });
   assert.equal(result.data.interval, "1w");
+  assert.equal(result.data.candles[0].date, "20260518");
+  assert.equal(result.data.candles[0].close, 70100);
+  assert.equal(result.data.candles[0].volume, 185262700);
 });
 
 test("requests KIS weekly candles with FID_PERIOD_DIV_CODE W", async () => {
@@ -297,6 +305,9 @@ test("requests KIS weekly candles with FID_PERIOD_DIV_CODE W", async () => {
   assert.equal(result.ok, true);
   assert.equal(client.calls[0].params.FID_PERIOD_DIV_CODE, "W");
   assert.equal(result.data.interval, "1w");
+  assert.equal(result.data.candles[0].date, "20260518");
+  assert.equal(result.data.candles[0].close, 70100);
+  assert.equal(result.data.candles[0].volume, 185262700);
 });
 
 class FakeClient {
@@ -401,6 +412,57 @@ function fakePayload(id) {
           close: 70000,
           jdiff_vol: 100,
           value: 7000000,
+        },
+      ],
+    };
+  }
+
+  if (id === "ka10082") {
+    return {
+      stk_cd: "005930",
+      stk_stk_pole_chart_qry: [
+        {
+          dt: "20260518",
+          open_pric: "69800",
+          high_pric: "70500",
+          low_pric: "69600",
+          cur_prc: "70100",
+          trde_qty: "185262700",
+          trde_prica: "1297050000",
+          pred_pre: "+600",
+        },
+      ],
+    };
+  }
+
+  if (id === "CHARTWEEK") {
+    return {
+      Out: [
+        {
+          Hour: "",
+          Date: "20260518",
+          Prpr: "70100",
+          Oprc: "69800",
+          Hprc: "70500",
+          Lprc: "69600",
+          CntgVol: "185262700",
+        },
+      ],
+    };
+  }
+
+  if (id === "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice") {
+    return {
+      output1: { stck_shrn_iscd: "005930" },
+      output2: [
+        {
+          stck_bsop_date: "20260518",
+          stck_oprc: "69800",
+          stck_hgpr: "70500",
+          stck_lwpr: "69600",
+          stck_clpr: "70100",
+          acml_vol: "185262700",
+          acml_tr_pbmn: "1297050000",
         },
       ],
     };
