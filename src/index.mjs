@@ -89,6 +89,7 @@ export {
   normalizeDomesticStockBasicInfo,
   normalizeDomesticStockCash,
   normalizeDomesticStockDailyCandles,
+  normalizeDomesticStockWeeklyCandles,
   normalizeDomesticStockMonthlyCandles,
   normalizeDomesticIndexDailyCandles,
   normalizeDomesticIndexCurrent,
