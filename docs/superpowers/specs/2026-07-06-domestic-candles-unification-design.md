@@ -102,8 +102,13 @@ capability는 자동 생성(codegen)하지 않는다. 기존 방식대로 **수�
 - `marketData.domesticStock.weeklyCandles` capability 신규 정의
   (`definitions.mjs`에 label 추가).
 - 각 브로커 `{broker}.mjs`에 주봉 지원분을 매트릭스와 동일하게 수기 선언.
-- 브로커 capability 선언과 매트릭스가 어긋나면 `validate:manifest`가 실패하도록
-  검증을 추가(또는 기존 검증 확장). 목표: 매트릭스와 수기 선언의 드리프트 차단.
+- **정정**: `validate:manifest`/`validate:docs`는 브로커 원본 API 문서(data/raw→
+  data/generated)만 검증하며 `src/capabilities/`와 무관하다(어떤 script도 capabilities를
+  참조하지 않음). 따라서 매트릭스↔선언 드리프트는 `npm test`의 **단위 테스트**로 강제한다:
+  매트릭스(candleSupport)의 모든 interval capabilityId가 `CAPABILITY_DEFINITIONS`에
+  존재하고, 주봉 지원 브로커가 실제로 `supports()`를 통과하는지 검증.
+- 주봉 capability 추가는 manifest/docs 생성물에 영향이 없으므로 재생성 불필요
+  (PR #12 월봉도 동일). `validate:manifest`/`validate:docs`는 회귀 게이트로만 유지.
 - 문서 생성(`generate:docs`)과 매니페스트(`generate:manifest`)에 주봉이 반영되도록
   재생성하고 `validate:docs` / `validate:manifest` 통과.
 
@@ -135,9 +140,11 @@ capability는 자동 생성(codegen)하지 않는다. 기존 방식대로 **수�
     와 반환 `interval:"1w"`, OHLCV 매핑 검증. 기존 일/월/분 테스트 패턴(FakeClient) 준수.
   - 신규: **미지원 interval 차단** 테스트 — 예: DB에 `"1w"` 요청 시 `ok:false` +
     `BrokerError.unsupported`, 에러에 interval 명시.
+  - 신규: **매트릭스↔capability 일관성** 테스트 — candleSupport의 interval capabilityId가
+    모두 CAPABILITY_DEFINITIONS에 존재, 주봉 지원 브로커가 supports() 통과.
   - 회귀: PR #12 **월봉** 테스트 및 기존 일/분 테스트 전부 통과(파사드 위임 후에도 불변).
-- `npm run validate:manifest` — 주봉 capability가 매니페스트에 반영, 매트릭스↔선언 일치.
-- `npm run validate:docs` — 생성 문서에 주봉 반영.
+- `npm run validate:manifest` — 회귀 게이트(주봉과 무관, green 유지 확인).
+- `npm run validate:docs` — 회귀 게이트(주봉과 무관, green 유지 확인).
 
 ## 7. 리스크 / 주의점
 
