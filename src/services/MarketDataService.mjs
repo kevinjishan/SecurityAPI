@@ -1,9 +1,10 @@
 import { getCapabilities } from "../capabilities/index.mjs";
 import { BrokerError, assertBroker } from "../core/index.mjs";
-import { classifyCandleInterval } from "./candleSupport.mjs";
+import { classifyCandleInterval, weeklyPeriodCode } from "./candleSupport.mjs";
 
 const BASIC_INFO_CAPABILITY_ID = "marketData.domesticStock.basicInfo";
 const DAILY_CANDLES_CAPABILITY_ID = "marketData.domesticStock.dailyCandles";
+const WEEKLY_CANDLES_CAPABILITY_ID = "marketData.domesticStock.weeklyCandles";
 const MONTHLY_CANDLES_CAPABILITY_ID = "marketData.domesticStock.monthlyCandles";
 const MINUTE_CANDLES_CAPABILITY_ID = "marketData.domesticStock.minuteCandles";
 
@@ -12,6 +13,11 @@ const PERIOD_CANDLE_ROUTES = {
     capabilityId: DAILY_CANDLES_CAPABILITY_ID,
     request: requestDailyCandles,
     normalize: normalizeDomesticStockDailyCandles,
+  },
+  "1w": {
+    capabilityId: WEEKLY_CANDLES_CAPABILITY_ID,
+    request: requestWeeklyCandles,
+    normalize: normalizeDomesticStockWeeklyCandles,
   },
   "1mo": {
     capabilityId: MONTHLY_CANDLES_CAPABILITY_ID,
@@ -38,6 +44,10 @@ export class MarketDataService {
 
   async getDomesticStockDailyCandles(broker, symbol, options = {}) {
     return this.getDomesticStockCandles(broker, symbol, { ...options, interval: "1d" });
+  }
+
+  async getDomesticStockWeeklyCandles(broker, symbol, options = {}) {
+    return this.getDomesticStockCandles(broker, symbol, { ...options, interval: "1w" });
   }
 
   async getDomesticStockMonthlyCandles(broker, symbol, options = {}) {
@@ -191,6 +201,29 @@ export function normalizeDomesticStockDailyCandles(broker, symbol, sourceId, pay
   }
 
   throw BrokerError.unsupported(`Unsupported daily candle normalization broker: ${broker}`, {
+    broker,
+    details: { sourceId },
+  });
+}
+
+export function normalizeDomesticStockWeeklyCandles(broker, symbol, sourceId, payload) {
+  if (broker === "kiwoom") {
+    return normalizeKiwoomCandles(symbol, sourceId, "1w", payload?.stk_stk_pole_chart_qry, WEEKLY_CANDLES_CAPABILITY_ID);
+  }
+
+  if (broker === "ls") {
+    return normalizeLsCandles(symbol, sourceId, "1w", payload?.t8410OutBlock1, payload?.t8410OutBlock, WEEKLY_CANDLES_CAPABILITY_ID);
+  }
+
+  if (broker === "db") {
+    return normalizeDbCandles(symbol, sourceId, "1w", payload?.Out ?? payload?.output, WEEKLY_CANDLES_CAPABILITY_ID);
+  }
+
+  if (broker === "kis") {
+    return normalizeKisCandles(symbol, sourceId, "1w", payload?.output2, payload?.output1, WEEKLY_CANDLES_CAPABILITY_ID);
+  }
+
+  throw BrokerError.unsupported(`Unsupported weekly candle normalization broker: ${broker}`, {
     broker,
     details: { sourceId },
   });
@@ -370,6 +403,43 @@ async function requestDailyCandles(client, broker, sourceId, symbol, options) {
   }
 
   throw BrokerError.unsupported(`Unsupported daily candle request broker: ${broker}`, {
+    broker,
+    details: { sourceId },
+  });
+}
+
+async function requestWeeklyCandles(client, broker, sourceId, symbol, options) {
+  const requestOptions = options.requestOptions ?? {};
+
+  if (broker === "kiwoom") {
+    return client.request(sourceId, {
+      stk_cd: symbol,
+      base_dt: normalizeDate(options.baseDate ?? options.endDate),
+      upd_stkpc_tp: options.adjusted === false ? "0" : "1",
+    }, requestOptions);
+  }
+
+  if (broker === "ls" || broker === "kis") {
+    return requestDailyCandles(client, broker, sourceId, symbol, {
+      ...options,
+      periodCode: options.periodCode ?? weeklyPeriodCode(broker),
+    });
+  }
+
+  if (broker === "db") {
+    return client.request(sourceId, {
+      In: {
+        InputOrgAdjPrc: options.adjusted === false ? "0" : "1",
+        InputCondMrktDivCode: options.marketDivision ?? options.market ?? "J",
+        InputIscd1: symbol,
+        InputDate1: normalizeOptionalDate(options.startDate),
+        InputDate2: normalizeOptionalDate(options.endDate ?? options.baseDate),
+        InputPeriodDivCode: "W",
+      },
+    }, requestOptions);
+  }
+
+  throw BrokerError.unsupported(`Unsupported weekly candle request broker: ${broker}`, {
     broker,
     details: { sourceId },
   });
@@ -732,6 +802,10 @@ function normalizeKisCandles(symbol, sourceId, interval, rows, summary = {}, cap
 function candleCapabilityId(interval) {
   if (interval === "1d") {
     return DAILY_CANDLES_CAPABILITY_ID;
+  }
+
+  if (interval === "1w") {
+    return WEEKLY_CANDLES_CAPABILITY_ID;
   }
 
   if (interval === "1mo") {
