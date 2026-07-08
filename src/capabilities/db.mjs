@@ -35,6 +35,11 @@ export const DB_CAPABILITIES = [
     apis: [{ id: "CHARTDAY", role: "dailyChart", transport: "rest" }],
   },
   {
+    id: "marketData.domesticStock.weeklyCandles",
+    status: "serviceReady",
+    apis: [{ id: "CHARTWEEK", role: "weeklyChart", transport: "rest" }],
+  },
+  {
     id: "marketData.domesticStock.minuteCandles",
     status: "serviceReady",
     apis: [{ id: "CHARTMIN", role: "minuteChart", transport: "rest" }],

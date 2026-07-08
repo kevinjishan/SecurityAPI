@@ -200,6 +200,116 @@ test("normalizes monthly candle payloads directly", () => {
   assert.equal(data.candles[0].close, 70500);
 });
 
+test("getDomesticStockCandles routes daily interval like the daily facade", async () => {
+  const core = new MarketDataService({ ls: new FakeClient("ls") });
+  const facade = new MarketDataService({ ls: new FakeClient("ls") });
+
+  const viaCore = await core.getDomesticStockCandles("ls", "005930", { interval: "1d", count: 3, endDate: "2026-05-31" });
+  const viaFacade = await facade.getDomesticStockDailyCandles("ls", "005930", { count: 3, endDate: "2026-05-31" });
+
+  assert.equal(viaCore.ok, true);
+  assert.equal(viaCore.capability, "marketData.domesticStock.dailyCandles");
+  assert.equal(viaCore.data.interval, "1d");
+  assert.deepEqual(viaCore.data, viaFacade.data);
+});
+
+test("getDomesticStockCandles rejects unsupported intervals with a structured error", async () => {
+  const service = new MarketDataService({ ls: new FakeClient("ls") });
+
+  const result = await service.getDomesticStockCandles("ls", "005930", { interval: "1y" });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "UNSUPPORTED_CAPABILITY");
+  assert.match(result.error.message, /1y/);
+});
+
+test("gets and normalizes LS domestic stock weekly candles", async () => {
+  const client = new FakeClient("ls");
+  const service = new MarketDataService({ ls: client });
+
+  const result = await service.getDomesticStockWeeklyCandles("ls", "005930", { count: 3, endDate: "2026-05-31" });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(client.calls[0], {
+    id: "t8410",
+    params: {
+      t8410InBlock: {
+        shcode: "005930",
+        gubun: "3",
+        qrycnt: 3,
+        sdate: "",
+        edate: "20260531",
+        cts_date: "",
+        comp_yn: "N",
+        sujung: "Y",
+      },
+    },
+    options: {},
+  });
+  assert.equal(result.capability, "marketData.domesticStock.weeklyCandles");
+  assert.equal(result.data.interval, "1w");
+  assert.equal(result.data.candles[0].date, "20260501");
+  assert.equal(result.data.candles[0].close, 70100);
+  assert.equal(result.data.source.capabilityId, "marketData.domesticStock.weeklyCandles");
+});
+
+test("requests Kiwoom weekly candles via ka10082", async () => {
+  const client = new FakeClient("kiwoom");
+  const service = new MarketDataService({ kiwoom: client });
+
+  const result = await service.getDomesticStockCandles("kiwoom", "005930", { interval: "1w", endDate: "2026-05-31" });
+
+  assert.equal(result.ok, true);
+  assert.equal(client.calls[0].id, "ka10082");
+  assert.deepEqual(client.calls[0].params, {
+    stk_cd: "005930",
+    base_dt: "20260531",
+    upd_stkpc_tp: "1",
+  });
+  assert.equal(result.data.interval, "1w");
+  assert.equal(result.data.candles[0].date, "20260518");
+  assert.equal(result.data.candles[0].close, 70100);
+  assert.equal(result.data.candles[0].volume, 185262700);
+});
+
+test("requests DB weekly candles via CHARTWEEK with period div code", async () => {
+  const client = new FakeClient("db");
+  const service = new MarketDataService({ db: client });
+
+  const result = await service.getDomesticStockWeeklyCandles("db", "005930", { startDate: "2026-01-01", endDate: "2026-05-31" });
+
+  assert.equal(result.ok, true);
+  assert.equal(client.calls[0].id, "CHARTWEEK");
+  assert.deepEqual(client.calls[0].params, {
+    In: {
+      InputOrgAdjPrc: "1",
+      InputCondMrktDivCode: "J",
+      InputIscd1: "005930",
+      InputDate1: "20260101",
+      InputDate2: "20260531",
+      InputPeriodDivCode: "W",
+    },
+  });
+  assert.equal(result.data.interval, "1w");
+  assert.equal(result.data.candles[0].date, "20260518");
+  assert.equal(result.data.candles[0].close, 70100);
+  assert.equal(result.data.candles[0].volume, 185262700);
+});
+
+test("requests KIS weekly candles with FID_PERIOD_DIV_CODE W", async () => {
+  const client = new FakeClient("kis");
+  const service = new MarketDataService({ kis: client });
+
+  const result = await service.getDomesticStockWeeklyCandles("kis", "005930", { startDate: "2026-01-01", endDate: "2026-05-31" });
+
+  assert.equal(result.ok, true);
+  assert.equal(client.calls[0].params.FID_PERIOD_DIV_CODE, "W");
+  assert.equal(result.data.interval, "1w");
+  assert.equal(result.data.candles[0].date, "20260518");
+  assert.equal(result.data.candles[0].close, 70100);
+  assert.equal(result.data.candles[0].volume, 185262700);
+});
+
 class FakeClient {
   constructor(broker) {
     this.broker = broker;
@@ -302,6 +412,57 @@ function fakePayload(id) {
           close: 70000,
           jdiff_vol: 100,
           value: 7000000,
+        },
+      ],
+    };
+  }
+
+  if (id === "ka10082") {
+    return {
+      stk_cd: "005930",
+      stk_stk_pole_chart_qry: [
+        {
+          dt: "20260518",
+          open_pric: "69800",
+          high_pric: "70500",
+          low_pric: "69600",
+          cur_prc: "70100",
+          trde_qty: "185262700",
+          trde_prica: "1297050000",
+          pred_pre: "+600",
+        },
+      ],
+    };
+  }
+
+  if (id === "CHARTWEEK") {
+    return {
+      Out: [
+        {
+          Hour: "",
+          Date: "20260518",
+          Prpr: "70100",
+          Oprc: "69800",
+          Hprc: "70500",
+          Lprc: "69600",
+          CntgVol: "185262700",
+        },
+      ],
+    };
+  }
+
+  if (id === "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice") {
+    return {
+      output1: { stck_shrn_iscd: "005930" },
+      output2: [
+        {
+          stck_bsop_date: "20260518",
+          stck_oprc: "69800",
+          stck_hgpr: "70500",
+          stck_lwpr: "69600",
+          stck_clpr: "70100",
+          acml_vol: "185262700",
+          acml_tr_pbmn: "1297050000",
         },
       ],
     };
