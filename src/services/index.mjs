@@ -56,6 +56,7 @@ export {
   MarketDataService,
   normalizeDomesticStockBasicInfo,
   normalizeDomesticStockDailyCandles,
+  normalizeDomesticStockMonthlyCandles,
   normalizeDomesticStockMinuteCandles,
 } from "./MarketDataService.mjs";
 
