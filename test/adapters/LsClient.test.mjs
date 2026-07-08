@@ -137,6 +137,86 @@ test("refreshes an expired LS token", async () => {
   assert.equal(calls[1].headers.authorization, "Bearer fresh-token");
 });
 
+test("auto-refreshes the LS token when broker reports IGW00121 token-invalid", async () => {
+  // 시나리오: 같은 appkey 로 외부 클라이언트(legacy LSClient.py)가 새 토큰을 발급해
+  // 우리 캐시된 토큰이 LS 인프라 게이트웨이에서 무효화된 상태. 첫 요청은
+  // 500 + IGW00121 으로 실패해야 하지만 SDK 가 자동 클리어 + 재발급 + 1회
+  // 재시도를 거쳐 두 번째 응답을 성공으로 반환해야 한다.
+  const calls = [];
+  const tokenStore = new MemoryTokenStore({ now: () => 1_000, expirationSkewMs: 0 });
+  tokenStore.set("ls:prod", {
+    accessToken: "stale-but-not-expired",
+    tokenType: "Bearer",
+    expiresAt: 9_999_999_999_999, // 시간상 유효, 서버 측 무효화
+  });
+
+  let businessCalls = 0;
+  const client = new LsClient({
+    appKey: "app-key",
+    appSecretKey: "secret-key",
+    macAddress: "AABBCCDDEEFF",
+    tokenStore,
+    fetch: async (url, init) => {
+      calls.push(readCall(url, init));
+      if (url.endsWith("/oauth2/token")) {
+        return jsonResponse({
+          access_token: "freshly-reissued",
+          token_type: "Bearer",
+          expires_in: 86400,
+        });
+      }
+      businessCalls += 1;
+      if (businessCalls === 1) {
+        return jsonResponse(
+          { rsp_cd: "IGW00121", rsp_msg: "유효하지 않은 token 입니다." },
+          { status: 500 },
+        );
+      }
+      return jsonResponse({
+        rsp_cd: "00000",
+        rsp_msg: "ok",
+        t1101OutBlock: { shcode: "005930", price: 70000 },
+      });
+    },
+  });
+
+  const result = await client.request("t1101", { t1101InBlock: { shcode: "005930" } });
+
+  assert.equal(result.ok, true, "auto-recovery should produce ok response");
+  assert.equal(result.data.t1101OutBlock.price, 70000);
+  // 호출 순서: (1) 비즈니스(실패) → (2) 토큰 재발급 → (3) 비즈니스(재시도 성공)
+  assert.equal(calls.length, 3);
+  assert.equal(calls[0].headers.authorization, "Bearer stale-but-not-expired");
+  assert.equal(calls[1].url, "https://openapi.ls-sec.co.kr:8080/oauth2/token");
+  assert.equal(calls[2].headers.authorization, "Bearer freshly-reissued");
+});
+
+test("does not auto-retry when the LS error is unrelated to token invalidation", async () => {
+  // IGW00121 외의 일반 에러는 재시도 없이 한 번에 실패 응답을 그대로 반환해야 한다.
+  // (인증과 무관한 비즈니스 오류로 토큰을 클리어하면 다음 호출까지 영향)
+  const calls = [];
+  const tokenStore = new MemoryTokenStore();
+  tokenStore.set("ls:prod", {
+    accessToken: "cached-token",
+    tokenType: "Bearer",
+    expiresAt: Date.now() + 60_000,
+  });
+  const client = new LsClient({
+    appKey: "app-key",
+    appSecretKey: "secret-key",
+    tokenStore,
+    fetch: async (url, init) => {
+      calls.push(readCall(url, init));
+      return jsonResponse({ rsp_cd: "99999", rsp_msg: "업무 오류" });
+    },
+  });
+
+  const result = await client.request("t1101", { t1101InBlock: { shcode: "005930" } });
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "API_ERROR");
+  assert.equal(calls.length, 1, "should not retry for non-token errors");
+});
+
 test("sends LS continuation headers and extracts next key", async () => {
   const calls = [];
   const tokenStore = new MemoryTokenStore();

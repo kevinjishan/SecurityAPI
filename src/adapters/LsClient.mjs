@@ -6,6 +6,10 @@ const REVOKE_TR_CODE = "revoke";
 const DEFAULT_TOKEN_TTL_MS = 23 * 60 * 60 * 1000;
 const LS_SUCCESS_CODES = new Set(["00000", "00040", "00136", "00156", "00200"]);
 const LS_NO_DATA_MESSAGES = new Set(["조회내역이 없습니다."]);
+// LS infra-gateway codes that indicate the cached access token is no longer
+// valid (e.g. revoked because the same appkey issued a new token from another
+// client process). On these, we must clear the cached token and re-issue once.
+const LS_TOKEN_INVALID_CODES = new Set(["IGW00121", "IGW00123", "IGW00125"]);
 
 export class LsClient extends BaseBrokerClient {
   constructor(config = {}) {
@@ -32,30 +36,44 @@ export class LsClient extends BaseBrokerClient {
         }));
       }
 
-      const token = entry.authRequired ? await this.getAccessToken() : null;
-      const headers = buildLsHeaders(entry, id, token, {
-        ...options,
-        macAddress: this.macAddress,
-      });
-      const result = await this.http.request({
-        method: endpoint.method,
-        url: endpoint.url,
-        headers,
-        body: params ?? {},
-        bodyFormat: entry.requestFormat,
-        timeoutMs: options.timeoutMs,
-        context: {
-          broker: this.broker,
-          id,
-          operation: "request",
-          retryable: options.retryable,
-        },
-      });
-
-      return this.normalizeLsResult(id, result);
+      // Token-invalidation auto-recovery: LS allows only one active token per
+      // appkey, so a co-resident legacy client can silently revoke ours. On the
+      // first attempt we use the cached token; if LS reports the token is no
+      // longer valid (IGW00121 family), we clear the cache, force-refresh, and
+      // retry exactly once before surfacing the error.
+      let response = await this.#dispatch(id, entry, endpoint, params, options, false);
+      if (!response.ok && isLsTokenInvalidError(response.error) && entry.authRequired) {
+        this.clearToken();
+        response = await this.#dispatch(id, entry, endpoint, params, options, true);
+      }
+      return response;
     } catch (error) {
       return this.failureResponse(id || "unknown", error, { id: id || undefined });
     }
+  }
+
+  async #dispatch(id, entry, endpoint, params, options, forceRefresh) {
+    const token = entry.authRequired ? await this.getAccessToken(forceRefresh) : null;
+    const headers = buildLsHeaders(entry, id, token, {
+      ...options,
+      macAddress: this.macAddress,
+    });
+    const result = await this.http.request({
+      method: endpoint.method,
+      url: endpoint.url,
+      headers,
+      body: params ?? {},
+      bodyFormat: entry.requestFormat,
+      timeoutMs: options.timeoutMs,
+      context: {
+        broker: this.broker,
+        id,
+        operation: "request",
+        retryable: options.retryable,
+      },
+    });
+
+    return this.normalizeLsResult(id, result);
   }
 
   async getAccessToken(forceRefresh = false) {
@@ -271,6 +289,23 @@ function extractLsContinuation(headers) {
       tr_cont_key: trContKey,
     },
   };
+}
+
+// True if the broker error carries an LS infra-gateway code that signals the
+// cached access token has been invalidated (typically by another client of the
+// same appkey). Caller is responsible for clearing the cache and re-issuing.
+function isLsTokenInvalidError(error) {
+  if (!error) return false;
+  // Two surfaces:
+  //  - 200-with-envelope error (extractLsApiError): error.details.rsp_cd
+  //  - HTTP non-2xx with envelope body (HttpClient HTTP_ERROR): error.details.body.rsp_cd
+  const code = String(
+    error.details?.rsp_cd
+    ?? error.details?.body?.rsp_cd
+    ?? error.cause?.details?.body?.rsp_cd
+    ?? "",
+  ).trim();
+  return code.length > 0 && LS_TOKEN_INVALID_CODES.has(code);
 }
 
 function extractLsApiError(data, id) {
