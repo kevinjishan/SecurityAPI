@@ -12,10 +12,12 @@ const LS_NO_DATA_MESSAGES = new Set(["조회내역이 없습니다."]);
 const LS_TOKEN_INVALID_CODES = new Set(["IGW00121", "IGW00123", "IGW00125"]);
 
 export class LsClient extends BaseBrokerClient {
+  #tokenAuthority = null;
   constructor(config = {}) {
     validateCredentials(config);
     super("ls", config);
 
+    this.#tokenAuthority = config.tokenAuthority ?? null;
     this.appKey = config.appKey;
     this.appSecretKey = config.appSecretKey;
     this.macAddress = config.macAddress;
@@ -26,6 +28,9 @@ export class LsClient extends BaseBrokerClient {
 
     try {
       id = normalizeId(trCode);
+      if (this.#tokenAuthority && [TOKEN_TR_CODE, REVOKE_TR_CODE].includes(id)) {
+        throw BrokerError.unsupported("Delegated LS clients do not expose OAuth endpoints", { broker: this.broker, id });
+      }
       const entry = await this.getEntry(id);
       const endpoint = await this.getEndpoint(id);
 
@@ -42,7 +47,7 @@ export class LsClient extends BaseBrokerClient {
       // longer valid (IGW00121 family), we clear the cache, force-refresh, and
       // retry exactly once before surfacing the error.
       let response = await this.#dispatch(id, entry, endpoint, params, options, false);
-      if (!response.ok && isLsTokenInvalidError(response.error) && entry.authRequired) {
+      if (!this.#tokenAuthority && !response.ok && isLsTokenInvalidError(response.error) && entry.authRequired) {
         this.clearToken();
         response = await this.#dispatch(id, entry, endpoint, params, options, true);
       }
@@ -77,6 +82,24 @@ export class LsClient extends BaseBrokerClient {
   }
 
   async getAccessToken(forceRefresh = false) {
+    if (this.#tokenAuthority) {
+      if (forceRefresh !== false) {
+        throw BrokerError.auth("Delegated LS authority does not allow forced refresh", { broker: this.broker, id: TOKEN_TR_CODE });
+      }
+      try {
+        const supplied = await this.#tokenAuthority.getAccessToken({ broker: this.broker, env: this.env });
+        const accessToken = supplied?.accessToken, tokenType = supplied?.tokenType, expiresAt = supplied?.expiresAt;
+        if (typeof accessToken !== "string" || !accessToken || accessToken.length > 8192 || /[\r\n]/.test(accessToken) ||
+            typeof tokenType !== "string" || tokenType.toLowerCase() !== "bearer" ||
+            !Number.isSafeInteger(expiresAt) || expiresAt <= this.now() + 60000) {
+          throw Error("INVALID_AUTHORITY_TOKEN");
+        }
+        return { accessToken, tokenType: "Bearer", expiresAt };
+      } catch {
+        // An external issuer's private error/cause must never escape through the SDK response.
+        throw BrokerError.auth("Delegated LS authority is unavailable or returned an invalid token", { broker: this.broker, id: TOKEN_TR_CODE });
+      }
+    }
     const key = this.tokenStoreKey();
 
     if (!forceRefresh) {
@@ -122,6 +145,9 @@ export class LsClient extends BaseBrokerClient {
   }
 
   async revokeToken() {
+    if (this.#tokenAuthority) {
+      throw BrokerError.unsupported("Delegated LS authority owns token revocation", { broker: this.broker, id: REVOKE_TR_CODE });
+    }
     const key = this.tokenStoreKey();
     const token = this.tokenStore.get(key);
 
@@ -171,6 +197,9 @@ export class LsClient extends BaseBrokerClient {
   }
 
   clearToken() {
+    if (this.#tokenAuthority) {
+      throw BrokerError.unsupported("Delegated LS authority owns token invalidation", { broker: this.broker, id: TOKEN_TR_CODE });
+    }
     this.tokenStore.delete(this.tokenStoreKey());
   }
 
@@ -355,6 +384,12 @@ function extractLsApiError(data, id) {
 }
 
 function validateCredentials(config) {
+  if (Object.hasOwn(config, "tokenAuthority")) {
+    if (!config.tokenAuthority || typeof config.tokenAuthority.getAccessToken !== "function" || config.appKey || config.appSecretKey) {
+      throw BrokerError.config("LS tokenAuthority requires getAccessToken and excludes direct credentials", { broker: "ls" });
+    }
+    return;
+  }
   if (!config.appKey) {
     throw BrokerError.config("LS appKey is required", { broker: "ls" });
   }
