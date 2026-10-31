@@ -54,7 +54,10 @@ export const LS_CAPABILITIES = [
   {
     id: "marketData.domesticStock.minuteCandles",
     status: "serviceReady",
-    apis: [{ id: "t8412", role: "minuteChart", transport: "rest" }],
+    apis: [
+      { id: "t8412", role: "minuteChart", transport: "rest" },
+      { id: "t8452", role: "integratedMinuteChart", transport: "rest" },
+    ],
   },
   {
     id: "technical.domesticStock.indicators",

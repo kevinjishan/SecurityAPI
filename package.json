@@ -46,7 +46,8 @@
     "docs/broker-error-reject-policy.md",
     "docs/production-readiness-checklist.md",
     "docs/broker-expansion-db-kis-plan.md",
-    "README.md"
+    "README.md",
+    "docs/ls-2026-policy-update.md"
   ],
   "repository": {
     "type": "git",

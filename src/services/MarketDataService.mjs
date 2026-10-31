@@ -1,6 +1,7 @@
 import { getCapabilities } from "../capabilities/index.mjs";
 import { BrokerError, assertBroker } from "../core/index.mjs";
 import { classifyCandleInterval, weeklyPeriodCode } from "./candleSupport.mjs";
+import { candleSelection, lsMinuteWireOptions, lsSessionTimes } from "./lsCandleOptions.mjs";
 
 const BASIC_INFO_CAPABILITY_ID = "marketData.domesticStock.basicInfo";
 const DAILY_CANDLES_CAPABILITY_ID = "marketData.domesticStock.dailyCandles";
@@ -256,7 +257,12 @@ export function normalizeDomesticStockMinuteCandles(broker, symbol, sourceId, pa
   }
 
   if (broker === "ls") {
-    return normalizeLsCandles(symbol, sourceId, interval, payload?.t8412OutBlock1, payload?.t8412OutBlock);
+    const normalized = normalizeLsCandles(symbol, sourceId, interval, payload?.[sourceId+"OutBlock1"], payload?.[sourceId+"OutBlock"]);
+    if (options.session !== undefined) normalized.source.requestedSession = options.session;
+    const selection = candleSelection(broker, MINUTE_CANDLES_CAPABILITY_ID, options);
+    if (selection.exchange !== null) normalized.source.requestedExchange = selection.exchange;
+    else if (sourceId === "t8452" && (options.apiId || options.trCode)) normalized.source.requestedExchange = "K";
+    return normalized;
   }
 
   if (broker === "db") {
@@ -289,7 +295,11 @@ function resolveClient(clients, broker) {
 }
 
 function selectMarketDataSource(broker, capabilities, capabilityId, options) {
-  const preferredId = options.apiId ?? options.trCode;
+  const selection = candleSelection(broker, capabilityId, options);
+  const preferredId = options.apiId ?? options.trCode ?? (selection.exchange !== null ? "t8452" : undefined);
+  if (broker === "ls" && capabilityId === MINUTE_CANDLES_CAPABILITY_ID && preferredId === "t8412" && selection.exchange !== null) {
+    throw BrokerError.unsupported("t8412 cannot express an explicit exchange; use t8452", {broker});
+  }
   const sources = capabilities.findApis(capabilityId).filter((api) => api.transport === "rest");
 
   if (preferredId) {
@@ -496,6 +506,7 @@ async function requestMinuteCandles(client, broker, sourceId, symbol, options) {
     return client.request(sourceId, {
       [`${sourceId}InBlock`]: {
         shcode: symbol,
+        ...lsMinuteWireOptions(sourceId, options),
         ncnt: intervalMinutes,
         qrycnt: options.count ?? 500,
         nday: options.businessDays ? "1" : "0",
@@ -722,6 +733,7 @@ function normalizeLsCandles(symbol, sourceId, interval, rows, summary = {}, capa
       nextDate: nullableString(firstValue(summary, ["cts_date"])),
       nextTime: nullableString(firstValue(summary, ["cts_time"])),
       recordCount: parseNumber(firstValue(summary, ["rec_count"])),
+      ...lsSessionTimes(summary),
     },
     source: {
       broker: "ls",

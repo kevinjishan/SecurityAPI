@@ -1,0 +1,290 @@
+{
+  "schemaVersion": 1,
+  "broker": "ls",
+  "checkedAt": "2026-10-31",
+  "baseSnapshotDate": "2026-05-22",
+  "notices": [
+    {
+      "id": "chart-regular-20261022",
+      "url": "https://openapi.ls-sec.co.kr/community/10000000-0000-0011-0000-000000000001/posts/90fd71b7-edf5-42bd-92db-700be878b78f",
+      "publishedAt": "2026-10-07",
+      "announcedEffectiveFrom": "2026-10-22T16:00:00+09:00"
+    },
+    {
+      "id": "krx-session-fields-20260912",
+      "url": "https://openapi.ls-sec.co.kr/community/10000000-0000-0011-0000-000000000001/posts/893e9427-0cd8-4706-a1d2-b11fd833e2e1",
+      "publishedAt": "2026-09-03",
+      "announcedEffectiveFrom": "2026-09-12T12:00:00+09:00"
+    }
+  ],
+  "fields": [
+    {
+      "trCode": "t8412",
+      "block": "t8412InBlock",
+      "direction": "request",
+      "name": "krx_mmk_gubun",
+      "label": "KRX정규장구분",
+      "type": "String",
+      "length": "1",
+      "description": "Y: KRX 정규장. 공란을 포함한 다른 값: 전체. SDK에서는 선택 입력이며 미지정 시 기존 요청을 보존한다. 공지에는 필수 여부가 명시되지 않았다.",
+      "noticeId": "chart-regular-20261022"
+    },
+    {
+      "trCode": "t8452",
+      "block": "t8452InBlock",
+      "direction": "request",
+      "name": "krx_mmk_gubun",
+      "label": "KRX정규장구분",
+      "type": "String",
+      "length": "1",
+      "description": "Y: KRX 정규장. 공란을 포함한 다른 값: 전체. SDK에서는 선택 입력이며 미지정 시 기존 요청을 보존한다. 공지에는 필수 여부가 명시되지 않았다.",
+      "noticeId": "chart-regular-20261022"
+    },
+    {
+      "trCode": "t8451",
+      "block": "t8451OutBlock",
+      "direction": "response",
+      "name": "krx_fm_s_time",
+      "label": "KRX 프리마켓 s_time",
+      "type": "String",
+      "length": "6",
+      "description": "장시작/종료 시각(HHMMSS). 라벨의 시작/종료 의미나 실제 거래소 판정과 구분한다.",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8451",
+      "block": "t8451OutBlock",
+      "direction": "response",
+      "name": "krx_fm_e_time",
+      "label": "KRX 프리마켓 e_time",
+      "type": "String",
+      "length": "6",
+      "description": "장시작/종료 시각(HHMMSS). 라벨의 시작/종료 의미나 실제 거래소 판정과 구분한다.",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8451",
+      "block": "t8451OutBlock",
+      "direction": "response",
+      "name": "krx_fm_dshmin",
+      "label": "KRX 프리마켓 dshmin",
+      "type": "String",
+      "length": "2",
+      "description": "동시호가처리시간(MM:분)",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8451",
+      "block": "t8451OutBlock",
+      "direction": "response",
+      "name": "krx_am_s_time",
+      "label": "KRX 애프터마켓 s_time",
+      "type": "String",
+      "length": "6",
+      "description": "장시작/종료 시각(HHMMSS). 라벨의 시작/종료 의미나 실제 거래소 판정과 구분한다.",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8451",
+      "block": "t8451OutBlock",
+      "direction": "response",
+      "name": "krx_am_e_time",
+      "label": "KRX 애프터마켓 e_time",
+      "type": "String",
+      "length": "6",
+      "description": "장시작/종료 시각(HHMMSS). 라벨의 시작/종료 의미나 실제 거래소 판정과 구분한다.",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8451",
+      "block": "t8451OutBlock",
+      "direction": "response",
+      "name": "krx_am_dshmin",
+      "label": "KRX 애프터마켓 dshmin",
+      "type": "String",
+      "length": "2",
+      "description": "동시호가처리시간(MM:분)",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8452",
+      "block": "t8452OutBlock",
+      "direction": "response",
+      "name": "krx_fm_s_time",
+      "label": "KRX 프리마켓 s_time",
+      "type": "String",
+      "length": "6",
+      "description": "장시작/종료 시각(HHMMSS). 라벨의 시작/종료 의미나 실제 거래소 판정과 구분한다.",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8452",
+      "block": "t8452OutBlock",
+      "direction": "response",
+      "name": "krx_fm_e_time",
+      "label": "KRX 프리마켓 e_time",
+      "type": "String",
+      "length": "6",
+      "description": "장시작/종료 시각(HHMMSS). 라벨의 시작/종료 의미나 실제 거래소 판정과 구분한다.",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8452",
+      "block": "t8452OutBlock",
+      "direction": "response",
+      "name": "krx_fm_dshmin",
+      "label": "KRX 프리마켓 dshmin",
+      "type": "String",
+      "length": "2",
+      "description": "동시호가처리시간(MM:분)",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8452",
+      "block": "t8452OutBlock",
+      "direction": "response",
+      "name": "krx_am_s_time",
+      "label": "KRX 애프터마켓 s_time",
+      "type": "String",
+      "length": "6",
+      "description": "장시작/종료 시각(HHMMSS). 라벨의 시작/종료 의미나 실제 거래소 판정과 구분한다.",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8452",
+      "block": "t8452OutBlock",
+      "direction": "response",
+      "name": "krx_am_e_time",
+      "label": "KRX 애프터마켓 e_time",
+      "type": "String",
+      "length": "6",
+      "description": "장시작/종료 시각(HHMMSS). 라벨의 시작/종료 의미나 실제 거래소 판정과 구분한다.",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8452",
+      "block": "t8452OutBlock",
+      "direction": "response",
+      "name": "krx_am_dshmin",
+      "label": "KRX 애프터마켓 dshmin",
+      "type": "String",
+      "length": "2",
+      "description": "동시호가처리시간(MM:분)",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8453",
+      "block": "t8453OutBlock",
+      "direction": "response",
+      "name": "krx_fm_s_time",
+      "label": "KRX 프리마켓 s_time",
+      "type": "String",
+      "length": "6",
+      "description": "장시작/종료 시각(HHMMSS). 라벨의 시작/종료 의미나 실제 거래소 판정과 구분한다.",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8453",
+      "block": "t8453OutBlock",
+      "direction": "response",
+      "name": "krx_fm_e_time",
+      "label": "KRX 프리마켓 e_time",
+      "type": "String",
+      "length": "6",
+      "description": "장시작/종료 시각(HHMMSS). 라벨의 시작/종료 의미나 실제 거래소 판정과 구분한다.",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8453",
+      "block": "t8453OutBlock",
+      "direction": "response",
+      "name": "krx_fm_dshmin",
+      "label": "KRX 프리마켓 dshmin",
+      "type": "String",
+      "length": "2",
+      "description": "동시호가처리시간(MM:분)",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8453",
+      "block": "t8453OutBlock",
+      "direction": "response",
+      "name": "krx_am_s_time",
+      "label": "KRX 애프터마켓 s_time",
+      "type": "String",
+      "length": "6",
+      "description": "장시작/종료 시각(HHMMSS). 라벨의 시작/종료 의미나 실제 거래소 판정과 구분한다.",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8453",
+      "block": "t8453OutBlock",
+      "direction": "response",
+      "name": "krx_am_e_time",
+      "label": "KRX 애프터마켓 e_time",
+      "type": "String",
+      "length": "6",
+      "description": "장시작/종료 시각(HHMMSS). 라벨의 시작/종료 의미나 실제 거래소 판정과 구분한다.",
+      "noticeId": "krx-session-fields-20260912"
+    },
+    {
+      "trCode": "t8453",
+      "block": "t8453OutBlock",
+      "direction": "response",
+      "name": "krx_am_dshmin",
+      "label": "KRX 애프터마켓 dshmin",
+      "type": "String",
+      "length": "2",
+      "description": "동시호가처리시간(MM:분)",
+      "noticeId": "krx-session-fields-20260912"
+    }
+  ],
+  "usagePolicy": {
+    "schemaVersion": 1,
+    "broker": "ls",
+    "checkedAt": "2026-10-31",
+    "status": "PARTIAL_OFFICIAL_NOTICES",
+    "automaticallyEnforced": false,
+    "rules": [
+      {
+        "id": "account-appkey-sessions",
+        "dimension": "concurrentSessions",
+        "scope": "accountAppkey",
+        "limit": 3,
+        "status": "EFFECTIVE_ANNOUNCEMENT",
+        "effectiveFrom": "2026-10-31T08:00:00+09:00",
+        "runtimeVerified": false,
+        "sourceUrl": "https://openapi.ls-sec.co.kr/community/10000000-0000-0011-0000-000000000001/posts/03f7e4d4-cdb3-4276-a7b6-0f27ca5ebfb5"
+      },
+      {
+        "id": "subscriptions-per-session",
+        "dimension": "subscriptions",
+        "scope": "session",
+        "limit": 200,
+        "status": "ANNOUNCED_NOT_CONFIRMED_ACTIVE",
+        "effectiveFrom": null,
+        "sourceUrl": "https://openapi.ls-sec.co.kr/community/10000000-0000-0011-0000-000000000001/posts/043f99f1-271c-4d00-93e4-21b1fbff8de0",
+        "laterStageSourceUrl": "https://openapi.ls-sec.co.kr/community/10000000-0000-0011-0000-000000000001/posts/03f7e4d4-cdb3-4276-a7b6-0f27ca5ebfb5",
+        "counting": "Each realtime TR/instrument pair counts separately."
+      },
+      {
+        "id": "prior-ip-sessions",
+        "dimension": "concurrentSessions",
+        "scope": "ip",
+        "limit": 20,
+        "status": "HISTORICAL_CURRENT_UNCONFIRMED",
+        "effectiveFrom": null,
+        "sourceUrl": "https://openapi.ls-sec.co.kr/community/10000000-0000-0011-0000-000000000001/posts/03f7e4d4-cdb3-4276-a7b6-0f27ca5ebfb5"
+      }
+    ],
+    "unknownLimits": [
+      "REST aggregate appkey/account/IP limits",
+      "REST minute/hour/day quotas",
+      "token issuance frequency",
+      "current IP cap and precise session accounting",
+      "subscription-limit activation date",
+      "WebSocket subscribe/unsubscribe message rates"
+    ],
+    "enforcementNote": "Informational metadata only. Use an external shared coordinator; existing TR perSecond values remain historical snapshot evidence."
+  }
+}
