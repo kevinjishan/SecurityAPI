@@ -2,6 +2,10 @@
 
 키움증권, LS증권, DB증권, 한국투자증권의 공식 Open API 문서를 AI 코딩 참고용 Markdown 레퍼런스와 공통 SDK metadata로 생성하는 저장소입니다.
 
+## LS 차트·정책 추가 (2026-10-31)
+
+[세션/거래소 옵션과 공지 기반 정책](docs/ls-2026-policy-update.md)을 추가했다. 기본 요청과 인증·주문 코드는 유지한다. 선택 옵션·새 metadata와 외부 공유 limiter의 경계를 구분한다.
+
 ## 사용법
 
 ```bash

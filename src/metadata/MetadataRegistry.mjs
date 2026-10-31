@@ -165,6 +165,12 @@ export class MetadataRegistry {
     return this.requireEntry(broker, id).authRequired;
   }
 
+  // Informational policy metadata. Enforcement belongs to the caller's shared owner.
+  getUsagePolicy(broker) {
+    const manifest = this.#requireManifest(broker);
+    return structuredClone(manifest.usagePolicy ?? {broker: manifest.broker, status: "UNKNOWN", rules: []});
+  }
+
   getSourceRef(broker, id) {
     return this.requireEntry(broker, id).sourceRef;
   }

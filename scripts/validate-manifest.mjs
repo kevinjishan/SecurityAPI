@@ -1,5 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import assert from "node:assert/strict";
+import {applyLsNoticeUpdates} from "./lib/ls-notice-updates.mjs";
 
 const ROOT = process.cwd();
 const RAW_DIR = path.join(ROOT, "data", "raw");
@@ -43,6 +45,14 @@ async function main() {
   validateCommonEntries(kisManifest);
   validateKiwoom(kiwoomManifest, kiwoomRaw, kiwoomErrors);
   validateLs(lsManifest, lsMenu, lsTrsByApiId, lsPropertiesByTrId);
+  const noticeUpdates = await readJson(path.join(ROOT,"data/updates/ls-20261031.json"));
+  const snapshotOnly = structuredClone(lsManifest);
+  for (const entry of Object.values(snapshotOnly.apis)) for (const direction of ["request","response"]) {
+    entry.body[direction] = entry.body[direction].filter(field => field.sourceEvidence?.kind !== "OFFICIAL_NOTICE");
+  }
+  delete snapshotOnly.usagePolicy;
+  delete snapshotOnly.source.noticeUpdates;
+  assert.deepEqual(lsManifest, applyLsNoticeUpdates(snapshotOnly,noticeUpdates), "LS notice fields/policy must match the canonical notice source");
   validateDb(dbManifest, dbMenu, dbTrsByApiId, dbPropertiesByTrId);
   validateKis(kisManifest, kisMenu);
   validateSummary(summary, kiwoomManifest, lsManifest, dbManifest, kisManifest);
@@ -93,7 +103,11 @@ function validateCommonEntries(manifest) {
       assertTruthy(field.location === "header" || field.location === "body", `${manifest.broker}.${id}.${field.id}.location`);
       assertTruthy(field.direction === "request" || field.direction === "response", `${manifest.broker}.${id}.${field.id}.direction`);
       assertTruthy(typeof field.order === "number", `${manifest.broker}.${id}.${field.id}.order`);
-      assertTruthy(field.raw && typeof field.raw === "object", `${manifest.broker}.${id}.${field.id}.raw`);
+      if (field.sourceEvidence?.kind === "OFFICIAL_NOTICE") {
+        assertTruthy(manifest.broker === "ls" && field.location === "body" && field.raw === null, "Notice fields must not impersonate raw API metadata");
+      } else {
+        assertTruthy(field.raw && typeof field.raw === "object", `${manifest.broker}.${id}.${field.id}.raw`);
+      }
     }
   }
 }
@@ -155,8 +169,8 @@ function validateLs(manifest, menu, trsByApiId, propertiesByTrId) {
     assertTruthy(entry, `LS manifest entry ${tr.trCode}`);
     assertEqual(entry.headers.request.length, properties.filter((item) => item.bodyType === "req_h").length, `${tr.trCode} request header count`);
     assertEqual(entry.headers.response.length, properties.filter((item) => item.bodyType === "res_h").length, `${tr.trCode} response header count`);
-    assertEqual(entry.body.request.length, properties.filter((item) => item.bodyType === "req_b").length, `${tr.trCode} request body count`);
-    assertEqual(entry.body.response.length, properties.filter((item) => item.bodyType === "res_b").length, `${tr.trCode} response body count`);
+    assertEqual(entry.body.request.length, properties.filter((item) => item.bodyType === "req_b").length + entry.body.request.filter(field => field.sourceEvidence?.kind === "OFFICIAL_NOTICE").length, `${tr.trCode} request body count`);
+    assertEqual(entry.body.response.length, properties.filter((item) => item.bodyType === "res_b").length + entry.body.response.filter(field => field.sourceEvidence?.kind === "OFFICIAL_NOTICE").length, `${tr.trCode} response body count`);
   }
 }
 

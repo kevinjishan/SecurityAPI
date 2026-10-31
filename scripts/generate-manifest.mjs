@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { applyLsNoticeUpdates } from "./lib/ls-notice-updates.mjs";
 
 const ROOT = process.cwd();
 const RAW_DIR = path.join(ROOT, "data", "raw");
@@ -79,8 +80,18 @@ const KIS_SERVICE_OVERRIDES = Object.freeze({
 });
 
 const generatedAt = new Date().toISOString();
+const args = process.argv.slice(2);
+const selectedBroker = args.length === 0 ? null :
+  args.length === 2 && args[0] === "--broker" && ["kiwoom","ls","db","kis"].includes(args[1]) ? args[1] : (()=>{throw Error("Usage: generate-manifest.mjs [--broker kiwoom|ls|db|kis]");})();
+
 
 async function main() {
+  if (selectedBroker) {
+    const builders = {kiwoom:buildKiwoomManifest,ls:buildLsManifest,db:buildDbManifest,kis:buildKisManifest};
+    await writeJson(path.join(GENERATED_DIR,selectedBroker+"-manifest.json"),await builders[selectedBroker]());
+    console.log(selectedBroker+" manifest generated; other brokers and summary unchanged.");
+    return;
+  }
   await fs.rm(GENERATED_DIR, { recursive: true, force: true });
   await ensureDir(GENERATED_DIR);
 
@@ -320,7 +331,7 @@ async function buildLsManifest() {
     }
   }
 
-  return {
+  const manifest = {
     broker: "ls",
     generatedAt,
     source: {
@@ -340,6 +351,8 @@ async function buildLsManifest() {
     },
     apis: Object.fromEntries(Object.entries(apis).sort(([a], [b]) => compareText(a, b))),
   };
+  const updates = await readJson(path.join(ROOT,"data/updates/ls-20261031.json"));
+  return applyLsNoticeUpdates(manifest,updates);
 }
 
 async function buildDbManifest() {
