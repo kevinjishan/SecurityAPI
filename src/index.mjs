@@ -152,3 +152,5 @@ export {
   simpleMovingAverage,
   stochasticOscillator,
 } from "./services/index.mjs";
+
+export {parseKisDomesticStockMaster} from './reference/KisDomesticStockMaster.mjs';
