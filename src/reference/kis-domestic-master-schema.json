@@ -1,0 +1,553 @@
+{
+  "schema": 1,
+  "official_repository": "koreainvestment/open-trading-api",
+  "official_commit": "3a9be59a3ed8745720dc3aa9d584bdf3b7830362",
+  "markets": {
+    "kospi": {
+      "tailWidth": 227,
+      "fields": [
+        {
+          "id": "scrt_grp_cls_code",
+          "width": 2
+        },
+        {
+          "id": "avls_scal_cls_code",
+          "width": 1
+        },
+        {
+          "id": "bstp_larg_div_code",
+          "width": 4
+        },
+        {
+          "id": "bstp_medm_div_code",
+          "width": 4
+        },
+        {
+          "id": "bstp_smal_div_code",
+          "width": 4
+        },
+        {
+          "id": "mnin_cls_code_yn",
+          "width": 1
+        },
+        {
+          "id": "low_current_yn",
+          "width": 1
+        },
+        {
+          "id": "sprn_strr_nmix_issu_yn",
+          "width": 1
+        },
+        {
+          "id": "kospi200_apnt_cls_code",
+          "width": 1
+        },
+        {
+          "id": "kospi100_issu_yn",
+          "width": 1
+        },
+        {
+          "id": "kospi50_issu_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_issu_yn",
+          "width": 1
+        },
+        {
+          "id": "etp_prod_cls_code",
+          "width": 1
+        },
+        {
+          "id": "elw_pblc_yn",
+          "width": 1
+        },
+        {
+          "id": "krx100_issu_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_car_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_smcn_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_bio_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_bank_yn",
+          "width": 1
+        },
+        {
+          "id": "etpr_undt_objt_co_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_enrg_chms_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_stel_yn",
+          "width": 1
+        },
+        {
+          "id": "short_over_cls_code",
+          "width": 1
+        },
+        {
+          "id": "krx_medi_cmnc_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_cnst_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_fnnc_svc_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_scrt_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_ship_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_insu_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_trnp_yn",
+          "width": 1
+        },
+        {
+          "id": "sri_nmix_yn",
+          "width": 1
+        },
+        {
+          "id": "stck_sdpr",
+          "width": 9
+        },
+        {
+          "id": "frml_mrkt_deal_qty_unit",
+          "width": 5
+        },
+        {
+          "id": "ovtm_mrkt_deal_qty_unit",
+          "width": 5
+        },
+        {
+          "id": "trht_yn",
+          "width": 1
+        },
+        {
+          "id": "sltr_yn",
+          "width": 1
+        },
+        {
+          "id": "mang_issu_yn",
+          "width": 1
+        },
+        {
+          "id": "mrkt_alrm_cls_code",
+          "width": 2
+        },
+        {
+          "id": "mrkt_alrm_risk_adnt_yn",
+          "width": 1
+        },
+        {
+          "id": "insn_pbnt_yn",
+          "width": 1
+        },
+        {
+          "id": "byps_lstn_yn",
+          "width": 1
+        },
+        {
+          "id": "flng_cls_code",
+          "width": 2
+        },
+        {
+          "id": "fcam_mod_cls_code",
+          "width": 2
+        },
+        {
+          "id": "icic_cls_code",
+          "width": 2
+        },
+        {
+          "id": "marg_rate",
+          "width": 3
+        },
+        {
+          "id": "crdt_able",
+          "width": 1
+        },
+        {
+          "id": "crdt_days",
+          "width": 3
+        },
+        {
+          "id": "prdy_vol",
+          "width": 12
+        },
+        {
+          "id": "stck_fcam",
+          "width": 12
+        },
+        {
+          "id": "stck_lstn_date",
+          "width": 8
+        },
+        {
+          "id": "lstn_stcn",
+          "width": 15
+        },
+        {
+          "id": "cpfn",
+          "width": 21
+        },
+        {
+          "id": "stac_month",
+          "width": 2
+        },
+        {
+          "id": "po_prc",
+          "width": 7
+        },
+        {
+          "id": "prst_cls_code",
+          "width": 1
+        },
+        {
+          "id": "ssts_hot_yn",
+          "width": 1
+        },
+        {
+          "id": "stange_runup_yn",
+          "width": 1
+        },
+        {
+          "id": "krx300_issu_yn",
+          "width": 1
+        },
+        {
+          "id": "kospi_issu_yn",
+          "width": 1
+        },
+        {
+          "id": "sale_account",
+          "width": 9
+        },
+        {
+          "id": "bsop_prfi",
+          "width": 9
+        },
+        {
+          "id": "op_prfi",
+          "width": 9
+        },
+        {
+          "id": "thtr_ntin",
+          "width": 5
+        },
+        {
+          "id": "roe",
+          "width": 9
+        },
+        {
+          "id": "base_date",
+          "width": 8
+        },
+        {
+          "id": "prdy_avls_scal",
+          "width": 9
+        },
+        {
+          "id": "grp_code",
+          "width": 3
+        },
+        {
+          "id": "co_crdt_limt_over_yn",
+          "width": 1
+        },
+        {
+          "id": "secu_lend_able_yn",
+          "width": 1
+        },
+        {
+          "id": "stln_able_yn",
+          "width": 1
+        }
+      ]
+    },
+    "kosdaq": {
+      "tailWidth": 221,
+      "fields": [
+        {
+          "id": "scrt_grp_cls_code",
+          "width": 2
+        },
+        {
+          "id": "avls_scal_cls_code",
+          "width": 1
+        },
+        {
+          "id": "bstp_larg_div_code",
+          "width": 4
+        },
+        {
+          "id": "bstp_medm_div_code",
+          "width": 4
+        },
+        {
+          "id": "bstp_smal_div_code",
+          "width": 4
+        },
+        {
+          "id": "vntr_issu_yn",
+          "width": 1
+        },
+        {
+          "id": "low_current_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_issu_yn",
+          "width": 1
+        },
+        {
+          "id": "etp_prod_cls_code",
+          "width": 1
+        },
+        {
+          "id": "krx100_issu_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_car_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_smcn_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_bio_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_bank_yn",
+          "width": 1
+        },
+        {
+          "id": "etpr_undt_objt_co_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_enrg_chms_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_stel_yn",
+          "width": 1
+        },
+        {
+          "id": "short_over_cls_code",
+          "width": 1
+        },
+        {
+          "id": "krx_medi_cmnc_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_cnst_yn",
+          "width": 1
+        },
+        {
+          "id": "invt_alrm_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_scrt_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_ship_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_insu_yn",
+          "width": 1
+        },
+        {
+          "id": "krx_trnp_yn",
+          "width": 1
+        },
+        {
+          "id": "ksq150_nmix_yn",
+          "width": 1
+        },
+        {
+          "id": "stck_sdpr",
+          "width": 9
+        },
+        {
+          "id": "frml_mrkt_deal_qty_unit",
+          "width": 5
+        },
+        {
+          "id": "ovtm_mrkt_deal_qty_unit",
+          "width": 5
+        },
+        {
+          "id": "trht_yn",
+          "width": 1
+        },
+        {
+          "id": "sltr_yn",
+          "width": 1
+        },
+        {
+          "id": "mang_issu_yn",
+          "width": 1
+        },
+        {
+          "id": "mrkt_alrm_cls_code",
+          "width": 2
+        },
+        {
+          "id": "mrkt_alrm_risk_adnt_yn",
+          "width": 1
+        },
+        {
+          "id": "insn_pbnt_yn",
+          "width": 1
+        },
+        {
+          "id": "byps_lstn_yn",
+          "width": 1
+        },
+        {
+          "id": "flng_cls_code",
+          "width": 2
+        },
+        {
+          "id": "fcam_mod_cls_code",
+          "width": 2
+        },
+        {
+          "id": "icic_cls_code",
+          "width": 2
+        },
+        {
+          "id": "marg_rate",
+          "width": 3
+        },
+        {
+          "id": "crdt_able",
+          "width": 1
+        },
+        {
+          "id": "crdt_days",
+          "width": 3
+        },
+        {
+          "id": "prdy_vol",
+          "width": 12
+        },
+        {
+          "id": "stck_fcam",
+          "width": 12
+        },
+        {
+          "id": "stck_lstn_date",
+          "width": 8
+        },
+        {
+          "id": "lstn_stcn",
+          "width": 15
+        },
+        {
+          "id": "cpfn",
+          "width": 21
+        },
+        {
+          "id": "stac_month",
+          "width": 2
+        },
+        {
+          "id": "po_prc",
+          "width": 7
+        },
+        {
+          "id": "prst_cls_code",
+          "width": 1
+        },
+        {
+          "id": "ssts_hot_yn",
+          "width": 1
+        },
+        {
+          "id": "stange_runup_yn",
+          "width": 1
+        },
+        {
+          "id": "krx300_issu_yn",
+          "width": 1
+        },
+        {
+          "id": "sale_account",
+          "width": 9
+        },
+        {
+          "id": "bsop_prfi",
+          "width": 9
+        },
+        {
+          "id": "op_prfi",
+          "width": 9
+        },
+        {
+          "id": "thtr_ntin",
+          "width": 5
+        },
+        {
+          "id": "roe",
+          "width": 9
+        },
+        {
+          "id": "base_date",
+          "width": 8
+        },
+        {
+          "id": "prdy_avls_scal",
+          "width": 9
+        },
+        {
+          "id": "grp_code",
+          "width": 3
+        },
+        {
+          "id": "co_crdt_limt_over_yn",
+          "width": 1
+        },
+        {
+          "id": "secu_lend_able_yn",
+          "width": 1
+        },
+        {
+          "id": "stln_able_yn",
+          "width": 1
+        }
+      ]
+    }
+  }
+}

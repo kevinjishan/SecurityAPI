@@ -327,3 +327,7 @@ This contract is complete when:
 - Response wrapper, dry-run, realtime subscription shapes are documented.
 - Capability status semantics are clear.
 - Breaking change rules are defined.
+
+## 공개 국내 종목 기준정보
+
+추가 export parseKisDomesticStockMaster는 [공식 KIS 공개 master](kis-domestic-master.md)를 해석하는 부작용 없는 참조 데이터 parser다. 기존 broker request·인증/주문 API는 바꾸지 않는다. currentEligible은 현재 master의 보수적 필터이며 과거 종목군/전략 준비 완료를 뜻하지 않는다.
