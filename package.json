@@ -48,7 +48,8 @@
     "docs/broker-expansion-db-kis-plan.md",
     "README.md",
     "docs/ls-2026-policy-update.md",
-    "docs/kis-domestic-master.md"
+    "docs/kis-domestic-master.md",
+    "docs/ls-delegated-authority.md"
   ],
   "repository": {
     "type": "git",
