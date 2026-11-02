@@ -3,7 +3,7 @@ const integer=x=>Number.isSafeInteger(x)&&x>=0;
 /** Interpret metadata for a caller-owned shared controller; no request or private queue. */
 export function resolveRequestRatePolicy(entry,options={}){
  if(!entry||typeof entry.broker!=='string'||!entry.broker||typeof entry.id!=='string'||!entry.id||
- !options||Array.isArray(options)||Object.keys(options).some(k=>!['localFloorMs','safetyMarginMs','unknownGapMs'].includes(k)))fail();
+ !options||typeof options!=='object'||Array.isArray(options)||Object.keys(options).some(k=>!['localFloorMs','safetyMarginMs','unknownGapMs'].includes(k)))fail();
  const {localFloorMs=0,safetyMarginMs=0,unknownGapMs}=options;
  if(!integer(localFloorMs)||!integer(safetyMarginMs)||unknownGapMs!==undefined&&(!integer(unknownGapMs)||unknownGapMs<1))fail();
  const perSecond=entry.rateLimit?.perSecond??null;

@@ -26,7 +26,7 @@ test('missing metadata is unknown and an unrelated broker ID is retained',()=>{
  assert.equal(p.broker,'kis');assert.equal(p.id,'/uapi/test');assert.equal(p.effectiveGapMs,500);
 });
 test('invalid identity, negative margins and unrecognized options fail closed',()=>{
- for(const [e,o] of [[{},{}],[entry(1),{localFloorMs:-1}],[entry(1),{safetyMarginMs:.5}],[entry(1),{extra:1}]])assert.throws(()=>resolveRequestRatePolicy(e,o),/RATE_POLICY_INVALID/);
+ for(const [e,o] of [[{},{}],[entry(1),{localFloorMs:-1}],[entry(1),{safetyMarginMs:.5}],[entry(1),{extra:1}],[entry(1),1],[entry(1),true]])assert.throws(()=>resolveRequestRatePolicy(e,o),/RATE_POLICY_INVALID/);
 });
 test('policy resolution is pure and never installs an independent timer or mutates metadata',()=>{
  const e=Object.freeze({broker:'ls',id:'t8410',rateLimit:Object.freeze({perSecond:1})});
