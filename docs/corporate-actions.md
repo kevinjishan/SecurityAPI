@@ -25,3 +25,8 @@ evidence는 HTTPS URL, 보존 원문의 SHA-256, observedAt이다. observedAt은
 ## 호환성과 검증
 
 추가 export와 LS 응답 필드만 추가했다. 인증·quota·주문 builder·운영 설정은 변경하지 않았다. 신규6개를 포함해 SDK346개 테스트가 통과했다. 실제 브로커·OAuth 호출은 수행하지 않았다. 실제 공시 장부와 전략 엔진 연결은 소비 프로젝트에서 별도 검증한다.
+
+
+## 단주 소각의 명시적 구분
+
+outputs의 fractionDisposition은 기본 CLAIM이다. CANCEL은 단주 소각을 뜻하며 별도의 fractionEvidence(URL/hash/observedAt)가 필요하다. 근거가 없으면 PARTIAL이다. 소각 단위를 감사 기록으로 남기고 대응 원가를 처리하는 일은 소비 장부가 맡는다. LS 가격 조정비로 소각 여부를 추정하지 않는다. 감자기준일·법적 효력발생일·신주상장일은 각각 별도 사실이며 같은 날짜로 간주하지 않는다.

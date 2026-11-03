@@ -36,3 +36,11 @@ test('contract result detaches mutable caller data and preserves unknown cash pa
  const c=validateCorporateActionTerms(e);e.outputs[0].numerator='99';
  assert.equal(c.outputs[0].numerator,'1');assert.equal(c.cash[0].payAt,null);
 });
+
+test('fractional cancellation needs separate explicit evidence and cannot be inferred from rate',()=>{
+ const e=terms();e.outputs[0].fractionDisposition='CANCEL';
+ assert.equal(validateCorporateActionTerms(e).status,'PARTIAL');
+ e.outputs[0].fractionEvidence=[{...proof}];assert.equal(validateCorporateActionTerms(e).status,'TERMS_COMPLETE');
+ assert.equal(validateCorporateActionTerms(terms()).outputs[0].fractionDisposition,'CLAIM');
+ e.outputs[0].fractionDisposition='ROUND_DOWN';assert.throws(()=>validateCorporateActionTerms(e));
+});
