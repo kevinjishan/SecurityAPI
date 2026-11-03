@@ -154,3 +154,5 @@ export {
 } from "./services/index.mjs";
 
 export {parseKisDomesticStockMaster} from './reference/KisDomesticStockMaster.mjs';
+
+export { resolveRequestRatePolicy } from "./core/index.mjs";

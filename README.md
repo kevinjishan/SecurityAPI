@@ -308,3 +308,7 @@ const overseasTradeStream = await overseasRealtime.subscribeOverseasStockTrades(
 - DB증권 OPEN API: https://openapi.db-fi.com/apiservice?group_id=cc55b867-e049-421b-a798-be016370ff44&api_id=9e3097ab-7d39-4433-8002-00649604f0de
 - 한국투자증권 Open API: https://apiportal.koreainvestment.com/apiservice-summary
 - 한국투자증권 공식 샘플: https://github.com/koreainvestment/open-trading-api
+
+## 공유 호출 제어용 제한 정책
+
+[메타데이터 기반 제한 정책](docs/request-rate-policy.md)의 `resolveRequestRatePolicy`는 실제 TR metadata를 호출 간격으로 해석한다. 적용은 기존 공유 실행기가 맡으며 클라이언트별 독립 limiter나 자동 재시도를 추가하지 않는다.

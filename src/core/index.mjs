@@ -13,3 +13,5 @@ export {
   isBrokerEnvironment,
   isRequestOperation,
 } from "./types.mjs";
+
+export { resolveRequestRatePolicy } from "./RequestRatePolicy.mjs";
