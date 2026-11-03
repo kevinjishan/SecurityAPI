@@ -137,3 +137,5 @@ export {
   normalizeDomesticStockRealtimeMessage,
   normalizeMarketStatusRealtimeMessage,
 } from "./RealtimeService.mjs";
+
+export {normalizeLsCandleAdjustment,validateCorporateActionTerms} from './corporateActionSupport.mjs';

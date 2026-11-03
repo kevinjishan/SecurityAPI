@@ -156,3 +156,5 @@ export {
 export {parseKisDomesticStockMaster} from './reference/KisDomesticStockMaster.mjs';
 
 export { resolveRequestRatePolicy } from "./core/index.mjs";
+
+export {normalizeLsCandleAdjustment,validateCorporateActionTerms} from './services/corporateActionSupport.mjs';

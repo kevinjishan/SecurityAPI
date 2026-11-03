@@ -331,3 +331,8 @@ This contract is complete when:
 ## 공개 국내 종목 기준정보
 
 추가 export parseKisDomesticStockMaster는 [공식 KIS 공개 master](kis-domestic-master.md)를 해석하는 부작용 없는 참조 데이터 parser다. 기존 broker request·인증/주문 API는 바꾸지 않는다. currentEligible은 현재 master의 보수적 필터이며 과거 종목군/전략 준비 완료를 뜻하지 않는다.
+
+
+## 기업행위·가격 조정 근거 (추가 계약)
+
+LS 조정 원문 필드와 정확한 유리수의 기업행위 조건을 [기업행위 계약](corporate-actions.md)으로 제공합니다. normalizeLsCandleAdjustment와 validateCorporateActionTerms를 root/services에서 내보냅니다. 서식 완전성과 성과/권리의 사실 검증을 구분합니다.
