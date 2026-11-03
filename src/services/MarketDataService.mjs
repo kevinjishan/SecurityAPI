@@ -1,3 +1,4 @@
+import {normalizeLsCandleAdjustment} from './corporateActionSupport.mjs';
 import { getCapabilities } from "../capabilities/index.mjs";
 import { BrokerError, assertBroker } from "../core/index.mjs";
 import { classifyCandleInterval, weeklyPeriodCode } from "./candleSupport.mjs";
@@ -184,13 +185,13 @@ export function normalizeDomesticStockBasicInfo(broker, symbol, sourceId, payloa
   });
 }
 
-export function normalizeDomesticStockDailyCandles(broker, symbol, sourceId, payload) {
+export function normalizeDomesticStockDailyCandles(broker, symbol, sourceId, payload, options = null) {
   if (broker === "kiwoom") {
     return normalizeKiwoomCandles(symbol, sourceId, "1d", payload?.stk_dt_pole_chart_qry);
   }
 
   if (broker === "ls") {
-    return normalizeLsCandles(symbol, sourceId, "1d", payload?.t8410OutBlock1, payload?.t8410OutBlock);
+    return {...normalizeLsCandles(symbol, sourceId, "1d", payload?.t8410OutBlock1, payload?.t8410OutBlock), priceAdjustment:{requested:options===null?'UNKNOWN':options.adjusted===false?'N':'Y',verified:false}};
   }
 
   if (broker === "db") {
@@ -723,6 +724,7 @@ function normalizeLsCandles(symbol, sourceId, interval, rows, summary = {}, capa
         valueRaw: nullableString(firstValue(row, ["value"])),
         change: null,
         changeRaw: null,
+        adjustment: normalizeLsCandleAdjustment(row),
         raw: row,
       };
     }),
