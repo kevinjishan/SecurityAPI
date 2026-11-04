@@ -35,6 +35,7 @@ const KIWOOM_MARKET_STATUS_EVENTS = Object.freeze({
 const LS_MARKET_STATUS_MARKETS = Object.freeze({
   1: { market: "kospi", marketName: "KOSPI" },
   2: { market: "kosdaq", marketName: "KOSDAQ" },
+  3: { market: "krx", marketName: "KRX" },
   5: { market: "derivatives", marketName: "선물/옵션" },
   6: { market: "nxt", marketName: "NXT" },
   8: { market: "krxNightDerivatives", marketName: "KRX야간파생" },
@@ -574,27 +575,40 @@ function normalizeRealtimeOrderBook(message) {
     };
   }
 
+  const integrated = message.id === "UH1";
+  const prefix = integrated ? "unt_" : "";
+  const clock = nullableString(firstValue(body, ["hotime"]));
   return {
     ...message,
     kind: "orderBook",
     symbol: normalizeSymbol(firstValue(body, ["shcode"]) ?? message.key),
-    timestamp: nullableString(firstValue(body, ["hotime"])),
+    timestamp: clock,
+    venue: integrated ? "CONSOLIDATED" : "KRX",
+    market: message.id === "H1_" ? "kospi" : message.id === "HA_" ? "kosdaq" : null,
+    sourceTime: { value: clock, format: "HHmmss", timeZone: "Asia/Seoul", precision: "second", date: null, sequence: null },
+    sessionCodes: integrated
+      ? { krx: nullableString(body.krx_donsigubun), nxt: nullableString(body.nxt_donsigubun) }
+      : { krx: nullableString(body.donsigubun) },
+    allocationCode: nullableString(body.alloc_gubun),
+    instrumentTradability: null,
     asks: Array.from({ length: 10 }, (_, index) => orderBookLevel(
-      index + 1,
-      firstValue(body, [`offerho${index + 1}`]),
-      firstValue(body, [`offerrem${index + 1}`]),
+      index + 1, firstValue(body, [`offerho${index + 1}`]), firstValue(body, [`${prefix}offerrem${index + 1}`]),
     )),
     bids: Array.from({ length: 10 }, (_, index) => orderBookLevel(
-      index + 1,
-      firstValue(body, [`bidho${index + 1}`]),
-      firstValue(body, [`bidrem${index + 1}`]),
+      index + 1, firstValue(body, [`bidho${index + 1}`]), firstValue(body, [`${prefix}bidrem${index + 1}`]),
     )),
     totals: {
-      askQuantity: parseNumber(firstValue(body, ["totofferrem"])),
-      askQuantityRaw: nullableString(firstValue(body, ["totofferrem"])),
-      bidQuantity: parseNumber(firstValue(body, ["totbidrem"])),
-      bidQuantityRaw: nullableString(firstValue(body, ["totbidrem"])),
+      askQuantity: parseNumber(firstValue(body, [`${prefix}totofferrem`])),
+      askQuantityRaw: nullableString(firstValue(body, [`${prefix}totofferrem`])),
+      bidQuantity: parseNumber(firstValue(body, [`${prefix}totbidrem`])),
+      bidQuantityRaw: nullableString(firstValue(body, [`${prefix}totbidrem`])),
     },
+    ...(integrated ? { quantityByVenue: Object.fromEntries(["krx", "nxt"].map((venue) => [venue, {
+      asks: Array.from({ length: 10 }, (_, i) => quantityLevel(i + 1, body[`${venue}_offerrem${i + 1}`])),
+      bids: Array.from({ length: 10 }, (_, i) => quantityLevel(i + 1, body[`${venue}_bidrem${i + 1}`])),
+      askQuantity: parseNumber(body[`${venue}_totofferrem`]),
+      bidQuantity: parseNumber(body[`${venue}_totbidrem`]),
+    }])) } : {}),
   };
 }
 
@@ -745,9 +759,14 @@ function normalizeRealtimeMarketStatus(message) {
     phase: event.phase ?? null,
     eventCode,
     eventName: event.eventName ?? null,
+    ...(message.broker === "ls" ? { sourceTime: null } : {}),
     time: nullableString(firstValue(body, ["time", "chetime"])),
     remainingTime: nullableString(firstValue(body, ["remainingTime", "remtime"])),
   };
+}
+
+function quantityLevel(level, raw) {
+  return { level, quantity: parseNumber(raw), quantityRaw: nullableString(raw) };
 }
 
 function orderBookLevel(level, priceRaw, quantityRaw) {
