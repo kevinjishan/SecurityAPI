@@ -159,4 +159,4 @@ export { resolveRequestRatePolicy } from "./core/index.mjs";
 
 export {normalizeLsCandleAdjustment,validateCorporateActionTerms} from './services/corporateActionSupport.mjs';
 
-export {normalizeKrxHolidayYear,joinKrxCalendars,resolveKrxEquitySettlementDate,latestKrxEligibleTradeDate,describeLsDailyMeaning} from './services/calendarSupport.mjs';
+export {normalizeKrxHolidayYear,joinKrxCalendars,resolveKrxEquitySettlementDate,latestKrxEligibleTradeDate,describeLsDailyMeaning,normalizeKrxRegularSessionExceptions,resolveKrxRegularSessionException} from './services/calendarSupport.mjs';

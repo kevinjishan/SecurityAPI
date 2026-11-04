@@ -17,3 +17,14 @@ LS `t8410` 정규화는 기존 OHLC/value/raw·수정주가 요청 값을 유지
 - https://openapi.ls-sec.co.kr/guide/api/8ncj7d41-48w8-fv13-cj5y-4z8d6m811rbr?type=rest&api=12320341-ad85-429a-90bd-5b3771c5e89f
 
 검증: `node --test test/services/CalendarSupport.test.mjs`. 네트워크/실제 계좌를 사용하지 않는다.
+
+
+## 날짜·시장별 정규장 예외 일정
+
+`normalizeKrxRegularSessionExceptions(calendar, entries)`는 공식 공시에서 확인한 날짜·시장·개장/종료 시각·근거를 명시한 부분 일정 등록부를 만듭니다. `resolveKrxRegularSessionException(calendar, register, {date,market})`는 정확히 일치하는 항목만 반환하며 미등록 날짜·시장은 실패합니다. 빈 목록·중복·휴장일·범위 밖·잘못된 시각·근거 없는 항목도 거부합니다. 이 API는 기존 날짜 달력의 sessionTimes나 LS 일봉 meaning을 변경하지 않습니다.
+
+각 입력은 id, date(YYYYMMDD), market(KOSPI/KOSDAQ/KONEX), open/close(HH:mm), reason, evidence로 구성합니다. KST 일정을 scheduledOpenAt/scheduledCloseAt(UTC ISO)으로 변환하며 실제 첫/마지막 체결 시각은 null입니다. 부분 등록부는 모든 일반 거래일·추가 예외의 완전성을 인증하지 않습니다. 날짜별 공시가 있다고 해당 종목의 정지/거래 가능 여부, LS 봉의 집계 세션, 거래대금 단위나 과거 정보 가용 시각이 인증되는 것도 아닙니다.
+
+SDK는 전달받은 사실·일정의 구조와 달력 일치를 검사합니다. Application은 원문 전체 해시와 시장·날짜·변경 전/후 구획의 발췌, 등록부 스냅샷을 검증해야 합니다. 현재 취득한 공시의 관측 시각을 과거 이용 가능 시각으로 바꾸지 않습니다. 기존 수집 pin·동결 연구 계획·운영 프로세스를 자동 업그레이드하지 않습니다.
+
+검증: `node --test test/services/RegularSessionExceptions.test.mjs`.
