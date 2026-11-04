@@ -139,3 +139,5 @@ export {
 } from "./RealtimeService.mjs";
 
 export {normalizeLsCandleAdjustment,validateCorporateActionTerms} from './corporateActionSupport.mjs';
+
+export {normalizeKrxHolidayYear,joinKrxCalendars,resolveKrxEquitySettlementDate,latestKrxEligibleTradeDate,describeLsDailyMeaning} from './calendarSupport.mjs';
