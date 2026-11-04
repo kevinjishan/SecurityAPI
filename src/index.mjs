@@ -158,3 +158,5 @@ export {parseKisDomesticStockMaster} from './reference/KisDomesticStockMaster.mj
 export { resolveRequestRatePolicy } from "./core/index.mjs";
 
 export {normalizeLsCandleAdjustment,validateCorporateActionTerms} from './services/corporateActionSupport.mjs';
+
+export {normalizeKrxHolidayYear,joinKrxCalendars,resolveKrxEquitySettlementDate,latestKrxEligibleTradeDate,describeLsDailyMeaning} from './services/calendarSupport.mjs';

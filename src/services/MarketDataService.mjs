@@ -1,3 +1,4 @@
+import {describeLsDailyMeaning} from './calendarSupport.mjs';
 import {normalizeLsCandleAdjustment} from './corporateActionSupport.mjs';
 import { getCapabilities } from "../capabilities/index.mjs";
 import { BrokerError, assertBroker } from "../core/index.mjs";
@@ -191,7 +192,7 @@ export function normalizeDomesticStockDailyCandles(broker, symbol, sourceId, pay
   }
 
   if (broker === "ls") {
-    return {...normalizeLsCandles(symbol, sourceId, "1d", payload?.t8410OutBlock1, payload?.t8410OutBlock), priceAdjustment:{requested:options===null?'UNKNOWN':options.adjusted===false?'N':'Y',verified:false}};
+    return {...normalizeLsCandles(symbol, sourceId, "1d", payload?.t8410OutBlock1, payload?.t8410OutBlock), meaning:sourceId==='t8410'?describeLsDailyMeaning(sourceId):null, priceAdjustment:{requested:options===null?'UNKNOWN':options.adjusted===false?'N':'Y',verified:false}};
   }
 
   if (broker === "db") {
