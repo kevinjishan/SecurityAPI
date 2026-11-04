@@ -81,3 +81,43 @@ export function describeLsDailyMeaning(sourceId){
  finalState:'UNKNOWN',historicalAvailableAt:null,
  turnover:{sourceField:'value',sourceUnit:null,normalizedUnit:null,status:'UNVERIFIED',policy:'PRESERVE_RAW_NO_MULTIPLIER'}};
 }
+
+/** Partial exchange schedule register; never a certificate of instrument trading or vendor candle coverage. */
+export function normalizeKrxRegularSessionExceptions(value,entries){
+ const c=validate(value);
+ must(Array.isArray(entries)&&entries.length>0&&entries.length<=500,'SESSION_EXCEPTION_LIST_REQUIRED');
+ const keys=['id','date','market','open','close','reason','evidence'],seen=new Set(),out=[];
+ const localAt=(date,time)=>new Date(parseDate(date)+Number(time.slice(0,2))*3600000+Number(time.slice(3))*60000-9*3600000).toISOString();
+ for(const e of entries){
+  must(e&&typeof e==='object'&&!Array.isArray(e)&&Object.keys(e).every(k=>keys.includes(k))&&keys.every(k=>Object.hasOwn(e,k)),'SESSION_EXCEPTION_FIELDS');
+  must(typeof e.id==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(e.id),'SESSION_EXCEPTION_ID');
+  const date=e.date;parseDate(date);
+  must(['KOSPI','KOSDAQ','KONEX'].includes(e.market),'SESSION_MARKET_UNSUPPORTED');
+  const day=c.days.find(d=>d.date===date);must(day?.tradingDay===true,'SESSION_DATE_NOT_OPEN_OR_COVERED');
+  const time=s=>typeof s==='string'&&/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/.test(s);
+  must(time(e.open)&&time(e.close)&&e.open<e.close,'SESSION_TIME_INVALID');
+  must(typeof e.reason==='string'&&/^[A-Z][A-Z0-9_]{0,79}$/.test(e.reason),'SESSION_REASON_REQUIRED');
+  must(Array.isArray(e.evidence)&&e.evidence.length>0&&e.evidence.length<=10,'SESSION_EVIDENCE_REQUIRED');
+  const evidence=e.evidence.map(proof),key=date+':'+e.market;
+  must(!seen.has(key),'DUPLICATE_SESSION_EXCEPTION');seen.add(key);
+  out.push({id:e.id,date,market:e.market,open:e.open,close:e.close,reason:e.reason,evidence,
+   venue:'KRX',timezone:'Asia/Seoul',session:'REGULAR',assetClass:'CASH_EQUITY',
+   status:'DOCUMENTED_EXCEPTION_SCHEDULE',scheduledOpenAt:localAt(date,e.open),scheduledCloseAt:localAt(date,e.close),
+   actualOpenAt:null,actualCloseAt:null,historicalAvailableAt:null,pointInTimeCertified:false,
+   instrumentTradabilityCertified:false,providerCandleCoverageCertified:false});
+ }
+ out.sort((a,b)=>(a.date+':'+a.market).localeCompare(b.date+':'+b.market));
+ return {schema:'securityapi.regular-session-exceptions.v1',scope:'PARTIAL_REGULAR_SESSION_EXCEPTION_REGISTER',
+  calendarFrom:c.from,calendarTo:c.to,calendarEvidence:structuredClone(c.evidence),
+  historicalAvailableAt:null,pointInTimeCertified:false,entries:out};
+}
+export function resolveKrxRegularSessionException(calendar,register,{date,market}={}){
+ parseDate(date);must(['KOSPI','KOSDAQ','KONEX'].includes(market),'SESSION_MARKET_UNSUPPORTED');
+ must(register?.schema==='securityapi.regular-session-exceptions.v1'&&Array.isArray(register.entries),'SESSION_EXCEPTION_REGISTER_REQUIRED');
+ const keys=['id','date','market','open','close','reason','evidence'];
+ const rebuilt=normalizeKrxRegularSessionExceptions(calendar,register.entries.map(e=>Object.fromEntries(keys.map(k=>[k,e[k]]))));
+ const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
+ must(JSON.stringify(stable(register))===JSON.stringify(stable(rebuilt)),'SESSION_EXCEPTION_ARTIFACT_CHANGED');
+ const found=rebuilt.entries.find(e=>e.date===date&&e.market===market);must(found,'SESSION_EXCEPTION_UNVERIFIED');
+ return structuredClone(found);
+}
