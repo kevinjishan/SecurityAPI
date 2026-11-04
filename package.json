@@ -52,7 +52,8 @@
     "docs/ls-delegated-authority.md",
     "docs/request-rate-policy.md",
     "docs/corporate-actions.md",
-    "docs/kr-calendar-semantics.md"
+    "docs/kr-calendar-semantics.md",
+    "docs/ls-realtime-orderbook-semantics.md"
   ],
   "repository": {
     "type": "git",
