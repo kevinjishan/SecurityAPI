@@ -54,7 +54,8 @@
     "docs/corporate-actions.md",
     "docs/kr-calendar-semantics.md",
     "docs/ls-realtime-orderbook-semantics.md",
-    "docs/inbound-frame-capture.md"
+    "docs/inbound-frame-capture.md",
+    "docs/realtime-usage-policy.md"
   ],
   "repository": {
     "type": "git",
