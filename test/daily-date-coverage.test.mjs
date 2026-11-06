@@ -1,0 +1,24 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {normalizeKrxHolidayYear,joinKrxCalendars,auditKrxDailyDates} from '../src/index.mjs';
+const proof={url:'https://example.test/krx',sha256:'a'.repeat(64),observedAt:100};
+const year=y=>normalizeKrxHolidayYear(y,{block1:[{calnd_dd:y+'-01-01',holdy_nm:'NEW_YEAR'},{calnd_dd:y+'-12-31',holdy_nm:'YEAR_END'}]},{holidayEvidence:proof,ruleEvidence:{...proof,sha256:'b'.repeat(64)}});
+const request=()=>({startDate:'20260101',endDate:'20260106',dates:['20260102','20260105','20260106']});
+test('audits exact trading dates without certifying venue/session/units or availability',()=>{
+ const r=auditKrxDailyDates(year(2026),request());
+ assert.equal(r.dateCoverageMatched,true);assert.equal(r.expectedCount,3);assert.equal(r.observedCount,3);assert.deepEqual(r.missingDates,[]);assert.deepEqual(r.reasons,[]);
+ for(const k of ['providerVenueCertified','providerSessionCertified','turnoverUnitCertified','historicalAvailabilityCertified','instrumentTradingStatusCertified'])assert.equal(r[k],false);
+});
+test('reports a missing internal day',()=>{const q=request();q.dates.splice(1,1);const r=auditKrxDailyDates(year(2026),q);assert.equal(r.dateCoverageMatched,false);assert.deepEqual(r.missingDates,['20260105']);});
+test('rejects holiday and weekend observations as nontrading dates',()=>{const q=request();q.dates=['20260101','20260102','20260103','20260105','20260106'];const r=auditKrxDailyDates(year(2026),q);assert.equal(r.dateCoverageMatched,false);assert.deepEqual(r.nonTradingDates,['20260101','20260103']);});
+test('reports duplicate dates instead of silently deduplicating',()=>{const q=request();q.dates.splice(1,0,'20260102');const r=auditKrxDailyDates(year(2026),q);assert.equal(r.dateCoverageMatched,false);assert.deepEqual(r.duplicateDates,['20260102']);assert.equal(r.observedCount,4);assert.equal(r.uniqueCount,3);});
+test('unsorted complete input does not pass',()=>{const q=request();q.dates.reverse();const r=auditKrxDailyDates(year(2026),q);assert.equal(r.dateCoverageMatched,false);assert.equal(r.chronological,false);assert.deepEqual(r.missingDates,[]);});
+test('dates outside requested range are reported',()=>{const q=request();q.dates.push('20260107');const r=auditKrxDailyDates(year(2026),q);assert.equal(r.dateCoverageMatched,false);assert.deepEqual(r.outOfRangeDates,['20260107']);});
+test('empty input cannot pass a nonempty trading range',()=>{const q=request();q.dates=[];const r=auditKrxDailyDates(year(2026),q);assert.equal(r.dateCoverageMatched,false);assert.equal(r.missingDates.length,3);});
+test('an empty trading range cannot pass vacuously',()=>{const r=auditKrxDailyDates(year(2026),{startDate:'20260103',endDate:'20260104',dates:[]});assert.equal(r.dateCoverageMatched,false);assert.ok(r.reasons.includes('NO_EXPECTED_TRADING_DATES'));});
+test('malformed and impossible civil dates rejected',()=>{for(const date of ['20260230','2026012','2026-01-02',null,20260102]){const q=request();q.dates=[date];assert.throws(()=>auditKrxDailyDates(year(2026),q),/CALENDAR_DATE_INVALID/);}});
+test('missing, invalid and excessive lists rejected',()=>{for(const dates of [undefined,null,{},'20260102',Array(10001).fill('20260102')])assert.throws(()=>auditKrxDailyDates(year(2026),{...request(),dates}),/DAILY_DATE_LIST_REQUIRED/);});
+test('reversed and out-of-calendar ranges rejected',()=>{assert.throws(()=>auditKrxDailyDates(year(2026),{...request(),startDate:'20260107'}),/DAILY_DATE_RANGE_INVALID/);assert.throws(()=>auditKrxDailyDates(year(2026),{...request(),startDate:'20251231'}),/CALENDAR_COVERAGE_REQUIRED/);});
+test('calendar gaps and absent source evidence are rejected',()=>{const c=year(2026);c.days.splice(2,1);assert.throws(()=>auditKrxDailyDates(c,request()),/CALENDAR_GAP/);const d=year(2026);d.evidence=[];assert.throws(()=>auditKrxDailyDates(d,request()),/CALENDAR_COVERAGE_REQUIRED/);});
+test('joins across year end with supplied closure evidence',()=>{const c=joinKrxCalendars([year(2025),year(2026)]);const r=auditKrxDailyDates(c,{startDate:'20251230',endDate:'20260102',dates:['20251230','20260102']});assert.equal(r.dateCoverageMatched,true);assert.equal(r.expectedCount,2);});
+test('does not mutate supplied calendar, dates, or caller proof metadata',()=>{const c=year(2026),q=request(),before=JSON.stringify({c,q});const r=auditKrxDailyDates(c,q);r.expectedTradingDates.pop();assert.equal(JSON.stringify({c,q}),before);});
