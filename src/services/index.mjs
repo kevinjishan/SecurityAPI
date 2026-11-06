@@ -140,4 +140,4 @@ export {
 
 export {normalizeLsCandleAdjustment,validateCorporateActionTerms} from './corporateActionSupport.mjs';
 
-export {normalizeKrxHolidayYear,joinKrxCalendars,resolveKrxEquitySettlementDate,latestKrxEligibleTradeDate,describeLsDailyMeaning,normalizeKrxRegularSessionExceptions,resolveKrxRegularSessionException} from './calendarSupport.mjs';
+export {normalizeKrxHolidayYear,joinKrxCalendars,resolveKrxEquitySettlementDate,latestKrxEligibleTradeDate,describeLsDailyMeaning,normalizeKrxRegularSessionExceptions,resolveKrxRegularSessionException,auditKrxDailyDates} from './calendarSupport.mjs';

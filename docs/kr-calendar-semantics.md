@@ -28,3 +28,12 @@ LS `t8410` 정규화는 기존 OHLC/value/raw·수정주가 요청 값을 유지
 SDK는 전달받은 사실·일정의 구조와 달력 일치를 검사합니다. Application은 원문 전체 해시와 시장·날짜·변경 전/후 구획의 발췌, 등록부 스냅샷을 검증해야 합니다. 현재 취득한 공시의 관측 시각을 과거 이용 가능 시각으로 바꾸지 않습니다. 기존 수집 pin·동결 연구 계획·운영 프로세스를 자동 업그레이드하지 않습니다.
 
 검증: `node --test test/services/RegularSessionExceptions.test.mjs`.
+
+
+## Daily date coverage audit
+
+auditKrxDailyDates(calendar, {startDate, endDate, dates}) compares an explicitly bounded daily date list with the supplied KRX day calendar. The range must be covered by the calendar. Missing trading dates, duplicates, nontrading dates, out-of-range observations and unsorted input are reported. Invalid dates/lists/calendar profiles throw validation errors. Empty input or a range containing no expected trading day never passes.
+
+dateCoverageMatched covers date membership and ordering only. It does not certify the instrument's listing/halt history, the provider's exchange or aggregation session, turnover units, candle finality, or historical availability. All corresponding certification fields remain false. Provider header times must not be copied to every historical row.
+
+No network, implicit holiday lookup, clock, candle mutation or trading activation is performed. Existing calendar/settlement and LS raw-preservation contracts are unchanged.

@@ -121,3 +121,40 @@ export function resolveKrxRegularSessionException(calendar,register,{date,market
  const found=rebuilt.entries.find(e=>e.date===date&&e.market===market);must(found,'SESSION_EXCEPTION_UNVERIFIED');
  return structuredClone(found);
 }
+
+/** Compare daily date membership/order with a supplied KRX civil-day calendar.
+ * This does not attest instrument trading, provider session/venue, units or PIT availability.
+ */
+export function auditKrxDailyDates(value,{startDate,endDate,dates}={}){
+ const c=validate(value);
+ must(Array.isArray(dates)&&dates.length<=10000,'DAILY_DATE_LIST_REQUIRED');
+ const start=parseDate(startDate),end=parseDate(endDate);
+ must(start<=end,'DAILY_DATE_RANGE_INVALID');
+ must(start>=parseDate(c.from)&&end<=parseDate(c.to),'CALENDAR_COVERAGE_REQUIRED');
+ dates.forEach(parseDate);
+ const days=c.days.filter(d=>d.date>=startDate&&d.date<=endDate);
+ const expectedTradingDates=days.filter(d=>d.tradingDay).map(d=>d.date);
+ const expected=new Set(expectedTradingDates),within=new Map(days.map(d=>[d.date,d]));
+ const counts=new Map();
+ for(const date of dates)counts.set(date,(counts.get(date)??0)+1);
+ const observed=new Set(dates),sorted=[...observed].sort();
+ const missingDates=expectedTradingDates.filter(d=>!observed.has(d));
+ const duplicateDates=sorted.filter(d=>counts.get(d)>1);
+ const outOfRangeDates=sorted.filter(d=>d<startDate||d>endDate);
+ const nonTradingDates=sorted.filter(d=>within.has(d)&&!expected.has(d));
+ const chronological=dates.every((d,i)=>i===0||d>dates[i-1]);
+ const reasons=[];
+ if(!expectedTradingDates.length)reasons.push('NO_EXPECTED_TRADING_DATES');
+ if(missingDates.length)reasons.push('MISSING_TRADING_DATES');
+ if(duplicateDates.length)reasons.push('DUPLICATE_DATES');
+ if(outOfRangeDates.length)reasons.push('OUT_OF_RANGE_DATES');
+ if(nonTradingDates.length)reasons.push('NON_TRADING_DATES');
+ if(!chronological)reasons.push('DATES_NOT_STRICTLY_CHRONOLOGICAL');
+ return {schema:'securityapi.daily-date-coverage.v1',venue:'KRX',timezone:'Asia/Seoul',
+  startDate,endDate,expectedCount:expectedTradingDates.length,observedCount:dates.length,uniqueCount:observed.size,
+  expectedTradingDates,missingDates,duplicateDates,outOfRangeDates,nonTradingDates,chronological,
+  dateCoverageMatched:reasons.length===0,reasons,
+  scope:'DATE_MEMBERSHIP_ONLY_NOT_PROVIDER_OR_INSTRUMENT_CERTIFICATION',
+  providerVenueCertified:false,providerSessionCertified:false,turnoverUnitCertified:false,
+  historicalAvailabilityCertified:false,instrumentTradingStatusCertified:false};
+}
