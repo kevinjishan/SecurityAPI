@@ -36,3 +36,7 @@ Text is preserved exactly as delivered by the WebSocket API. The byte bound meas
 `inspectCapture()` exposes safe counters/state; it contains neither raw frames nor tokens. `waitForCaptureIdle({timeoutMs})` observes bounded completion and returns `idle:false` if callbacks remain active. Sink timeout is not cancellation: an underlying callback may still commit later. `outcomeUnknown` remains latched even after a late callback settles, and no late dispatch occurs. Idle does not mean the session is healthy or gap-free.
 
 Frames waiting in process memory are not durable until the host sink accepts them. This feature does not provide zero-loss transport, upstream gap recovery, a live execution admission, production latency/retention SLO or physical power-loss certification.
+
+## Protocol envelope classification
+
+`classifyInboundFrame(raw)` is a pure protocol helper returning CONTROL with no control payload, DATA with standard normalized envelopes, or UNRECOGNIZED. It is not privacy or execution admission. DATA can include account/private stream identifiers. Compare payload identifiers and keys with the authorized capability and reject private fields before storage. The input callback `frame.id` is the connection endpoint selection, not a verified payload TR/type or symbol.

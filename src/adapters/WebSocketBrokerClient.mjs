@@ -230,6 +230,14 @@ export class WebSocketBrokerClient {
     }
   }
 
+  classifyInboundFrame(raw) {
+    if (typeof raw !== "string") return { kind: "UNRECOGNIZED", messages: [] };
+    const data = parseSocketMessage(raw);
+    if (!data || typeof data !== "object" || Array.isArray(data)) return { kind: "UNRECOGNIZED", messages: [] };
+    if (isAckMessage(this.broker, data)) return { kind: "CONTROL", messages: [] };
+    return { kind: "DATA", messages: normalizeRealtimeMessage(this.broker, data) };
+  }
+
   inspectCapture() {
     return this._captureState ? { ...this._captureState } : null;
   }
