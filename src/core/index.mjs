@@ -15,3 +15,5 @@ export {
 } from "./types.mjs";
 
 export { resolveRequestRatePolicy } from "./RequestRatePolicy.mjs";
+
+export { resolveRealtimeUsagePolicy } from './RealtimeUsagePolicy.mjs';
