@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { BrokerError, assertBroker } from "../core/index.mjs";
 
 const DEFAULT_REALTIME_IDS = Object.freeze({
@@ -38,18 +39,54 @@ export class WebSocketBrokerClient {
     this.heartbeatTimeoutMs = config.heartbeatTimeoutMs ?? this.heartbeatIntervalMs * 2;
     this.pingMessage = config.pingMessage;
     this.connectTimeoutMs = config.connectTimeoutMs ?? DEFAULT_CONNECT_TIMEOUT_MS;
+    this._captureState = null;
+    if (config.onInboundFrame !== undefined) {
+      const integer = (n, max) => Number.isSafeInteger(n) && n >= 1 && n <= max;
+      if (typeof config.onInboundFrame !== "function" || config.autoReconnect !== false ||
+          !integer(config.captureMaxPending ?? 64, 256) || !integer(config.captureMaxBytes ?? 65536, 1048576) ||
+          !integer(config.captureTimeoutMs ?? 5000, 30000) || config.captureClock !== undefined && typeof config.captureClock !== "function") {
+        throw BrokerError.config("Capture requires a callback, explicit autoReconnect=false and bounded policy.", { broker: this.broker });
+      }
+      this._captureSink = config.onInboundFrame;
+      this._captureClock = config.captureClock ?? Date.now;
+      this._captureMaxPending = config.captureMaxPending ?? 64;
+      this._captureMaxBytes = config.captureMaxBytes ?? 65536;
+      this._captureTimeoutMs = config.captureTimeoutMs ?? 5000;
+      this._captureState = { sessionId: randomUUID(), started: false, closed: false, received: 0, pending: 0,
+        activeCallbacks: 0, completed: 0, dispatched: 0, blockedReason: null, outcomeUnknown: false };
+      this._captureTail = Promise.resolve();
+      this._captureCallbacks = new Set();
+      this._captureConnecting = null;
+      this._captureLastAt = null;
+    }
   }
 
   async connect(options = {}) {
+    if (!this._captureState) return this._connectOnce(options);
+    this._assertCaptureOpen();
+    if (this.socket && this.readyState() <= 1) return this;
+    if (this._captureConnecting) return this._captureConnecting;
+    if (this._captureState.started) throw BrokerError.config("Capture session already attempted; a new authorized instance is required.", { broker: this.broker });
+    this._captureState.started = true;
+    this._captureConnecting = this._connectOnce(options).catch((error) => {
+      this._captureState.closed = true;
+      throw error;
+    }).finally(() => { this._captureConnecting = null; });
+    return this._captureConnecting;
+  }
+
+  async _connectOnce(options = {}) {
     if (this.socket && this.readyState() <= 1) {
       return this;
     }
 
     const id = options.id ?? DEFAULT_REALTIME_IDS[this.broker];
     const endpoint = await this.brokerClient.getEndpoint(id);
+    this._assertCaptureOpen();
     this.token = this.broker === "kis"
       ? { accessToken: await this.brokerClient.getApprovalKey(), tokenType: "Approval" }
       : await this.brokerClient.getAccessToken();
+    this._assertCaptureOpen();
     this.connectedId = id;
     this.closedByUser = false;
 
@@ -61,6 +98,7 @@ export class WebSocketBrokerClient {
     try {
       this.attachSocketHandlers(this.socket);
       await waitForSocketOpen(this.socket, this.connectTimeoutMs);
+      this._assertCaptureOpen();
       this.startHeartbeat();
       return this;
     } catch (error) {
@@ -111,6 +149,10 @@ export class WebSocketBrokerClient {
   }
 
   close(code, reason) {
+    if (this._captureState) {
+      this._captureState.closed = true;
+      if (this._captureState.activeCallbacks) this._captureState.outcomeUnknown = true;
+    }
     this.closedByUser = true;
     this.clearReconnectTimer();
     this.stopHeartbeat();
@@ -135,6 +177,7 @@ export class WebSocketBrokerClient {
   }
 
   async ensureConnected(id) {
+    this._assertCaptureOpen();
     if (!this.socket || this.readyState() > 1) {
       await this.connect({ id });
     }
@@ -163,24 +206,128 @@ export class WebSocketBrokerClient {
       this.emit("open", event);
     });
     setSocketHandler(socket, "close", (event) => {
+      if (this._captureState && this.socket === socket) {
+        this._captureState.closed = true;
+        if (this._captureState.activeCallbacks) this._captureState.outcomeUnknown = true;
+      }
       this.stopHeartbeat();
       this.emit("disconnected", { broker: this.broker, id: this.connectedId, event });
       this.emit("close", event);
       this.scheduleReconnect(event);
     });
-    setSocketHandler(socket, "error", (event) => this.emit("error", event));
+    setSocketHandler(socket, "error", (event) => this._captureState ? this._stopCapture("CAPTURE_SOCKET_ERROR") : this.emit("error", event));
     setSocketHandler(socket, "message", (event) => {
       const raw = event?.data ?? event;
-      const data = parseSocketMessage(raw);
-      this.lastMessageAt = Date.now();
-      this.emit("message", { broker: this.broker, data, raw });
-
-      if (isAckMessage(this.broker, data)) {
-        this.emit("ack", { broker: this.broker, data, raw });
-      } else {
-        this.emit("realtime", { broker: this.broker, data, raw });
-      }
+      if (this._captureState) this._captureMessage(socket, raw);
+      else this._dispatchRaw(raw);
     });
+  }
+
+
+  _assertCaptureOpen() {
+    if (this._captureState?.closed || this._captureState?.blockedReason) {
+      throw BrokerError.config("Capture session is closed or stopped.", { broker: this.broker });
+    }
+  }
+
+  classifyInboundFrame(raw) {
+    if (typeof raw !== "string") return { kind: "UNRECOGNIZED", messages: [] };
+    const data = parseSocketMessage(raw);
+    if (!data || typeof data !== "object" || Array.isArray(data)) return { kind: "UNRECOGNIZED", messages: [] };
+    if (isAckMessage(this.broker, data)) return { kind: "CONTROL", messages: [] };
+    return { kind: "DATA", messages: normalizeRealtimeMessage(this.broker, data) };
+  }
+
+  inspectCapture() {
+    return this._captureState ? { ...this._captureState } : null;
+  }
+
+  async waitForCaptureIdle({ timeoutMs = 1000 } = {}) {
+    if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 30000) {
+      throw BrokerError.config("Capture idle timeout is invalid.", { broker: this.broker });
+    }
+    if (!this._captureState) return { idle: true };
+    let timer;
+    const work = Promise.allSettled([this._captureTail, ...this._captureCallbacks]);
+    try {
+      await Promise.race([work, new Promise((resolve) => { timer = setTimeout(resolve, timeoutMs); })]);
+      const state = this.inspectCapture();
+      return { ...state, idle: state.pending === 0 && state.activeCallbacks === 0 };
+    } finally { clearTimeout(timer); }
+  }
+
+  _dispatchRaw(raw, frame) {
+    const data = parseSocketMessage(raw);
+    this.lastMessageAt = Date.now();
+    const payload = { broker: this.broker, data, raw, ...(frame ? {
+      receivedAt: frame.receivedAt, captureSessionId: frame.sessionId, captureSequence: frame.sequence,
+    } : {}) };
+    this.emit("message", payload);
+    if (frame && (this._captureState.closed || this._captureState.blockedReason)) return false;
+    this.emit(isAckMessage(this.broker, data) ? "ack" : "realtime", payload);
+    return true;
+  }
+
+  _stopCapture(code) {
+    const state = this._captureState;
+    if (!state || state.blockedReason) return;
+    state.blockedReason = code;
+    state.closed = true;
+    if (state.activeCallbacks) state.outcomeUnknown = true;
+    this.closedByUser = true;
+    this.clearReconnectTimer();
+    this.stopHeartbeat();
+    try { this.socket?.close?.(1011, "Inbound capture stopped"); } catch {}
+    // Sink/dispatch exception messages may contain private diagnostics. Never forward their text/cause.
+    try { this.emit("error", BrokerError.config("Inbound frame capture stopped.", { broker: this.broker, details: { code } })); } catch {}
+  }
+
+  _captureMessage(socket, raw) {
+    const state = this._captureState;
+    if (this.socket !== socket || state.closed || state.blockedReason) return;
+    state.received += 1;
+    this.lastMessageAt = Date.now();
+    if (typeof raw !== "string") { this._stopCapture("CAPTURE_FRAME_TYPE"); return; }
+    if (raw.length > this._captureMaxBytes || new TextEncoder().encode(raw).byteLength > this._captureMaxBytes) {
+      this._stopCapture("CAPTURE_FRAME_TOO_LARGE"); return;
+    }
+    let receivedAt;
+    try { receivedAt = this._captureClock(); } catch { this._stopCapture("CAPTURE_CLOCK_INVALID"); return; }
+    if (!Number.isSafeInteger(receivedAt) || receivedAt < 0 || this._captureLastAt !== null && receivedAt < this._captureLastAt) {
+      this._stopCapture("CAPTURE_CLOCK_INVALID"); return;
+    }
+    this._captureLastAt = receivedAt;
+    if (state.pending >= this._captureMaxPending) { this._stopCapture("CAPTURE_QUEUE_FULL"); return; }
+    const frame = Object.freeze({ broker: this.broker, id: this.connectedId, sessionId: state.sessionId,
+      sequence: state.received, receivedAt, raw });
+    state.pending += 1;
+    const task = this._captureTail.then(async () => {
+      if (state.closed || state.blockedReason || this.socket !== socket) return;
+      state.activeCallbacks += 1;
+      const callback = Promise.resolve().then(() => this._captureSink(frame));
+      this._captureCallbacks.add(callback);
+      callback.then(() => { state.completed += 1; }, () => {}).finally(() => {
+        state.activeCallbacks -= 1;
+        this._captureCallbacks.delete(callback);
+      }).catch(() => {});
+      let timer;
+      try {
+        const outcome = await Promise.race([
+          callback.then(() => "RESOLVED", () => "REJECTED"),
+          new Promise(resolve => { timer = setTimeout(() => resolve("TIMEOUT"), this._captureTimeoutMs); }),
+        ]);
+        if (outcome !== "RESOLVED") {
+          state.outcomeUnknown = true;
+          this._stopCapture(outcome === "TIMEOUT" ? "CAPTURE_TIMEOUT" : "CAPTURE_FAILED");
+          return;
+        }
+        if (state.closed || state.blockedReason || this.socket !== socket) return;
+        try { if (this._dispatchRaw(raw, frame)) state.dispatched += 1; }
+        catch { this._stopCapture("CAPTURE_DISPATCH_FAILED"); }
+      } finally { clearTimeout(timer); }
+    }).catch(() => { this._stopCapture("CAPTURE_INTERNAL_FAILED"); })
+      .finally(() => { state.pending -= 1; });
+    this._captureTail = task;
   }
 
   buildSubscriptionMessage(action, id, key, options = {}) {
@@ -223,6 +370,7 @@ export class WebSocketBrokerClient {
   }
 
   send(message) {
+    this._assertCaptureOpen();
     if (!this.socket?.send) {
       throw BrokerError.config("WebSocket is not connected", {
         broker: this.broker,
@@ -249,6 +397,7 @@ export class WebSocketBrokerClient {
   }
 
   scheduleReconnect(event) {
+    if (this._captureState) return;
     if (!this.autoReconnect || this.closedByUser || this.reconnectTimer) {
       return;
     }
@@ -283,6 +432,7 @@ export class WebSocketBrokerClient {
   }
 
   async reconnect() {
+    if (this._captureState) throw BrokerError.config("Capture reconnect requires a new authorized instance.", { broker: this.broker });
     const id = this.connectedId ?? this.subscriptions.values().next().value?.id ?? DEFAULT_REALTIME_IDS[this.broker];
     this.socket = null;
     await this.connect({ id });

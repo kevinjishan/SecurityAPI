@@ -53,7 +53,8 @@
     "docs/request-rate-policy.md",
     "docs/corporate-actions.md",
     "docs/kr-calendar-semantics.md",
-    "docs/ls-realtime-orderbook-semantics.md"
+    "docs/ls-realtime-orderbook-semantics.md",
+    "docs/inbound-frame-capture.md"
   ],
   "repository": {
     "type": "git",
